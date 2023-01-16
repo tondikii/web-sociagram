@@ -1,0 +1,7 @@
+.container {
+  @aplly min-h-screen;
+}
+
+.postsContainer {
+  @apply dark:bg-black border border-zinc-300 dark:border-zinc-800 rounded-lg w-3/5 px-12 pt-8 pb-12;
+}

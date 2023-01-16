@@ -1,0 +1,24 @@
+.container {
+  @aplly min-h-screen;
+}
+
+.formContainer {
+  @apply dark:bg-black border border-zinc-300 dark:border-zinc-800 my-2 rounded-lg w-1/2 py-8 px-12;
+}
+
+.formRow {
+  @apply flex flex-row items-center mb-4 w-full;
+}
+
+.input {
+  @apply border bg-white dark:bg-black border-zinc-300 dark:border-zinc-800 rounded p-1;
+}
+
+.textSecondary {
+  @apply mt-1 text-xs text-zinc-400;
+}
+
+.btnPrimary {
+  background-color: #9c27b0 !important;
+  @apply w-1/4 self-center mt-4 font-bold;
+}

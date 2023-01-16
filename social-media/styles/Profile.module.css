@@ -1,0 +1,8 @@
+.container {
+  @aplly min-h-screen text-zinc-900 dark:text-white;
+}
+
+.btnPrimary {
+  background-color: #9c27b0 !important;
+  @apply ml-4 mr-1 font-bold;
+}

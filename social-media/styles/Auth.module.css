@@ -1,0 +1,14 @@
+.btnPrimary {
+  background-color: #9c27b0 !important;
+  @apply font-bold;
+}
+
+.textField {
+  background-color: rgb(248 250 252 / var(--tw-bg-opacity));
+  border-radius: 5px;
+  color: white;
+}
+
+.anchor {
+  @apply text-slate-300 decoration-slate-300 hover:text-white hover:decoration-white;
+}

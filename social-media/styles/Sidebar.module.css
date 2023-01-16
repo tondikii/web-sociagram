@@ -1,0 +1,13 @@
+.container {
+  @apply bg-white dark:bg-black flex flex-col justify-between w-2/12 fixed border-r border-r-zinc-200 dark:border-r-zinc-800;
+}
+
+.section {
+  height: 50vh;
+}
+
+.menuContainer {
+  align-items: center;
+  cursor: pointer;
+  @apply rounded-full hover:bg-fuchsia-50 dark:hover:bg-zinc-900;
+}
