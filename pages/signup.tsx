@@ -1,4 +1,10 @@
-import * as React from "react";
+import type {NextComponentType, NextPageContext} from "next";
+import {useEffect, useState, useCallback, useMemo} from "react";
+import {connect} from "react-redux";
+import {signUp as signUpProps, signIn as signInProps} from "../store/actions";
+import {setCookie} from "cookies-next";
+import {useRouter} from "next/router";
+
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -11,6 +17,8 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
 import styles from "../styles/Auth.module.css";
+import {ExclamationCircleIcon} from "@heroicons/react/outline";
+import * as Alert from "../components/Alert";
 
 const theme = createTheme();
 
@@ -27,10 +35,129 @@ const focusColor = {
   },
 };
 
-export default function SignUp() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+interface Props {
+  signUp: Function;
+  signUpState: {
+    fetch: boolean;
+    data: {userId: string};
+    error: any;
   };
+  signIn: Function;
+  signInState: {
+    fetch: boolean;
+    data: {accessToken: string};
+    error: any;
+  };
+}
+
+const SignUp: NextComponentType<NextPageContext, {}, Props> = (
+  props: Props
+) => {
+  const {
+    signUp,
+    signUpState: {data, error},
+    signIn,
+    signInState,
+  } = props;
+
+  const router = useRouter();
+
+  const [signUpForm, setSignUpForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const disabledSubmit = useMemo(() => {
+    let disabled = false;
+    const {username, email, password} = signUpForm;
+    if (username.length < 3 || !email || password.length < 8) {
+      disabled = true;
+    }
+    return disabled;
+  }, [signUpForm]);
+
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      signUp(signUpForm);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [signUpForm]
+  );
+
+  const handleChangeForm = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const {name, value} = e.target;
+      setSignUpForm({...signUpForm, [name]: value});
+    },
+    [signUpForm]
+  );
+
+  const renderWarning = useCallback(
+    (name: string) => {
+      const {password, username, email} = signUpForm;
+      const renderText = () => {
+        switch (name) {
+          case "username":
+            if (username.length < 3) {
+              return "Password should be more than equal 3 characters";
+            }
+            break;
+          case "email":
+            if (!email) {
+              return "Email cannot be empty";
+            }
+            break;
+          case "password":
+            if (password.length < 8) {
+              return "Password should be more than equal 8 characters";
+            }
+            break;
+          default:
+            break;
+        }
+      };
+      const text = renderText();
+      if (!text) return null;
+      return (
+        <div className="flex flex-row items-center mt-1">
+          <ExclamationCircleIcon className="h-4 w-4 text-yellow-300 mr-1" />
+          <small className="text-yellow-300">{text}</small>
+        </div>
+      );
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [signUpForm]
+  );
+
+  useEffect(() => {
+    const {userId} = data;
+    const {email, password} = signUpForm;
+    if (userId) {
+      signIn({email, password});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+  useEffect(() => {
+    if (error) {
+      Alert.Error({text: error});
+    }
+  }, [error]);
+
+  useEffect(() => {
+    const {accessToken} = signInState.data;
+    if (accessToken) {
+      setCookie("accessToken", accessToken);
+      router.push("/");
+      Alert.Success({text: "Welcome to Sosiagram!"});
+    }
+  }, [signInState.data]);
+  useEffect(() => {
+    if (signInState.error) {
+      Alert.Error({text: signInState.error});
+    }
+  }, [signInState.error]);
 
   return (
     <div className="verticalCenter p-4 min-h-screen bg-gradient-to-r from-purple-500 to-pink-500">
@@ -70,7 +197,10 @@ export default function SignUp() {
                     id="username"
                     label="Username"
                     autoFocus
+                    value={signUpForm.username}
+                    onChange={handleChangeForm}
                   />
+                  {renderWarning("username")}
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
@@ -83,7 +213,10 @@ export default function SignUp() {
                     label="Email Address"
                     name="email"
                     autoComplete="email"
+                    value={signUpForm.email}
+                    onChange={handleChangeForm}
                   />
+                  {renderWarning("email")}
                 </Grid>
                 <Grid item xs={12}>
                   <TextField
@@ -97,7 +230,10 @@ export default function SignUp() {
                     type="password"
                     id="password"
                     autoComplete="new-password"
+                    value={signUpForm.password}
+                    onChange={handleChangeForm}
                   />
+                  {renderWarning("password")}
                 </Grid>
               </Grid>
               <Button
@@ -107,6 +243,7 @@ export default function SignUp() {
                 sx={{mt: 3, mb: 2}}
                 style={{textTransform: "none"}}
                 className={styles.btnPrimary}
+                disabled={disabledSubmit}
               >
                 Sign Up
               </Button>
@@ -127,4 +264,18 @@ export default function SignUp() {
       </ThemeProvider>
     </div>
   );
-}
+};
+
+const mapStateToProps = (state: {
+  rootReducer: {signUp: Object; signIn: Object};
+}) => ({
+  signUpState: state.rootReducer.signUp,
+  signInState: state.rootReducer.signIn,
+});
+const mapDispatchToProps = {
+  signUp: (payload: {email: string; password: string; username: string}) =>
+    signUpProps(payload),
+  signIn: (payload: {email: string; password: string}) => signInProps(payload),
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignUp);

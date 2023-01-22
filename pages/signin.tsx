@@ -1,4 +1,10 @@
-import * as React from "react";
+import type {NextComponentType, NextPageContext} from "next";
+import {connect} from "react-redux";
+import {useEffect, useState, useCallback} from "react";
+import {signIn as signInProps} from "../store/actions";
+import {setCookie} from "cookies-next";
+import {useRouter} from "next/router";
+
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -11,6 +17,8 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
 import styles from "../styles/Auth.module.css";
+
+import * as Alert from "../components/Alert";
 
 const theme = createTheme();
 
@@ -27,10 +35,56 @@ const focusColor = {
   },
 };
 
-export default function SignIn() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+interface Props {
+  signIn: Function;
+  signInState: {
+    fetch: boolean;
+    data: {accessToken: string};
+    error: any;
   };
+}
+
+const SignIn: NextComponentType<NextPageContext, {}, Props> = (
+  props: Props
+) => {
+  const {
+    signIn,
+    signInState: {data, error},
+  } = props;
+  const router = useRouter();
+
+  const [signInForm, setSignInForm] = useState({email: "", password: ""});
+
+  const handleChangeForm = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const {name, value} = e.target;
+      setSignInForm({...signInForm, [name]: value});
+    },
+    [signInForm]
+  );
+
+  const handleSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      signIn(signInForm);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [signInForm]
+  );
+
+  useEffect(() => {
+    const {accessToken} = data;
+    if (accessToken) {
+      setCookie("accessToken", accessToken);
+      router.push("/");
+      Alert.Success({text: "Sign in success!"});
+    }
+  }, [data]);
+  useEffect(() => {
+    if (error) {
+      Alert.Error({text: error});
+    }
+  }, [error]);
 
   return (
     <div className="verticalCenter p-4 min-h-screen bg-gradient-to-r from-purple-500 to-pink-500">
@@ -69,6 +123,8 @@ export default function SignIn() {
                     label="Email Address"
                     name="email"
                     autoComplete="email"
+                    value={signInForm.email}
+                    onChange={handleChangeForm}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -83,6 +139,8 @@ export default function SignIn() {
                     type="password"
                     id="password"
                     autoComplete="new-password"
+                    value={signInForm.password}
+                    onChange={handleChangeForm}
                   />
                 </Grid>
               </Grid>
@@ -113,4 +171,13 @@ export default function SignIn() {
       </ThemeProvider>
     </div>
   );
-}
+};
+
+const mapStateToProps = (state: {rootReducer: {signIn: Object}}) => ({
+  signInState: state.rootReducer.signIn,
+});
+const mapDispatchToProps = {
+  signIn: (payload: {email: string; password: string}) => signInProps(payload),
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SignIn);

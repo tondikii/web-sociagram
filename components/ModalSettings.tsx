@@ -5,16 +5,17 @@ import {Fragment} from "react";
 interface Props {
   open: boolean;
   toggle: Function;
+  signOut: Function;
 }
 
 const ModalSettings: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {open, toggle} = props;
+  const {open, toggle, signOut} = props;
 
   const menus = [
-    {label: "Sign Out"},
-    {label: "Cancel", onclick: () => toggle()},
+    {label: "Sign Out", onClick: signOut},
+    {label: "Cancel", onClick: toggle},
   ];
 
   return (
@@ -44,7 +45,7 @@ const ModalSettings: NextComponentType<NextPageContext, {}, Props> = (
         >
           {menus.map((menu, idx) => (
             <Fragment key={idx}>
-              <ListItem button onClick={menu.onclick}>
+              <ListItem button onClick={menu.onClick}>
                 <ListItemText primary={menu.label} />
               </ListItem>
               {idx !== menus.length - 1 && <Divider />}

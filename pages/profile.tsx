@@ -1,6 +1,8 @@
 import {Fragment, useState} from "react";
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
+import {connect} from "react-redux";
+import {signOut as signOutProps} from "../store/actions";
 
 import {Button, IconButton} from "@mui/material";
 import {CogIcon, CameraIcon} from "@heroicons/react/outline";
@@ -9,11 +11,15 @@ import ModalSettings from "../components/ModalSettings";
 
 import styles from "../styles/Profile.module.css";
 
-interface Props {}
+interface Props {
+  signOut: Function;
+}
 
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
+  const {signOut} = props;
+
   const router = useRouter();
 
   const [showModalSettings, setShowModalSettings] = useState(false);
@@ -24,10 +30,18 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const onClickEditProfile = () => {
     router.push("/profile/edit");
   };
+  const handleSignOut = () => {
+    signOut();
+    router.push("/signin");
+  };
 
   return (
     <Fragment>
-      <ModalSettings open={showModalSettings} toggle={toggleModalSettings} />
+      <ModalSettings
+        open={showModalSettings}
+        toggle={toggleModalSettings}
+        signOut={handleSignOut}
+      />
       <div className={`${styles.container} verticalCenter`}>
         <div className="horizontal p-4 w-3/5">
           <img
@@ -94,4 +108,9 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-export default Profile;
+const mapStateToProps = (state: {rootReducer: {signIn: Object}}) => ({});
+const mapDispatchToProps = {
+  signOut: () => signOutProps(),
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);
