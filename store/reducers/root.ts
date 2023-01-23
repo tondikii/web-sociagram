@@ -1,5 +1,5 @@
 import {createSlice} from "@reduxjs/toolkit";
-import {signIn, signOut, signUp} from "../actions";
+import {signIn, signOut, signUp, getProfile, editProfile} from "../actions";
 
 const rootSlice = createSlice({
   name: "root",
@@ -12,6 +12,20 @@ const rootSlice = createSlice({
     signUp: {
       fetch: false,
       data: {userId: ""},
+      error: "",
+    },
+    getProfile: {
+      fetch: false,
+      data: {
+        userId: "",
+      },
+      error: "",
+    },
+    editProfile: {
+      fetch: false,
+      data: {
+        userId: "",
+      },
       error: "",
     },
   },
@@ -39,6 +53,7 @@ const rootSlice = createSlice({
         error: payload,
       };
     });
+
     builder.addCase(signIn.pending, (state, action) => {
       state.signIn = {...state.signIn, fetch: true};
     });
@@ -58,11 +73,52 @@ const rootSlice = createSlice({
         error: payload,
       };
     });
+
     builder.addCase(signOut.fulfilled, (state, action) => {
       state.signIn = {
         fetch: false,
         data: {accessToken: ""},
         error: "",
+      };
+    });
+
+    builder.addCase(getProfile.pending, (state, action) => {
+      state.getProfile = {...state.getProfile, fetch: true};
+    });
+    builder.addCase(getProfile.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.getProfile = {
+        ...state.getProfile,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(getProfile.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.getProfile = {
+        ...state.getProfile,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(editProfile.pending, (state, action) => {
+      state.editProfile = {...state.editProfile, fetch: true};
+    });
+    builder.addCase(editProfile.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.editProfile = {
+        ...state.editProfile,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(editProfile.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.editProfile = {
+        ...state.editProfile,
+        fetch: false,
+        error: payload,
       };
     });
   },

@@ -39,7 +39,7 @@ interface Props {
   signIn: Function;
   signInState: {
     fetch: boolean;
-    data: {accessToken: string};
+    data: {accessToken: string; username: string; avatar: string};
     error: any;
   };
 }
@@ -73,9 +73,13 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
   );
 
   useEffect(() => {
-    const {accessToken} = data;
+    const {accessToken, username, avatar} = data;
     if (accessToken) {
       setCookie("accessToken", accessToken);
+      // setCookie("username", username);
+      // setCookie("avatar", avatar);
+      localStorage.username = username;
+      localStorage.avatar = avatar;
       router.push("/");
       Alert.Success({text: "Sign in success!"});
     }

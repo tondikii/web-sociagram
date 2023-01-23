@@ -1,6 +1,7 @@
 import type {NextComponentType, NextPageContext} from "next";
 import Link from "next/link";
 import {useRouter} from "next/router";
+import {useEffect, useMemo, useState} from "react";
 import styles from "../styles/Sidebar.module.css";
 import {HomeIcon, HeartIcon, PlusCircleIcon} from "@heroicons/react/outline";
 import {
@@ -14,8 +15,19 @@ interface Props {}
 const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {pathname} = useRouter();
-  const isProfile = pathname.search("/profile") >= 0;
+  const {pathname, query} = useRouter();
+  const isProfile = query?.username ? true : false;
+
+  const [user, setUser] = useState({username: "", avatar: ""});
+
+  useEffect(() => {
+    setUser({
+      username: localStorage.getItem("username") || "",
+      avatar: localStorage.getItem("avatar") || "",
+    });
+  }, []);
+
+  console.log({user});
 
   return (
     <nav className={styles.container}>
@@ -57,19 +69,22 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
         className={`${styles.section} h-100 flex flex-col-reverse container`}
       >
         <Link
-          href={"/profile"}
+          href={`/${user?.username}`}
           className={`horizontal p-1 items-center ${styles.menuContainer}`}
         >
           <img
             className={`rounded-full w-11 h-11 ${
               isProfile ? "border-4 border-primary" : ""
             }`}
-            src="https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
+            src={
+              user?.avatar ||
+              "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+            }
             alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
           />
           <div className="vertical">
             <p className={`ml-2 text-primary ${isProfile ? "font-bold" : ""}`}>
-              tondikii
+              {user?.username}
             </p>
             <p className="ml-2 text-sm text-zinc-400">
               {isProfile ? "Viewing" : "View"} profile

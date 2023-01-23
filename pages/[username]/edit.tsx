@@ -1,13 +1,45 @@
-import {useCallback, useEffect, useState, useRef} from "react";
 import type {NextComponentType, NextPageContext} from "next";
+import {useRouter} from "next/router";
+import {useCallback, useEffect, useState, useRef, useMemo} from "react";
+import {connect} from "react-redux";
+import {
+  getProfile as getProfileProps,
+  editProfile as editProfileProps,
+} from "../../store/actions";
+
 import {Button} from "@mui/material";
+import * as Alert from "../../components/Alert";
 
 import styles from "../../styles/EditProfile.module.css";
 
-interface Props {}
+interface Props {
+  getProfile: Function;
+  getProfileState: {
+    fetch: boolean;
+    data: {
+      userId: string;
+      avatar: string;
+      bio: string;
+      name: string;
+      gender: string;
+    };
+    error: any;
+  };
+  editProfile: Function;
+  editProfileState: {
+    fetch: boolean;
+    data: {
+      userId: string;
+    };
+    error: any;
+  };
+}
 
 const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
+  const {getProfile, getProfileState, editProfile, editProfileState} = props;
   const avatarRef = useRef(null);
+  const router = useRouter();
+  const {username} = router.query;
 
   const [profileForm, setProfileForm] = useState({
     name: "",
@@ -34,6 +66,16 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       value: profileForm?.gender,
     },
   ];
+
+  const disabledSubmit = useMemo(() => {
+    let disabled = false;
+    for (const key in profileForm) {
+      if (!profileForm[key]) {
+        disabled = true;
+      }
+    }
+    return disabled;
+  }, [profileForm]);
 
   const handleClickFile = () => {
     avatarRef.current.click();
@@ -119,15 +161,61 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     [profileForm]
   );
 
+  const handleSubmitForm = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const {name, username, bio, gender, avatar} = profileForm;
+      const formData = new FormData();
+      formData.append(typeof avatar === "string" ? "avatar" : "file", avatar);
+      formData.append("name", name);
+      formData.append("username", username);
+      formData.append("bio", bio);
+      formData.append("gender", gender);
+      editProfile(formData);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [profileForm]
+  );
+
   useEffect(() => {
-    setPreview(
-      "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
-    );
-  }, []);
+    console.log({username});
+    if (username) {
+      getProfile(username);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username]);
+  useEffect(() => {
+    const {userId, name, bio, gender, avatar} = getProfileState?.data;
+    if (userId) {
+      setProfileForm({
+        ...profileForm,
+        username: `${username || ""}`,
+        name,
+        bio,
+        gender,
+        avatar,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [getProfileState]);
+  useEffect(() => {
+    console.log({profileForm});
+  }, [profileForm]);
+  useEffect(() => {
+    const userId = editProfileState?.data?.userId || "";
+    if (userId) {
+      router.push(`/${username}`);
+      Alert.Success({text: "Success edit profile!"});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editProfileState]);
 
   return (
     <div className={`${styles.container} verticalCenter`}>
-      <form className={`${styles.formContainer} vertical`}>
+      <form
+        className={`${styles.formContainer} vertical`}
+        onSubmit={handleSubmitForm}
+      >
         <div className={`${styles.formRow}`}>
           <div className="flex flex-row-reverse w-1/4">
             <img
@@ -135,7 +223,8 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
               src={
                 preview
                   ? preview
-                  : "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+                  : profileForm.avatar ||
+                    "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
               }
               alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
             />
@@ -149,7 +238,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
               ref={avatarRef}
               onChange={handleChangeFile}
             />
-            <p className="">tondikii</p>
+            <p className="">{username}</p>
             <p
               className="text-sky-500 hover:text-zinc-900 font-bold text-sm dark:hover:text-white"
               role="button"
@@ -172,6 +261,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
           variant="contained"
           style={{textTransform: "none"}}
           className={`${styles.btnPrimary}`}
+          disabled={disabledSubmit}
         >
           Submit
         </Button>
@@ -180,4 +270,15 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   );
 };
 
-export default Liked;
+const mapStateToProps = (state: {
+  rootReducer: {getProfile: Object; editProfile: Object};
+}) => ({
+  getProfileState: state.rootReducer.getProfile,
+  editProfileState: state.rootReducer.editProfile,
+});
+const mapDispatchToProps = {
+  getProfile: (payload: string) => getProfileProps(payload),
+  editProfile: (payload: FormData) => editProfileProps(payload),
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Liked);
