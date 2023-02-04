@@ -40,7 +40,7 @@ export const signOut = createAsyncThunk(CONST.SIGN_OUT, async () => {
 
 export const getProfile = createAsyncThunk(
   CONST.GET_PROFILE,
-  async (payload: strin, {rejectWithValue}) => {
+  async (payload: string, {rejectWithValue}) => {
     try {
       const response = await getProfileApi(payload);
       return response;
