@@ -1,10 +1,11 @@
-import {Fragment, useEffect, useState} from "react";
+import {Fragment, useCallback, useEffect, useMemo, useState} from "react";
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
 import {connect} from "react-redux";
 import {
   signOut as signOutProps,
   getProfile as getProfileProps,
+  followUnfollow as followUnfollowProps,
 } from "../store/actions";
 
 import {Button, IconButton} from "@mui/material";
@@ -27,14 +28,33 @@ interface Props {
       bio: string;
       name: string;
     };
-    error: any;
+    error: string;
+  };
+  followUnfollow: Function;
+  followUnfollowState: {
+    fetch: boolean;
+    data: {
+      userId: string;
+      avatar: string;
+      followers: never[];
+      following: never[];
+      bio: string;
+      name: string;
+    };
+    error: string;
   };
 }
 
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {signOut, getProfile, getProfileState} = props;
+  const {
+    signOut,
+    getProfile,
+    getProfileState,
+    followUnfollow,
+    followUnfollowState: {data: dataFollowUnFollow},
+  } = props;
 
   const router = useRouter();
   const {username} = router.query;
@@ -49,20 +69,73 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     bio: "",
     name: "",
   });
+  const [cookieUsername, setCookieUsername] = useState("");
 
-  const toggleModalSettings = () => {
-    setShowModalSettings(!showModalSettings);
+  const isOwnProfile = useMemo(() => {
+    if (username === cookieUsername) return true;
+    return false;
+  }, [username, cookieUsername]);
+  const EllipsisIcon = useMemo(
+    () => (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className="h-8 w-8 text-zinc-900 dark:text-white"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M4.5 12a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"
+          clip-rule="evenodd"
+        />
+      </svg>
+    ),
+    []
+  );
+
+  const toggleModalOptions = () => {
+    if (isOwnProfile) {
+      setShowModalSettings(!showModalSettings);
+    }
   };
-  const onClickEditProfile = () => {
-    router.push(`/${username}/edit`);
+  const onClickActionButton = () => {
+    if (isOwnProfile) {
+      router.push(`/${username}/edit`);
+    } else {
+      followUnfollow({
+        accessToken: localStorage.getItem("accessToken"),
+        data: {userId: user?.userId},
+      });
+    }
   };
   const handleSignOut = () => {
     signOut();
     router.push("/signin");
   };
+  const labelButton = useMemo(() => {
+    if (isOwnProfile) {
+      return "Edit profile";
+    }
+    const followers = user?.followers || [];
+    if (followers.length) {
+      if (followers.find((id) => id === localStorage.getItem("userId"))) {
+        return "Following";
+      }
+      return "Follow";
+    }
+    return "Follow";
+  }, [isOwnProfile, user?.followers]);
 
   useEffect(() => {
-    getProfile(username || "");
+    setCookieUsername(localStorage.getItem("username") || "");
+  }, []);
+  useEffect(() => {
+    if (username) {
+      getProfile({
+        accessToken: localStorage.getItem("accessToken"),
+        data: username,
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
   useEffect(() => {
@@ -73,12 +146,20 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getProfileState]);
+  useEffect(() => {
+    const {userId, avatar, followers, following, bio, name} =
+      dataFollowUnFollow;
+    if (userId) {
+      setUser({...user, userId, avatar, followers, following, bio, name});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataFollowUnFollow]);
 
   return (
     <Fragment>
       <ModalSettings
         open={showModalSettings}
-        toggle={toggleModalSettings}
+        toggle={toggleModalOptions}
         signOut={handleSignOut}
       />
       <div className={`${styles.container} verticalCenter`}>
@@ -99,13 +180,21 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                 fullWidth
                 variant="contained"
                 style={{textTransform: "none"}}
-                className={`${styles.btnPrimary}`}
-                onClick={onClickEditProfile}
+                className={`${styles.btnPrimary} ${
+                  labelButton === "Following"
+                    ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-900 dark:bg-zinc-400 dark:hover:bg-zinc-500"
+                    : "bg-primary"
+                }`}
+                onClick={onClickActionButton}
               >
-                Edit profile
+                {labelButton}
               </Button>
-              <IconButton aria-label="settings" onClick={toggleModalSettings}>
-                <CogIcon className="h-8 w-8 text-zinc-900 dark:text-white" />
+              <IconButton aria-label="settings" onClick={toggleModalOptions}>
+                {isOwnProfile ? (
+                  <CogIcon className="h-8 w-8 text-zinc-900 dark:text-white" />
+                ) : (
+                  <Fragment>{EllipsisIcon}</Fragment>
+                )}
               </IconButton>
             </div>
             <div className="horizontalCenter my-4 w-fit">
@@ -146,12 +235,18 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {rootReducer: {getProfile: Object}}) => ({
+const mapStateToProps = (state: {
+  rootReducer: {getProfile: Object; followUnfollow: Object};
+}) => ({
   getProfileState: state.rootReducer.getProfile,
+  followUnfollowState: state.rootReducer.followUnfollow,
 });
 const mapDispatchToProps = {
   signOut: () => signOutProps(),
-  getProfile: (payload: string) => getProfileProps(payload),
+  getProfile: (payload: {accessToken: string; data: string}) =>
+    getProfileProps(payload),
+  followUnfollow: (payload: {accessToken: string; data: {userId: string}}) =>
+    followUnfollowProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Profile);

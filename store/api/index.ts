@@ -1,6 +1,4 @@
 import {api} from "../../config/api";
-import * as Cookies from "../../helpers/cookies";
-api.defaults.headers.common = {Authorization: `Bearer ${Cookies.accessToken}`};
 
 export const signUpApi = (payload: {
   username: string;
@@ -14,10 +12,39 @@ export const signInApi = (payload: {email: string; password: string}) => {
   return api.post("/users/signIn", payload);
 };
 
-export const getProfileApi = (payload: string) => {
-  return api.get(`/users/${payload || ""}`);
+export const getProfileApi = (payload: {accessToken: string; data: string}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.get(`/users/${payload?.data || ""}`);
 };
 
-export const editProfileApi = (payload: FormData) => {
-  return api.put(`/users/edit`, payload);
+export const editProfileApi = (payload: {
+  accessToken: string;
+  data: FormData;
+}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.put(`/users/edit`, payload?.data);
+};
+
+export const searchUsersApi = (payload: {
+  accessToken: string;
+  data: string;
+}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.get(`users/find?search=${payload?.data || ""}`);
+};
+
+export const followUnfollowApi = (payload: {
+  accessToken: string;
+  data: {userId: string};
+}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.put("/users/follow", payload?.data);
 };

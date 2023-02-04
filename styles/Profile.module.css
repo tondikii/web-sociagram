@@ -3,6 +3,6 @@
 }
 
 .btnPrimary {
-  background-color: #9c27b0 !important;
+  /* background-color: #9c27b0 !important; */
   @apply ml-4 mr-1 font-bold;
 }

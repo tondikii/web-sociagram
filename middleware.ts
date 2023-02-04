@@ -19,12 +19,5 @@ export function middleware(request: NextRequest) {
 
 // See "Matching Paths" below to learn more
 export const config = {
-  matcher: [
-    "/",
-    "/signin",
-    "/signup",
-    "/profile",
-    "/liked",
-    "/profile/:username*",
-  ],
+  matcher: ["/((?!api|_next|fonts|examples|[\\w-]+\\.\\w+).*)"],
 };

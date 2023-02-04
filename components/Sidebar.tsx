@@ -22,7 +22,7 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
   const {pathname, query} = useRouter();
-  const isProfile = query?.username ? true : false;
+  const [isProfile, setIsProfile] = useState(false);
 
   const [user, setUser] = useState({username: "", avatar: ""});
   const [showModalSearch, setShowModalSearch] = useState(false);
@@ -32,13 +32,18 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
   }, [showModalSearch]);
 
   useEffect(() => {
+    if (query?.username === user?.username) {
+      setIsProfile(true);
+    } else {
+      setIsProfile(false);
+    }
+  }, [user, query?.username]);
+  useEffect(() => {
     setUser({
       username: localStorage.getItem("username") || "",
       avatar: localStorage.getItem("avatar") || "",
     });
   }, []);
-
-  console.log({user});
 
   return (
     <Fragment>
@@ -46,7 +51,7 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
       <nav className={styles.container}>
         <section className={`${styles.section} vertical h-100 container`}>
           <div className="cursor-pointer p-1 mb-8">
-            <p className="ml-2 text-primary text-xl">Pentagram</p>
+            <p className="ml-2 text-primary text-xl">Sociagram</p>
           </div>
           <Link
             href="/"

@@ -171,16 +171,21 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       formData.append("username", username);
       formData.append("bio", bio);
       formData.append("gender", gender);
-      editProfile(formData);
+      editProfile({
+        accessToken: localStorage.getItem("accessToken"),
+        data: formData,
+      });
       // eslint-disable-next-line react-hooks/exhaustive-deps
     },
     [profileForm]
   );
 
   useEffect(() => {
-    console.log({username});
     if (username) {
-      getProfile(username);
+      getProfile({
+        accessToken: localStorage.getItem("accessToken"),
+        data: username,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [username]);
@@ -198,9 +203,6 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getProfileState]);
-  useEffect(() => {
-    console.log({profileForm});
-  }, [profileForm]);
   useEffect(() => {
     const userId = editProfileState?.data?.userId || "";
     if (userId) {
@@ -277,8 +279,10 @@ const mapStateToProps = (state: {
   editProfileState: state.rootReducer.editProfile,
 });
 const mapDispatchToProps = {
-  getProfile: (payload: string) => getProfileProps(payload),
-  editProfile: (payload: FormData) => editProfileProps(payload),
+  getProfile: (payload: {accessToken: string; data: string}) =>
+    getProfileProps(payload),
+  editProfile: (payload: {accessToken: string; data: FormData}) =>
+    editProfileProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Liked);

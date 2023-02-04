@@ -1,5 +1,12 @@
 import * as CONST from "../constant";
-import {signInApi, signUpApi, getProfileApi, editProfileApi} from "../api";
+import {
+  signInApi,
+  signUpApi,
+  getProfileApi,
+  editProfileApi,
+  searchUsersApi,
+  followUnfollowApi,
+} from "../api";
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {deleteCookie} from "cookies-next";
 
@@ -40,7 +47,7 @@ export const signOut = createAsyncThunk(CONST.SIGN_OUT, async () => {
 
 export const getProfile = createAsyncThunk(
   CONST.GET_PROFILE,
-  async (payload: string, {rejectWithValue}) => {
+  async (payload: {accessToken: string; data: string}, {rejectWithValue}) => {
     try {
       const response = await getProfileApi(payload);
       return response;
@@ -53,9 +60,53 @@ export const getProfile = createAsyncThunk(
 
 export const editProfile = createAsyncThunk(
   CONST.EDIT_PROFILE,
-  async (payload: FormData, {rejectWithValue}) => {
+  async (
+    payload: {
+      accessToken: string;
+      data: FormData;
+    },
+    {rejectWithValue}
+  ) => {
     try {
       const response = await editProfileApi(payload);
+      return response;
+    } catch (err) {
+      const messageError = err?.response?.data?.error;
+      return rejectWithValue(messageError);
+    }
+  }
+);
+
+export const searchUsers = createAsyncThunk(
+  CONST.SEARCH_USERS,
+  async (
+    payload: {
+      accessToken: string;
+      data: string;
+    },
+    {rejectWithValue}
+  ) => {
+    try {
+      const response = await searchUsersApi(payload);
+      return response;
+    } catch (err) {
+      const messageError = err?.response?.data?.error;
+      return rejectWithValue(messageError);
+    }
+  }
+);
+
+export const followUnfollow = createAsyncThunk(
+  CONST.FOLLOW_UNFOLLOW,
+  async (
+    payload: {
+      accessToken: string;
+      data: {userId: string};
+    },
+    {rejectWithValue}
+  ) => {
+    try {
+      const response = await followUnfollowApi(payload);
       return response;
     } catch (err) {
       const messageError = err?.response?.data?.error;

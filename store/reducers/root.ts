@@ -1,5 +1,13 @@
 import {createSlice} from "@reduxjs/toolkit";
-import {signIn, signOut, signUp, getProfile, editProfile} from "../actions";
+import {
+  signIn,
+  signOut,
+  signUp,
+  getProfile,
+  editProfile,
+  searchUsers,
+  followUnfollow,
+} from "../actions";
 
 const rootSlice = createSlice({
   name: "root",
@@ -22,6 +30,21 @@ const rootSlice = createSlice({
       error: "",
     },
     editProfile: {
+      fetch: false,
+      data: {
+        userId: "",
+      },
+      error: "",
+    },
+    searchUsers: {
+      fetch: false,
+      data: {
+        count: 0,
+        rows: [],
+      },
+      error: "",
+    },
+    followUnfollow: {
       fetch: false,
       data: {
         userId: "",
@@ -117,6 +140,46 @@ const rootSlice = createSlice({
       const payload = action?.payload;
       state.editProfile = {
         ...state.editProfile,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(searchUsers.pending, (state, action) => {
+      state.searchUsers = {...state.searchUsers, fetch: true};
+    });
+    builder.addCase(searchUsers.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.searchUsers = {
+        ...state.searchUsers,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(searchUsers.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.searchUsers = {
+        ...state.searchUsers,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(followUnfollow.pending, (state, action) => {
+      state.followUnfollow = {...state.followUnfollow, fetch: true};
+    });
+    builder.addCase(followUnfollow.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.followUnfollow = {
+        ...state.followUnfollow,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(followUnfollow.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.followUnfollow = {
+        ...state.followUnfollow,
         fetch: false,
         error: payload,
       };
