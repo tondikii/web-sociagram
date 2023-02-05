@@ -6,6 +6,7 @@ import {
   editProfileApi,
   searchUsersApi,
   followUnfollowApi,
+  getFollowersFollowingApi,
 } from "../api";
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {deleteCookie} from "cookies-next";
@@ -107,6 +108,22 @@ export const followUnfollow = createAsyncThunk(
   ) => {
     try {
       const response = await followUnfollowApi(payload);
+      return response;
+    } catch (err) {
+      const messageError = err?.response?.data?.error;
+      return rejectWithValue(messageError);
+    }
+  }
+);
+
+export const getFollowersFollowing = createAsyncThunk(
+  CONST.GET_FOLLOWERS_FOLLOWING,
+  async (
+    payload: {accessToken: string; menu: string; username: string},
+    {rejectWithValue}
+  ) => {
+    try {
+      const response = await getFollowersFollowingApi(payload);
       return response;
     } catch (err) {
       const messageError = err?.response?.data?.error;

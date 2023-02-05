@@ -181,14 +181,14 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   );
 
   useEffect(() => {
-    if (username) {
+    const accessToken = localStorage.getItem("accessToken");
+    if (username && accessToken) {
       getProfile({
-        accessToken: localStorage.getItem("accessToken"),
+        accessToken,
         data: username,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username]);
+  }, [username, getProfile]);
   useEffect(() => {
     const {userId, name, bio, gender, avatar} = getProfileState?.data;
     if (userId) {

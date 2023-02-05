@@ -7,6 +7,7 @@ import {
   editProfile,
   searchUsers,
   followUnfollow,
+  getFollowersFollowing,
 } from "../actions";
 
 const rootSlice = createSlice({
@@ -49,6 +50,16 @@ const rootSlice = createSlice({
       data: {
         userId: "",
       },
+      error: "",
+    },
+    getFollowersFollowing: {
+      fetch: false,
+      data: [],
+      error: "",
+    },
+    getFollowing: {
+      fetch: false,
+      data: [],
       error: "",
     },
   },
@@ -180,6 +191,29 @@ const rootSlice = createSlice({
       const payload = action?.payload;
       state.followUnfollow = {
         ...state.followUnfollow,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(getFollowersFollowing.pending, (state, action) => {
+      state.getFollowersFollowing = {
+        ...state.getFollowersFollowing,
+        fetch: true,
+      };
+    });
+    builder.addCase(getFollowersFollowing.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.getFollowersFollowing = {
+        ...state.getFollowersFollowing,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(getFollowersFollowing.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.getFollowersFollowing = {
+        ...state.getFollowersFollowing,
         fetch: false,
         error: payload,
       };

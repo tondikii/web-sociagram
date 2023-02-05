@@ -12,6 +12,7 @@ import {Button, IconButton} from "@mui/material";
 import {CogIcon, CameraIcon} from "@heroicons/react/outline";
 
 import ModalSettings from "../components/ModalSettings";
+import ModalUsers from "../components/ModalUsers";
 
 import styles from "../styles/Profile.module.css";
 
@@ -53,13 +54,15 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     getProfile,
     getProfileState,
     followUnfollow,
-    followUnfollowState: {data: dataFollowUnFollow},
+    followUnfollowState: {fetch: fetchFollowUnfollow, data: dataFollowUnFollow},
   } = props;
 
   const router = useRouter();
   const {username} = router.query;
 
   const [showModalSettings, setShowModalSettings] = useState(false);
+  const [showModalUsers, setShowModalUsers] = useState(false);
+  const [titleModalUsers, setTitleModalUsers] = useState("");
   const [user, setUser] = useState({
     userId: "",
     avatar: "",
@@ -69,12 +72,14 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     bio: "",
     name: "",
   });
-  const [cookieUsername, setCookieUsername] = useState("");
+  const [ownUsername, setOwnUsername] = useState("");
+  const [ownUserId, setOwnUserId] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const isOwnProfile = useMemo(() => {
-    if (username === cookieUsername) return true;
+    if (username === ownUsername) return true;
     return false;
-  }, [username, cookieUsername]);
+  }, [username, ownUsername]);
   const EllipsisIcon = useMemo(
     () => (
       <svg
@@ -98,10 +103,14 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       setShowModalSettings(!showModalSettings);
     }
   };
+  const toggleModalUsers = () => {
+    setShowModalUsers(!showModalUsers);
+  };
   const onClickActionButton = () => {
     if (isOwnProfile) {
       router.push(`/${username}/edit`);
     } else {
+      setLoading(true);
       followUnfollow({
         accessToken: localStorage.getItem("accessToken"),
         data: {userId: user?.userId},
@@ -127,33 +136,41 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   }, [isOwnProfile, user?.followers]);
 
   useEffect(() => {
-    setCookieUsername(localStorage.getItem("username") || "");
+    setOwnUsername(localStorage.getItem("username") || "");
+    setOwnUserId(localStorage.getItem("userId") || "");
   }, []);
   useEffect(() => {
-    if (username) {
+    const accessToken = localStorage.getItem("accessToken");
+    if (username && accessToken) {
       getProfile({
-        accessToken: localStorage.getItem("accessToken"),
+        accessToken,
         data: username,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username]);
+  }, [username, getProfile]);
   useEffect(() => {
     const {userId, avatar, followers, following, bio, name} =
       getProfileState?.data;
+    console.log({getProfileState});
     if (userId) {
       setUser({...user, userId, avatar, followers, following, bio, name});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getProfileState]);
   useEffect(() => {
-    const {userId, avatar, followers, following, bio, name} =
-      dataFollowUnFollow;
-    if (userId) {
-      setUser({...user, userId, avatar, followers, following, bio, name});
+    console.log({fetchFollowUnfollow, loading});
+    if (!fetchFollowUnfollow && loading) {
+      getProfile({
+        accessToken: localStorage.getItem("accessToken"),
+        data: username,
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dataFollowUnFollow]);
+  }, [fetchFollowUnfollow, loading]);
+
+  // useEffect(() => {
+  //   console.log({loading});
+  // }, [loading]);
 
   return (
     <Fragment>
@@ -161,6 +178,15 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         open={showModalSettings}
         toggle={toggleModalOptions}
         signOut={handleSignOut}
+      />
+      <ModalUsers
+        open={showModalUsers}
+        toggle={toggleModalUsers}
+        title={titleModalUsers}
+        ownUserId={ownUserId}
+        loading={loading}
+        setLoading={setLoading}
+        username={`${username}`}
       />
       <div className={`${styles.container} verticalCenter`}>
         <div className="horizontal p-4 w-3/5">
@@ -201,12 +227,30 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
               <p className="text-lg mr-4">
                 <strong>{user?.posts.length}</strong> posts
               </p>
-              <p className="text-lg mx-4">
-                <strong>{user?.followers.length}</strong> followers
-              </p>
-              <p className="text-lg ml-4">
-                <strong>{user?.following.length}</strong> following
-              </p>
+              <div
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTitleModalUsers("followers");
+                  toggleModalUsers();
+                }}
+              >
+                <p className="text-lg mx-4">
+                  <strong>{user?.followers.length}</strong> followers
+                </p>
+              </div>
+              <div
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setTitleModalUsers("following");
+                  toggleModalUsers();
+                }}
+              >
+                <p className="text-lg ml-4">
+                  <strong>{user?.following.length}</strong> following
+                </p>
+              </div>
             </div>
             <div className="vertical">
               <strong className="text-md">{user?.name || "No name yet"}</strong>

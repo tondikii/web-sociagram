@@ -75,13 +75,15 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
     if (!searchState) return null;
     if (searchState && (error || users.length < 1)) {
       return (
-        <span
-          className={`${
-            error ? "text-red-600" : "text-zinc-500 dark:text-zinc-400"
-          }`}
-        >
-          {error || "No users found"}
-        </span>
+        <div className="flex flex-col items-center my-4">
+          <span
+            className={`${
+              error ? "text-red-600" : "text-zinc-500 dark:text-zinc-400"
+            }`}
+          >
+            {error || "No users found"}
+          </span>
+        </div>
       );
     }
     return (
@@ -183,9 +185,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
               ) : null}
             </Fragment>
           ) : (
-            <div className="flex flex-col items-center my-4">
-              {UsersComponent}
-            </div>
+            <Fragment>{UsersComponent}</Fragment>
           )}
         </div>
       </Box>

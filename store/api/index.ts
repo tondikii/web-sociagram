@@ -48,3 +48,14 @@ export const followUnfollowApi = (payload: {
   };
   return api.put("/users/follow", payload?.data);
 };
+
+export const getFollowersFollowingApi = (payload: {
+  accessToken: string;
+  menu: string;
+  username: string;
+}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.get(`users/${payload?.menu}/${payload?.username}`);
+};

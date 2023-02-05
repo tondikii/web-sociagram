@@ -153,3 +153,7 @@ a {
 .max-w-60 {
   max-width: 60%;
 }
+
+.remove-mb {
+  margin-bottom: 0 !important;
+}
