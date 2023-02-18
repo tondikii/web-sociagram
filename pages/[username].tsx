@@ -1,4 +1,4 @@
-import {Fragment, useCallback, useEffect, useMemo, useState} from "react";
+import {Fragment, useEffect, useMemo, useState} from "react";
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
 import {connect} from "react-redux";
@@ -89,9 +89,9 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         className="h-8 w-8 text-zinc-900 dark:text-white"
       >
         <path
-          fill-rule="evenodd"
+          fillRule="evenodd"
           d="M4.5 12a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z"
-          clip-rule="evenodd"
+          clipRule="evenodd"
         />
       </svg>
     ),

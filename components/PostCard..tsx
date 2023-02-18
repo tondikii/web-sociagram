@@ -1,5 +1,6 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {useState} from "react";
+
 import {red} from "@mui/material/colors";
 import {
   Avatar,
@@ -11,6 +12,7 @@ import {
 } from "@mui/material";
 import {HeartIcon, ShareIcon, ChatAltIcon} from "@heroicons/react/outline";
 import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
+import Carousel from "react-material-ui-carousel";
 
 import styles from "../styles/PostCard.module.css";
 
@@ -29,6 +31,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
     timeStamp = "16 hours ago",
     images = [
       "https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg",
+      // "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
     ],
     caption = "Tayang besok, beli tiket @filmhidayah pake website atau aplikasi CGV buat dapetin promo BUY 1 GET 1. Kuota terbatas, beli tiketnya sekarang! Jangan lupa masukin kode promo: HIDAYAH ya :)",
   } = props;
@@ -60,15 +63,17 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
           <span className={`${styles.textSecondary} text-xs`}>{timeStamp}</span>
         }
       />
-      {images.map((url, idx) => (
-        <CardMedia
-          component="img"
-          height="194"
-          image={url}
-          alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
-          key={idx}
-        />
-      ))}
+      <Carousel indicators={images.length > 1 ? true : false}>
+        {images.map((url, idx) => (
+          <CardMedia
+            component="img"
+            height="194"
+            image={url}
+            alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
+            key={idx}
+          />
+        ))}
+      </Carousel>
       <CardActions disableSpacing>
         {isLiked ? (
           <IconButton

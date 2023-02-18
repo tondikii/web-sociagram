@@ -6,7 +6,7 @@ import {useRouter} from "next/router";
 
 import {searchUsers as searchUsersProps} from "../store/actions";
 
-import {Modal, Box, Typography, Divider} from "@mui/material";
+import {Modal, Box, Divider} from "@mui/material";
 import {SearchIcon, XIcon} from "@heroicons/react/outline";
 import ReactLoading from "react-loading";
 

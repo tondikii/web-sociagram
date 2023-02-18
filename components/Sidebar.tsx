@@ -15,6 +15,7 @@ import {
   PlusCircleIcon as PlusCircleIconSolid,
 } from "@heroicons/react/solid";
 import ModalSearch from "./ModalSearch";
+import ModalCreate from "./ModalCreate";
 
 interface Props {}
 
@@ -26,10 +27,15 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
 
   const [user, setUser] = useState({username: "", avatar: ""});
   const [showModalSearch, setShowModalSearch] = useState(false);
+  const [showModalCreate, setShowModalCreate] = useState(false);
 
   const toggleModalSearch = useCallback(() => {
     setShowModalSearch(!showModalSearch);
   }, [showModalSearch]);
+
+  const toggleModalCreate = useCallback(() => {
+    setShowModalCreate(!showModalCreate);
+  }, [showModalCreate]);
 
   useEffect(() => {
     if (query?.username === user?.username) {
@@ -48,6 +54,12 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
   return (
     <Fragment>
       <ModalSearch toggle={toggleModalSearch} open={showModalSearch} />
+      <ModalCreate
+        toggle={toggleModalCreate}
+        open={showModalCreate}
+        username={user.username}
+        avatar={user.avatar}
+      />
       <nav className={styles.container}>
         <section className={`${styles.section} vertical h-100 container`}>
           <div className="cursor-pointer p-1 mb-8">
@@ -73,6 +85,7 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
             <p className="ml-2 text-primary">Search</p>
           </div>
           <div
+            onClick={toggleModalCreate}
             className={`horizontal p-1 items-center ${styles.menuContainer} mt-4`}
           >
             <PlusCircleIcon className="text-primary h-8 w-8" />

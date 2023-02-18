@@ -1,0 +1,9 @@
+.icon {
+  @apply w-7 h-7 cursor-pointer dark:hover:bg-zinc-900 hover:bg-zinc-200 p-1 rounded;
+}
+
+.textarea {
+  @apply dark:bg-zinc-800 border-0 w-full mb-4;
+  resize: none;
+  outline: none;
+}
