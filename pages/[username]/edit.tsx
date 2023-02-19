@@ -31,6 +31,7 @@ interface Props {
     fetch: boolean;
     data: {
       userId: string;
+      avatar: string;
     };
     error: any;
   };
@@ -215,8 +216,9 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getProfileState]);
   useEffect(() => {
-    const userId = editProfileState?.data?.userId || "";
+    const {userId = "", avatar = ""} = editProfileState?.data || {};
     if (userId) {
+      localStorage.avatar = avatar;
       setReload(true);
       router.replace(`/${profileForm?.username}`);
       Alert.Success({text: "Success edit profile!"});

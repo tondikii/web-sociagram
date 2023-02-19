@@ -1,4 +1,4 @@
-import {Fragment, useEffect, useMemo, useState} from "react";
+import {Fragment, useEffect, useMemo, useState, useCallback} from "react";
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
 import {connect} from "react-redux";
@@ -6,6 +6,7 @@ import {
   signOut as signOutProps,
   getProfile as getProfileProps,
   followUnfollow as followUnfollowProps,
+  getPosts as getPostsProps,
 } from "../store/actions";
 
 import {Button, IconButton} from "@mui/material";
@@ -45,6 +46,12 @@ interface Props {
     error: string;
   };
   reload: boolean;
+  getPosts: Function;
+  getPostsState: {
+    fetch: boolean;
+    data: {count: number; rows: []};
+    error: any;
+  };
 }
 
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
@@ -57,10 +64,16 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     followUnfollow,
     followUnfollowState: {fetch: fetchFollowUnfollow, data: dataFollowUnFollow},
     reload,
+    getPosts,
+    getPostsState: {
+      fetch: fetchGetPosts,
+      data: {rows = []},
+      error: errorGetPosts,
+    },
   } = props;
 
   const router = useRouter();
-  const {username} = router.query;
+  const {username = ""} = router.query;
 
   const [showModalSettings, setShowModalSettings] = useState(false);
   const [showModalUsers, setShowModalUsers] = useState(false);
@@ -100,6 +113,13 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     []
   );
 
+  const getData = useCallback(() => {
+    getPosts({
+      accessToken: localStorage.getItem("accessToken"),
+      data: username,
+    });
+  }, [getPosts, username]);
+
   const toggleModalOptions = () => {
     if (isOwnProfile) {
       setShowModalSettings(!showModalSettings);
@@ -137,6 +157,9 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     return "Follow";
   }, [isOwnProfile, user?.followers]);
 
+  useEffect(() => {
+    getData();
+  }, [getData]);
   useEffect(() => {
     setOwnUsername(localStorage.getItem("username") || "");
     setOwnUserId(localStorage.getItem("userId") || "");
@@ -268,15 +291,21 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
           <p>POSTS</p>
         </div>
         <div className="grid grid-cols-3 gap-8 mt-4 w-3/5">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((el) => (
-            <div className="" key={el}>
-              <img
-                className="w-full h-full"
-                src="https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
-                alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-              />
-            </div>
-          ))}
+          {rows &&
+            rows.length &&
+            Array.isArray(rows) &&
+            rows.map((row: {files: string[]}, idx: number) => (
+              <div className="" key={idx}>
+                <img
+                  className="w-full h-full"
+                  src={
+                    row?.files[0] ||
+                    "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
+                  }
+                  alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+                />
+              </div>
+            ))}
         </div>
       </div>
     </Fragment>
@@ -284,11 +313,17 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
 };
 
 const mapStateToProps = (state: {
-  rootReducer: {getProfile: Object; followUnfollow: Object; reload: boolean};
+  rootReducer: {
+    getProfile: Object;
+    followUnfollow: Object;
+    reload: boolean;
+    getPosts: Object;
+  };
 }) => ({
   getProfileState: state.rootReducer.getProfile,
   followUnfollowState: state.rootReducer.followUnfollow,
   reload: state.rootReducer.reload,
+  getPostsState: state.rootReducer.getPosts,
 });
 const mapDispatchToProps = {
   signOut: () => signOutProps(),
@@ -296,6 +331,8 @@ const mapDispatchToProps = {
     getProfileProps(payload),
   followUnfollow: (payload: {accessToken: string; data: {userId: string}}) =>
     followUnfollowProps(payload),
+  getPosts: (payload: {accessToken: string; data: string}) =>
+    getPostsProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Profile);

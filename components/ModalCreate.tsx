@@ -1,7 +1,14 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {useRef, useState, useMemo, useCallback} from "react";
+import {useRef, useState, useMemo, useCallback, useEffect} from "react";
 import {getDownloadURL, ref, uploadBytesResumable} from "@firebase/storage";
 import {storage} from "../config/firebase";
+import {connect} from "react-redux";
+import {useRouter} from "next/router";
+
+import {
+  createPosts as createPostsProps,
+  getPosts as getPostsProps,
+} from "../store/actions";
 
 import {CardMedia} from "@mui/material";
 import {Modal, Box, Divider, Button} from "@mui/material";
@@ -13,6 +20,7 @@ import {
 } from "@heroicons/react/outline";
 import Carousel from "react-material-ui-carousel";
 import EmojiPicker from "emoji-picker-react";
+import ReactLoading from "react-loading";
 
 import styles from "../styles/ModalCreate.module.css";
 
@@ -21,6 +29,13 @@ interface Props {
   toggle: Function;
   username: string;
   avatar: string;
+  createPosts: Function;
+  createPostsState: {
+    fetch: boolean;
+    data: {postId: string};
+    error: string[] | string;
+  };
+  getPosts: Function;
 }
 
 const boxStyle = {
@@ -38,10 +53,22 @@ const steps = [
   {label: "Create new post", value: 3},
 ];
 
-const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
+const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {open, toggle, username, avatar} = props;
+  const {
+    open,
+    toggle,
+    username,
+    avatar,
+    createPosts,
+    createPostsState: {
+      data: {postId},
+    },
+    getPosts,
+  } = props;
+  const router = useRouter();
+  const {username: usernameQuery = ""} = router.query;
   const fileRef = useRef(null);
 
   const [files, setFiles] = useState([]);
@@ -49,6 +76,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   const [currentStep, setCurrentStep] = useState(1);
   const [caption, setCaption] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const onClickFile = () => {
     fileRef.current.click();
@@ -68,6 +96,40 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
     },
     []
   );
+
+  const handleClickPost = useCallback(() => {
+    setLoading(true);
+    const tempUrls: Promise<unknown>[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const uploadFiles = new Promise(async (resolve, reject) => {
+        try {
+          console.log("file", files[i]);
+          const storageRef = ref(storage, `files/${files[i]?.name}`);
+          const uploadTask = uploadBytesResumable(storageRef, files[i]);
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          resolve(url);
+        } catch (err) {
+          console.error(err);
+          reject("");
+        }
+      });
+      tempUrls.push(uploadFiles);
+    }
+    Promise.all(tempUrls)
+      .then((result) => {
+        console.log({result});
+        createPosts({
+          accessToken: localStorage.getItem("accessToken"),
+          data: {
+            caption,
+            files: result,
+          },
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  }, [files, createPosts, caption]);
 
   const Header = useMemo(() => {
     const changeStep = (action: string) => {
@@ -98,30 +160,27 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
           <Button
             variant="contained"
             style={{textTransform: "none"}}
-            className="bg-primary"
+            className="bg-primary flex flex-row"
+            onClick={handleClickPost}
+            disabled={loading}
           >
-            Post
+            {loading && (
+              <ReactLoading
+                type="spin"
+                height={16}
+                width={16}
+                color="white"
+                className="mr-2"
+              />
+            )}
+            {loading ? "Loading..." : "Post"}
           </Button>
         )}
       </div>
     );
-  }, [currentStep]);
+  }, [currentStep, handleClickPost, loading]);
 
   const Content = useMemo(() => {
-    const uploadFiles = () => {
-      if (!files.length) return;
-      console.log({files});
-      for (let i = 0; i < files.length; i++) {
-        console.log({file: files[i]});
-        const storageRef = ref(storage, `files/${files[i]?.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, files[i]);
-        console.log("sini");
-        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
-          console.log({url});
-        });
-      }
-    };
-
     const handleChangeCaption = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setCaption(e?.target?.value);
     };
@@ -220,7 +279,6 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
         );
     }
   }, [
-    files,
     currentStep,
     handleChangeFile,
     preview,
@@ -229,6 +287,18 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
     caption,
     showEmojiPicker,
   ]);
+
+  useEffect(() => {
+    if (loading && postId) {
+      console.log({username, usernameQuery});
+      setLoading(false);
+      toggle();
+      getPosts({
+        accessToken: localStorage.getItem("accessToken"),
+        data: username === usernameQuery ? username : "",
+      });
+    }
+  }, [loading, postId, toggle, getPosts, username, usernameQuery]);
 
   return (
     <Modal
@@ -249,4 +319,17 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-export default ModalSearch;
+const mapStateToProps = (state: {rootReducer: {createPosts: Object}}) => ({
+  createPostsState: state.rootReducer.createPosts,
+});
+
+const mapDispatchToProps = {
+  createPosts: (payload: {
+    accessToken: string;
+    data: {caption: string; files: string[]};
+  }) => createPostsProps(payload),
+  getPosts: (payload: {accessToken: string; data: string}) =>
+    getPostsProps(payload),
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ModalCreate);

@@ -26,7 +26,7 @@ export const editProfileApi = (payload: {
   api.defaults.headers.common = {
     Authorization: `Bearer ${payload?.accessToken}`,
   };
-  return api.put(`/users/edit`, payload?.data);
+  return api.put("/users/edit", payload?.data);
 };
 
 export const searchUsersApi = (payload: {
@@ -58,4 +58,21 @@ export const getFollowersFollowingApi = (payload: {
     Authorization: `Bearer ${payload?.accessToken}`,
   };
   return api.get(`users/${payload?.menu}/${payload?.username}`);
+};
+
+export const getPostsApi = (payload: {accessToken: string; data: string}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.get(`posts?username=${payload?.data || ""}`);
+};
+
+export const createPostsApi = (payload: {
+  accessToken: string;
+  data: {caption: string; files: string[]};
+}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.post("/posts/create", payload?.data);
 };

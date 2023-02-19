@@ -17,23 +17,28 @@ import Carousel from "react-material-ui-carousel";
 import styles from "../styles/PostCard.module.css";
 
 interface Props {
-  name: string;
-  timeStamp: string;
-  images: string[];
-  caption: string;
+  data: {
+    User: {
+      avatar: string;
+      username: string;
+    };
+    files: string[];
+    caption: string;
+  };
 }
 
 const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
   const {
-    name = "tondikii",
-    timeStamp = "16 hours ago",
-    images = [
-      "https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg",
-      // "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
-    ],
-    caption = "Tayang besok, beli tiket @filmhidayah pake website atau aplikasi CGV buat dapetin promo BUY 1 GET 1. Kuota terbatas, beli tiketnya sekarang! Jangan lupa masukin kode promo: HIDAYAH ya :)",
+    data: {
+      User: {avatar = "", username = ""} = {},
+      files = [
+        "https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg",
+        // "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
+      ],
+      caption = "Tayang besok, beli tiket @filmhidayah pake website atau aplikasi CGV buat dapetin promo BUY 1 GET 1. Kuota terbatas, beli tiketnya sekarang! Jangan lupa masukin kode promo: HIDAYAH ya :)",
+    } = {},
   } = props;
 
   const [isLiked, setIsLiked] = useState(false);
@@ -53,21 +58,26 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
           <Avatar
             sx={{bgcolor: red[500]}}
             aria-label="recipe"
-            src="https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
-            alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+            src={
+              avatar ||
+              "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+            }
             className="cursor-pointer"
           />
         }
-        title={<span className={`${styles.title} cursor-pointer`}>{name}</span>}
+        title={
+          <span className={`${styles.title} cursor-pointer`}>{username}</span>
+        }
         subheader={
-          <span className={`${styles.textSecondary} text-xs`}>{timeStamp}</span>
+          <span className={`${styles.textSecondary} text-xs`}>
+            16 hours ago
+          </span>
         }
       />
-      <Carousel indicators={images.length > 1 ? true : false}>
-        {images.map((url, idx) => (
+      <Carousel indicators={files.length > 1 ? true : false}>
+        {files.map((url, idx) => (
           <CardMedia
             component="img"
-            height="194"
             image={url}
             alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
             key={idx}
@@ -105,7 +115,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       </CardActions>
       <div className="px-4 pb-4">
         <p className={`${styles.text}`}>
-          <span className={`${styles.text} font-bold`}>{name}</span>{" "}
+          <span className={`${styles.text} font-bold`}>{username}</span>{" "}
           {isShowMore
             ? caption
             : `${caption.split("").slice(0, 50).join("")}...`}{" "}

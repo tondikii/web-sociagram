@@ -157,3 +157,7 @@ a {
 .remove-mb {
   margin-bottom: 0 !important;
 }
+
+.min-w-100 {
+  min-width: 200rem !important;
+}

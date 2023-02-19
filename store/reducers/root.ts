@@ -8,6 +8,8 @@ import {
   searchUsers,
   followUnfollow,
   getFollowersFollowing,
+  getPosts,
+  createPosts,
 } from "../actions";
 
 const rootSlice = createSlice({
@@ -22,7 +24,7 @@ const rootSlice = createSlice({
     signUp: {
       fetch: false,
       data: {userId: ""},
-      error: "",
+      error: [],
     },
     getProfile: {
       fetch: false,
@@ -62,6 +64,19 @@ const rootSlice = createSlice({
       fetch: false,
       data: [],
       error: "",
+    },
+    getPosts: {
+      fetch: false,
+      data: {
+        count: 0,
+        rows: [],
+      },
+      error: "",
+    },
+    createPosts: {
+      fetch: false,
+      data: {postId: ""},
+      error: [],
     },
   },
   reducers: {
@@ -219,6 +234,49 @@ const rootSlice = createSlice({
       const payload = action?.payload;
       state.getFollowersFollowing = {
         ...state.getFollowersFollowing,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(getPosts.pending, (state, action) => {
+      state.getPosts = {...state.getPosts, fetch: true};
+    });
+    builder.addCase(getPosts.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.getPosts = {
+        ...state.getPosts,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(getPosts.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.getPosts = {
+        ...state.getPosts,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(createPosts.pending, (state, action) => {
+      state.createPosts = {...state.createPosts, fetch: true};
+    });
+    builder.addCase(createPosts.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.createPosts = {
+        ...state.createPosts,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(createPosts.rejected, (state, action) => {
+      let payload = action?.payload;
+      if (Array.isArray(payload)) {
+        payload = payload[0];
+      }
+      state.createPosts = {
+        ...state.createPosts,
         fetch: false,
         error: payload,
       };
