@@ -6,6 +6,7 @@ import {
   getProfile as getProfileProps,
   editProfile as editProfileProps,
 } from "../../store/actions";
+import {setReload as setReloadProps} from "../../store/reducers/root";
 
 import {Button} from "@mui/material";
 import * as Alert from "../../components/Alert";
@@ -33,10 +34,17 @@ interface Props {
     };
     error: any;
   };
+  setReload: Function;
 }
 
 const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {getProfile, getProfileState, editProfile, editProfileState} = props;
+  const {
+    getProfile,
+    getProfileState,
+    editProfile,
+    editProfileState,
+    setReload,
+  } = props;
   const avatarRef = useRef(null);
   const router = useRouter();
   const {username} = router.query;
@@ -83,6 +91,9 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   const handleChangeForm = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const {name, value} = e.target;
+      if (name === "username") {
+        localStorage.username = value;
+      }
       setProfileForm({...profileForm, [name]: value});
     },
     [profileForm]
@@ -206,7 +217,8 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   useEffect(() => {
     const userId = editProfileState?.data?.userId || "";
     if (userId) {
-      router.push(`/${username}`);
+      setReload(true);
+      router.replace(`/${profileForm?.username}`);
       Alert.Success({text: "Success edit profile!"});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -283,6 +295,7 @@ const mapDispatchToProps = {
     getProfileProps(payload),
   editProfile: (payload: {accessToken: string; data: FormData}) =>
     editProfileProps(payload),
+  setReload: (payload: boolean) => setReloadProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Liked);

@@ -44,6 +44,7 @@ interface Props {
     };
     error: string;
   };
+  reload: boolean;
 }
 
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
@@ -55,6 +56,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     getProfileState,
     followUnfollow,
     followUnfollowState: {fetch: fetchFollowUnfollow, data: dataFollowUnFollow},
+    reload,
   } = props;
 
   const router = useRouter();
@@ -168,9 +170,11 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchFollowUnfollow, loading]);
 
-  // useEffect(() => {
-  //   console.log({loading});
-  // }, [loading]);
+  useEffect(() => {
+    if (reload) {
+      window.location.reload();
+    }
+  }, [reload]);
 
   return (
     <Fragment>
@@ -280,10 +284,11 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
 };
 
 const mapStateToProps = (state: {
-  rootReducer: {getProfile: Object; followUnfollow: Object};
+  rootReducer: {getProfile: Object; followUnfollow: Object; reload: boolean};
 }) => ({
   getProfileState: state.rootReducer.getProfile,
   followUnfollowState: state.rootReducer.followUnfollow,
+  reload: state.rootReducer.reload,
 });
 const mapDispatchToProps = {
   signOut: () => signOutProps(),

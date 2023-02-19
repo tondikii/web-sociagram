@@ -13,6 +13,7 @@ import {
 const rootSlice = createSlice({
   name: "root",
   initialState: {
+    reload: false,
     signIn: {
       fetch: false,
       data: {accessToken: ""},
@@ -63,7 +64,11 @@ const rootSlice = createSlice({
       error: "",
     },
   },
-  reducers: {},
+  reducers: {
+    setReload(state, action) {
+      state.reload = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(signUp.pending, (state, action) => {
       state.signUp = {...state.signUp, fetch: true};
@@ -220,5 +225,7 @@ const rootSlice = createSlice({
     });
   },
 });
+
+export const {setReload} = rootSlice.actions;
 
 export default rootSlice.reducer;
