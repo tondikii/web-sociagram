@@ -10,6 +10,7 @@ import {
   getFollowersFollowing,
   getPosts,
   createPosts,
+  likeUnLike,
 } from "../actions";
 
 const rootSlice = createSlice({
@@ -77,6 +78,13 @@ const rootSlice = createSlice({
       fetch: false,
       data: {postId: ""},
       error: [],
+    },
+    likeUnLike: {
+      fetch: false,
+      data: {
+        postId: "",
+      },
+      error: "",
     },
   },
   reducers: {
@@ -277,6 +285,26 @@ const rootSlice = createSlice({
       }
       state.createPosts = {
         ...state.createPosts,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(likeUnLike.pending, (state, action) => {
+      state.likeUnLike = {...state.likeUnLike, fetch: true};
+    });
+    builder.addCase(likeUnLike.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.likeUnLike = {
+        ...state.likeUnLike,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(likeUnLike.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.likeUnLike = {
+        ...state.likeUnLike,
         fetch: false,
         error: payload,
       };

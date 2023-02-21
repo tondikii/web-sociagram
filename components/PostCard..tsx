@@ -1,5 +1,6 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {useState} from "react";
+import {useEffect, useMemo, useState} from "react";
+import {connect} from "react-redux";
 
 import {red} from "@mui/material/colors";
 import {
@@ -13,17 +14,29 @@ import {
 import {HeartIcon, ShareIcon, ChatAltIcon} from "@heroicons/react/outline";
 import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
 import Carousel from "react-material-ui-carousel";
+import {likeUnLike as likeUnLikeProps} from "../store/actions";
 
 import styles from "../styles/PostCard.module.css";
 
 interface Props {
   data: {
+    postId: string;
     User: {
       avatar: string;
       username: string;
     };
     files: string[];
+    likes: string[];
     caption: string;
+  };
+  likeUnLike: Function;
+  likeUnLikeState: {
+    fetch: boolean;
+    data: {
+      postId: string;
+      likes: string[];
+    };
+    error: string;
   };
 }
 
@@ -32,24 +45,50 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 ) => {
   const {
     data: {
+      postId,
       User: {avatar = "", username = ""} = {},
       files = [
         "https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg",
         // "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
       ],
       caption = "Tayang besok, beli tiket @filmhidayah pake website atau aplikasi CGV buat dapetin promo BUY 1 GET 1. Kuota terbatas, beli tiketnya sekarang! Jangan lupa masukin kode promo: HIDAYAH ya :)",
+      likes,
     } = {},
+    likeUnLike,
+    likeUnLikeState: {
+      data: {postId: newPostId, likes: newLikes},
+    },
   } = props;
 
   const [isLiked, setIsLiked] = useState(false);
   const [isShowMore, setIsShowMore] = useState(false);
 
+  const usedLikes: string[] | undefined = useMemo(() => {
+    if (postId === newPostId && newLikes?.length) {
+      return newLikes;
+    }
+    return likes;
+  }, [likes, newLikes, postId, newPostId]);
+
   const onClickLike = () => {
     setIsLiked(!isLiked);
+    likeUnLike({
+      accessToken: localStorage.getItem("accessToken"),
+      data: {postId},
+    });
   };
   const onClickMore = () => {
     setIsShowMore(!isShowMore);
   };
+
+  useEffect(() => {
+    if (usedLikes) {
+      const userId = localStorage.getItem("userId");
+      const isFound = usedLikes.find((id) => id === userId);
+      if (isFound) setIsLiked(true);
+      else setIsLiked(false);
+    }
+  }, [usedLikes]);
 
   return (
     <Card sx={{maxWidth: "60vh"}} className={styles.container}>
@@ -92,7 +131,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
             onClick={onClickLike}
           >
             <HeartIconSolid className={`text-rose-600 h-6 w-6`} />
-            <span className={`${styles.text} ml-1`}>0</span>
+            <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
           </IconButton>
         ) : (
           <IconButton
@@ -101,7 +140,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
             onClick={onClickLike}
           >
             <HeartIcon className={`${styles.text} h-6 w-6`} />
-            <span className={`${styles.text} ml-1`}>0</span>
+            <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
           </IconButton>
         )}
         <IconButton aria-label="add to favorites" className="mx-2">
@@ -116,10 +155,10 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       <div className="px-4 pb-4">
         <p className={`${styles.text}`}>
           <span className={`${styles.text} font-bold`}>{username}</span>{" "}
-          {isShowMore
+          {isShowMore || caption.length <= 50
             ? caption
             : `${caption.split("").slice(0, 50).join("")}...`}{" "}
-          {!isShowMore && (
+          {!isShowMore && caption.length > 50 && (
             <span
               className={`${styles.textSecondary} cursor-pointer`}
               onClick={onClickMore}
@@ -133,4 +172,16 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-export default PostCard;
+const mapStateToProps = (state: {
+  rootReducer: {
+    likeUnLike: Object;
+  };
+}) => ({
+  likeUnLikeState: state.rootReducer.likeUnLike,
+});
+const mapDispatchToProps = {
+  likeUnLike: (payload: {accessToken: string; data: {postId: string}}) =>
+    likeUnLikeProps(payload),
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(PostCard);

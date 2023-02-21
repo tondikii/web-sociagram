@@ -13,3 +13,4 @@ export const GET_FOLLOWERS_FOLLOWING = "GET_FOLLOWERS_FOLLOWING";
 
 export const GET_POSTS = "GET_POSTS";
 export const CREATE_POST = "CREATE_POST";
+export const LIKE_POST = "LIKE_POST";

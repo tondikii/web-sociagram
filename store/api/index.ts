@@ -76,3 +76,13 @@ export const createPostsApi = (payload: {
   };
   return api.post("/posts/create", payload?.data);
 };
+
+export const likeUnLikeApi = (payload: {
+  accessToken: string;
+  data: {postId: string};
+}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.put("/posts/like", payload?.data);
+};
