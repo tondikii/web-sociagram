@@ -45,7 +45,12 @@ interface Props {
   signIn: Function;
   signInState: {
     fetch: boolean;
-    data: {accessToken: string};
+    data: {
+      accessToken: string;
+      username: string;
+      avatar: string;
+      userId: string;
+    };
     error: any;
   };
 }
@@ -140,19 +145,24 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
   useEffect(() => {
-    if (error) {
+    if (error?.length) {
+      console.log("sini 1");
       Alert.Error({text: error});
     }
   }, [error]);
 
   useEffect(() => {
-    const {accessToken} = signInState.data;
+    const {accessToken, userId, username, avatar} = signInState.data;
     if (accessToken) {
       setCookie("accessToken", accessToken);
+      localStorage.accessToken = accessToken;
+      localStorage.userId = userId;
+      localStorage.username = username;
+      localStorage.avatar = avatar;
       router.push("/");
       Alert.Success({text: "Welcome to Sosiagram!"});
     }
-  }, [signInState.data]);
+  }, [signInState.data, router]);
   useEffect(() => {
     if (signInState.error) {
       Alert.Error({text: signInState.error});

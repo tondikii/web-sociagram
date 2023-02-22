@@ -1,6 +1,6 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {useRef, useState, useMemo, useCallback, useEffect} from "react";
-import {getDownloadURL, ref, uploadBytesResumable} from "@firebase/storage";
+import {getDownloadURL, ref, uploadBytes} from "@firebase/storage";
 import {storage} from "../config/firebase";
 import {connect} from "react-redux";
 import {useRouter} from "next/router";
@@ -21,6 +21,7 @@ import {
 import Carousel from "react-material-ui-carousel";
 import EmojiPicker from "emoji-picker-react";
 import ReactLoading from "react-loading";
+import * as Alert from "../components/Alert";
 
 import styles from "../styles/ModalCreate.module.css";
 
@@ -103,14 +104,26 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     for (let i = 0; i < files.length; i++) {
       const uploadFiles = new Promise(async (resolve, reject) => {
         try {
-          console.log("file", files[i]);
-          const storageRef = ref(storage, `files/${files[i]?.name}`);
-          const uploadTask = uploadBytesResumable(storageRef, files[i]);
-          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          const directory = `posts/${new Date().getTime()}-${files[i]?.name}`;
+          const storageRef = ref(storage, directory);
+          await uploadBytes(storageRef, files[i]);
+          const url = await getDownloadURL(storageRef);
           resolve(url);
-        } catch (err) {
-          console.error(err);
-          reject("");
+        } catch (err: any) {
+          switch (err.code) {
+            case "storage/object-not-found":
+              reject("File doesn't exist");
+              break;
+            case "storage/unauthorized":
+              reject("User doesn't have permission to access the object");
+              break;
+            case "storage/canceled":
+              reject("User canceled the upload");
+              break;
+            default:
+              reject("Unknown error occurred, inspect the server response");
+              break;
+          }
         }
       });
       tempUrls.push(uploadFiles);
@@ -127,7 +140,9 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
         });
       })
       .catch((err) => {
-        console.error(err);
+        console.log({err});
+        Alert.Error({text: err});
+        setLoading(false);
       });
   }, [files, createPosts, caption]);
 
@@ -306,6 +321,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       aria-labelledby="modal-modal-title"
       aria-describedby="modal-modal-description"
       onClose={() => toggle()}
+      sx={{zIndex: 1059}}
     >
       <Box
         sx={{...boxStyle, width: currentStep === steps[2].value ? 900 : 600}}
