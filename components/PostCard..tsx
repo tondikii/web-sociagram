@@ -1,6 +1,7 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {useEffect, useMemo, useState} from "react";
 import {connect} from "react-redux";
+import {useRouter} from "next/router";
 
 import {red} from "@mui/material/colors";
 import {
@@ -59,6 +60,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       data: {postId: newPostId, likes: newLikes},
     },
   } = props;
+  const router = useRouter();
 
   const [isLiked, setIsLiked] = useState(false);
   const [isShowMore, setIsShowMore] = useState(false);
@@ -91,7 +93,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   }, [usedLikes]);
 
   return (
-    <Card sx={{maxWidth: "60vh"}} className={styles.container}>
+    <Card sx={{width: "34rem"}} className={styles.container}>
       <CardHeader
         avatar={
           <Avatar
@@ -102,10 +104,16 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
               "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
             }
             className="cursor-pointer"
+            onClick={() => router.push(`/${username}`)}
           />
         }
         title={
-          <span className={`${styles.title} cursor-pointer`}>{username}</span>
+          <span
+            className={`${styles.title} cursor-pointer`}
+            onClick={() => router.push(`/${username}`)}
+          >
+            {username}
+          </span>
         }
         subheader={
           <span className={`${styles.textSecondary} text-xs`}>
