@@ -50,7 +50,7 @@ const boxStyle = {
 
 const steps = [
   {label: "Create new post", value: 1},
-  {label: "Crop", value: 2},
+  {label: "Preview", value: 2},
   {label: "Create new post", value: 3},
 ];
 

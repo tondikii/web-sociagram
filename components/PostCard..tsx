@@ -16,6 +16,7 @@ import {HeartIcon, ShareIcon, ChatAltIcon} from "@heroicons/react/outline";
 import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
 import Carousel from "react-material-ui-carousel";
 import {likeUnLike as likeUnLikeProps} from "../store/actions";
+import ModalDetailPost from "./ModalDetailPost";
 
 import styles from "../styles/PostCard.module.css";
 
@@ -49,10 +50,9 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       postId,
       User: {avatar = "", username = ""} = {},
       files = [
-        "https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg",
-        // "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
+        "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
       ],
-      caption = "Tayang besok, beli tiket @filmhidayah pake website atau aplikasi CGV buat dapetin promo BUY 1 GET 1. Kuota terbatas, beli tiketnya sekarang! Jangan lupa masukin kode promo: HIDAYAH ya :)",
+      caption,
       likes,
     } = {},
     likeUnLike,
@@ -64,6 +64,11 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 
   const [isLiked, setIsLiked] = useState(false);
   const [isShowMore, setIsShowMore] = useState(false);
+  const [showModalDetail, setShowModalDetail] = useState(false);
+
+  const toggleModalDetail = () => {
+    setShowModalDetail(!showModalDetail);
+  };
 
   const usedLikes: string[] | undefined = useMemo(() => {
     if (postId === newPostId && newLikes?.length) {
@@ -93,90 +98,101 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   }, [usedLikes]);
 
   return (
-    <Card sx={{width: "34rem"}} className={styles.container}>
-      <CardHeader
-        avatar={
-          <Avatar
-            sx={{bgcolor: red[500]}}
-            aria-label="recipe"
-            src={
-              avatar ||
-              "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-            }
-            className="cursor-pointer"
-            onClick={() => router.push(`/${username}`)}
-          />
-        }
-        title={
-          <span
-            className={`${styles.title} cursor-pointer`}
-            onClick={() => router.push(`/${username}`)}
-          >
-            {username}
-          </span>
-        }
-        subheader={
-          <span className={`${styles.textSecondary} text-xs`}>
-            16 hours ago
-          </span>
-        }
+    <>
+      <ModalDetailPost
+        open={showModalDetail}
+        toggle={toggleModalDetail}
+        data={{postId, User: {avatar, username}, files, caption, likes}}
       />
-      <Carousel indicators={files.length > 1 ? true : false}>
-        {files.map((url, idx) => (
-          <CardMedia
-            component="img"
-            image={url}
-            alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
-            key={idx}
-          />
-        ))}
-      </Carousel>
-      <CardActions disableSpacing>
-        {isLiked ? (
-          <IconButton
-            aria-label="add to favorites"
-            className="flex flex-row"
-            onClick={onClickLike}
-          >
-            <HeartIconSolid className={`text-rose-600 h-6 w-6`} />
-            <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
-          </IconButton>
-        ) : (
-          <IconButton
-            aria-label="add to favorites"
-            className="flex flex-row"
-            onClick={onClickLike}
-          >
-            <HeartIcon className={`${styles.text} h-6 w-6`} />
-            <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
-          </IconButton>
-        )}
-        <IconButton aria-label="add to favorites" className="mx-2">
-          <ChatAltIcon className={`${styles.text} h-6 w-6`} />
-          <span className={`${styles.text} ml-1`}>0</span>
-        </IconButton>
-        <IconButton aria-label="share" className="flex flex-row">
-          <ShareIcon className={`${styles.text} h-6 w-6`} />
-          <span className={`${styles.text} ml-1`}>0</span>
-        </IconButton>
-      </CardActions>
-      <div className="px-4 pb-4">
-        <p className={`${styles.text}`}>
-          <span className={`${styles.text} font-bold`}>{username}</span>{" "}
-          {isShowMore || caption.length <= 50
-            ? caption
-            : `${caption.split("").slice(0, 50).join("")}...`}{" "}
-          {!isShowMore && caption.length > 50 && (
+      <Card sx={{width: "34rem"}} className={styles.container}>
+        <CardHeader
+          avatar={
+            <Avatar
+              sx={{bgcolor: red[500]}}
+              aria-label="recipe"
+              src={
+                avatar ||
+                "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+              }
+              className="cursor-pointer"
+              onClick={() => router.push(`/${username}`)}
+            />
+          }
+          title={
             <span
-              className={`${styles.textSecondary} cursor-pointer`}
-              onClick={onClickMore}
+              className={`${styles.title} cursor-pointer`}
+              onClick={() => router.push(`/${username}`)}
             >
-              more
+              {username}
             </span>
+          }
+          subheader={
+            <span className={`${styles.textSecondary} text-xs`}>
+              16 hours ago
+            </span>
+          }
+        />
+        <Carousel indicators={files.length > 1 ? true : false}>
+          {files.map((url, idx) => (
+            <CardMedia
+              component="img"
+              image={url}
+              alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
+              key={idx}
+            />
+          ))}
+        </Carousel>
+        <CardActions disableSpacing>
+          {isLiked ? (
+            <IconButton
+              aria-label="add to favorites"
+              className="flex flex-row"
+              onClick={onClickLike}
+            >
+              <HeartIconSolid className={`text-rose-600 h-6 w-6`} />
+              <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
+            </IconButton>
+          ) : (
+            <IconButton
+              aria-label="add to favorites"
+              className="flex flex-row"
+              onClick={onClickLike}
+            >
+              <HeartIcon className={`${styles.text} h-6 w-6`} />
+              <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
+            </IconButton>
           )}
-        </p>
-      </div>
-    </Card>
+          <IconButton
+            aria-label="add to favorites"
+            className="mx-2"
+            onClick={toggleModalDetail}
+          >
+            <ChatAltIcon className={`${styles.text} h-6 w-6`} />
+            <span className={`${styles.text} ml-1`}>0</span>
+          </IconButton>
+          <IconButton aria-label="share" className="flex flex-row">
+            <ShareIcon className={`${styles.text} h-6 w-6`} />
+            <span className={`${styles.text} ml-1`}>0</span>
+          </IconButton>
+        </CardActions>
+        <div className="px-4 pb-4">
+          <p className={`${styles.caption}`}>
+            <span className={`${styles.text} font-bold`}>{username}</span>{" "}
+            {isShowMore || caption.length <= 50
+              ? caption
+              : `${caption.split("").slice(0, 50).join("")}...`}{" "}
+            {!isShowMore && caption.length > 50 && (
+              <span
+                className={`${styles.textSecondary} cursor-pointer`}
+                onClick={onClickMore}
+              >
+                more
+              </span>
+            )}
+          </p>
+        </div>
+      </Card>
+    </>
   );
 };
 
