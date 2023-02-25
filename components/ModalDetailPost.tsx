@@ -156,6 +156,19 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
               }
             />
             <Divider className="dark:bg-zinc-400" />
+            <div className="flex flex-row p-4">
+              <img
+                className="rounded-full w-9 h-9 mr-4"
+                src={
+                  avatar ||
+                  "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+                }
+              />
+              <p className={`${styles.caption}`}>
+                <span className={`${styles.text} font-bold`}>{username}</span>{" "}
+                {caption}
+              </p>
+            </div>
           </div>
           <div className="vertical">
             <CardActions disableSpacing className="px-0">
