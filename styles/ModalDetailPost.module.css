@@ -23,3 +23,8 @@
 .text {
   @apply text-zinc-900 text-sm dark:text-white;
 }
+
+.commentsContainer {
+  @apply overflow-y-scroll;
+  max-height: 23rem;
+}

@@ -3,7 +3,11 @@ import {useState, useMemo, useCallback, useEffect, useRef} from "react";
 import {connect} from "react-redux";
 import {useRouter} from "next/router";
 
-import {likeUnLike as likeUnLikeProps} from "../store/actions";
+import {
+  likeUnLike as likeUnLikeProps,
+  getPostComments as getPostCommentsProps,
+  createPostComment as createPostCommentProps,
+} from "../store/actions";
 
 import {CardMedia, Avatar, CardHeader} from "@mui/material";
 import {Modal, Box, Divider, CardActions, IconButton} from "@mui/material";
@@ -16,6 +20,7 @@ import {
 import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
 import Carousel from "react-material-ui-carousel";
 import EmojiPicker from "emoji-picker-react";
+import * as Alert from "../components/Alert";
 
 import styles from "../styles/ModalDetailPost.module.css";
 
@@ -23,6 +28,7 @@ interface Props {
   open: boolean;
   toggle: Function;
   data: {
+    PostId: number;
     postId: string;
     User: {
       avatar: string;
@@ -39,6 +45,19 @@ interface Props {
       postId: string;
       likes: string[];
     };
+    error: string;
+  };
+  getPostComments: Function;
+  getPostCommentsState: {
+    fetch: boolean;
+    data: [];
+    error: string;
+  };
+
+  createPostComment: Function;
+  createPostCommentState: {
+    fetch: boolean;
+    data: {id: number};
     error: string;
   };
 }
@@ -65,6 +84,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     open,
     toggle,
     data: {
+      PostId,
       postId,
       User: {avatar = "", username = ""} = {},
       files = [
@@ -76,6 +96,18 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     likeUnLike,
     likeUnLikeState: {
       data: {postId: newPostId, likes: newLikes},
+    },
+    getPostComments,
+    getPostCommentsState: {
+      fetch: fetchComments,
+      data: dataComments,
+      error: errorComments,
+    },
+    createPostComment,
+    createPostCommentState: {
+      fetch: fetchCreateComment,
+      data: {id: PostCommentId},
+      error: errorCreateComment,
     },
   } = props;
   const router = useRouter();
@@ -109,6 +141,45 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       setComment((prevInput) => prevInput + emojiObject.emoji);
       setShowEmojiPicker(false);
     };
+
+    const commentCard = (data: {
+      avatar: string;
+      comment: string;
+      username: string;
+      idx: number;
+    }) => (
+      <div className="flex flex-row p-4" key={data?.idx}>
+        <img
+          className="rounded-full w-9 h-9 mr-4"
+          src={
+            data?.avatar ||
+            "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+          }
+        />
+        <p className={`${styles.caption}`}>
+          <span className={`${styles.text} font-bold`}>{data?.username}</span>{" "}
+          {data?.comment}
+        </p>
+      </div>
+    );
+
+    const handlePostComment = () => {
+      console.log(
+        {
+          PostId,
+          accessToken: localStorage.getItem("accessToken"),
+          comment,
+          fetchCreateComment,
+        },
+        "SINI YA"
+      );
+      if (!comment?.length || fetchCreateComment) return;
+      createPostComment({
+        accessToken: localStorage.getItem("accessToken"),
+        data: {PostId, comment},
+      });
+    };
+
     return (
       <div className="flex flex-row">
         <div className="flex flex-col justify-center w-2/3">
@@ -156,18 +227,27 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
               }
             />
             <Divider className="dark:bg-zinc-400" />
-            <div className="flex flex-row p-4">
-              <img
-                className="rounded-full w-9 h-9 mr-4"
-                src={
-                  avatar ||
-                  "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-                }
-              />
-              <p className={`${styles.caption}`}>
-                <span className={`${styles.text} font-bold`}>{username}</span>{" "}
-                {caption}
-              </p>
+            <div className={styles.commentsContainer}>
+              {commentCard({avatar, comment: caption || "", username, idx: 0})}
+              {fetchComments ? (
+                <span>Loading fetch comments</span>
+              ) : (
+                dataComments.map(
+                  (
+                    e: {
+                      User: {avatar: string; username: string};
+                      comment: string;
+                    },
+                    idx: number
+                  ) =>
+                    commentCard({
+                      avatar: e?.User?.avatar || "",
+                      username: e?.User?.username,
+                      comment: e?.comment,
+                      idx: idx + 1,
+                    })
+                )
+              )}
             </div>
           </div>
           <div className="vertical">
@@ -212,16 +292,30 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
                 onChange={handleChangeCaption}
                 ref={textAreaRef}
                 rows={1}
+                maxLength={255}
               />
-              <span className="text-primary font-semibold" role="button">
+              <span
+                className={`${
+                  comment?.length && !fetchCreateComment
+                    ? "text-primary"
+                    : "text-zinc-400"
+                } font-semibold`}
+                role="button"
+                onClick={handlePostComment}
+              >
                 Post
               </span>
             </div>
-            <EmojiHappyIcon
-              className="w-5 h-5 text-zinc-400"
-              role="button"
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            />
+            <div className="horizontal justify-between">
+              <EmojiHappyIcon
+                className="w-7 h-7 text-zinc-400"
+                role="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              />
+              <small className={styles.textSecondary}>
+                {comment?.length}/255
+              </small>
+            </div>
             {showEmojiPicker && (
               <EmojiPicker theme="auto" onEmojiClick={onEmojiClick} />
             )}
@@ -229,7 +323,22 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
         </div>
       </div>
     );
-  }, [files, username, avatar, comment, showEmojiPicker, router]);
+  }, [
+    files,
+    username,
+    avatar,
+    comment,
+    showEmojiPicker,
+    router,
+    createPostComment,
+    PostId,
+    caption,
+    dataComments,
+    fetchComments,
+    isLiked,
+    onClickLike,
+    usedLikes,
+  ]);
 
   // Updates the height of a <textarea> when the value changes.
   const useAutosizeTextArea = (
@@ -248,7 +357,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       }
     }, [textAreaRef, value]);
   };
-
   useAutosizeTextArea(textAreaRef.current, comment);
 
   useEffect(() => {
@@ -259,6 +367,36 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       else setIsLiked(false);
     }
   }, [usedLikes]);
+
+  useEffect(() => {
+    if (open) {
+      getPostComments({
+        accessToken: localStorage.getItem("accessToken"),
+        data: PostId,
+      });
+    }
+  }, [getPostComments, PostId, open]);
+
+  useEffect(() => {
+    if (open && PostCommentId) {
+      getPostComments({
+        accessToken: localStorage.getItem("accessToken"),
+        data: PostId,
+      });
+      setComment("");
+    }
+  }, [PostCommentId, PostId, getPostComments, open]);
+
+  useEffect(() => {
+    if (errorComments && errorComments?.length) {
+      Alert.Error({text: "Error fetching data comments"});
+    }
+  }, [errorComments]);
+  useEffect(() => {
+    if (errorCreateComment && errorCreateComment?.length) {
+      Alert.Error({text: "Error post comment"});
+    }
+  }, [errorCreateComment]);
 
   return (
     <Modal
@@ -278,14 +416,24 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
 const mapStateToProps = (state: {
   rootReducer: {
     likeUnLike: Object;
+    getPostComments: Object;
+    createPostComment: Object;
   };
 }) => ({
   likeUnLikeState: state.rootReducer.likeUnLike,
+  getPostCommentsState: state.rootReducer.getPostComments,
+  createPostCommentState: state.rootReducer.createPostComment,
 });
 
 const mapDispatchToProps = {
   likeUnLike: (payload: {accessToken: string; data: {postId: string}}) =>
     likeUnLikeProps(payload),
+  getPostComments: (payload: {accessToken: string; data: number}) =>
+    getPostCommentsProps(payload),
+  createPostComment: (payload: {
+    accessToken: string;
+    data: {PostId: number; comment: string};
+  }) => createPostCommentProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ModalCreate);

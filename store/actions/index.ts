@@ -10,6 +10,8 @@ import {
   getPostsApi,
   createPostsApi,
   likeUnLikeApi,
+  getPostCommentsApi,
+  createPostCommentApi,
 } from "../api";
 import {createAsyncThunk} from "@reduxjs/toolkit";
 import {deleteCookie} from "cookies-next";
@@ -184,6 +186,45 @@ export const likeUnLike = createAsyncThunk(
   ) => {
     try {
       const response = await likeUnLikeApi(payload);
+      return response;
+    } catch (err) {
+      const messageError = err?.response?.data?.error;
+      return rejectWithValue(messageError);
+    }
+  }
+);
+
+export const getPostComments = createAsyncThunk(
+  CONST.GET_POST_COMMENTS,
+  async (
+    payload: {
+      accessToken: string;
+      data: number;
+    },
+    {rejectWithValue}
+  ) => {
+    try {
+      const response = await getPostCommentsApi(payload);
+      return response;
+    } catch (err) {
+      const messageError = err?.response?.data?.error;
+      return rejectWithValue(messageError);
+    }
+  }
+);
+
+export const createPostComment = createAsyncThunk(
+  CONST.CREATE_POST_COMMENTS,
+  async (
+    payload: {
+      accessToken: string;
+      data: {PostId: number; comment: string};
+    },
+    {rejectWithValue}
+  ) => {
+    try {
+      console.log({payload}, "DI ACTION");
+      const response = await createPostCommentApi(payload);
       return response;
     } catch (err) {
       const messageError = err?.response?.data?.error;

@@ -86,3 +86,23 @@ export const likeUnLikeApi = (payload: {
   };
   return api.put("/posts/like", payload?.data);
 };
+
+export const getPostCommentsApi = (payload: {
+  accessToken: string;
+  data: number;
+}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.get(`postComments/${payload?.data || 0}`);
+};
+
+export const createPostCommentApi = (payload: {
+  accessToken: string;
+  data: {PostId: number; comment: string};
+}) => {
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${payload?.accessToken}`,
+  };
+  return api.post("postComments", payload?.data || {});
+};

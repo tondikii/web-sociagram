@@ -256,13 +256,18 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
                   className={`${styles.textarea}`}
                   value={caption}
                   onChange={handleChangeCaption}
-                  style={{minHeight: 200}}
+                  maxLength={255}
                 />
-                <EmojiHappyIcon
-                  className="w-6 h-6 text-zinc-400"
-                  role="button"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                />
+                <div className="horizontal justify-between">
+                  <EmojiHappyIcon
+                    className="w-7 h-7 text-zinc-400"
+                    role="button"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                  />
+                  <small className={styles.textSecondary}>
+                    {caption?.length}/255
+                  </small>
+                </div>
                 {showEmojiPicker && (
                   <EmojiPicker theme="auto" onEmojiClick={onEmojiClick} />
                 )}

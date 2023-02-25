@@ -11,6 +11,8 @@ import {
   getPosts,
   createPosts,
   likeUnLike,
+  getPostComments,
+  createPostComment,
 } from "../actions";
 
 const rootSlice = createSlice({
@@ -85,6 +87,16 @@ const rootSlice = createSlice({
         postId: "",
       },
       error: "",
+    },
+    getPostComments: {
+      fetch: false,
+      data: [],
+      error: "",
+    },
+    createPostComment: {
+      fetch: false,
+      data: {id: 0},
+      error: [],
     },
   },
   reducers: {
@@ -305,6 +317,46 @@ const rootSlice = createSlice({
       const payload = action?.payload;
       state.likeUnLike = {
         ...state.likeUnLike,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(getPostComments.pending, (state, action) => {
+      state.getPostComments = {...state.getPostComments, fetch: true};
+    });
+    builder.addCase(getPostComments.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.getPostComments = {
+        ...state.getPostComments,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(getPostComments.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.getPostComments = {
+        ...state.getPostComments,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(createPostComment.pending, (state, action) => {
+      state.createPostComment = {...state.createPostComment, fetch: true};
+    });
+    builder.addCase(createPostComment.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.createPostComment = {
+        ...state.createPostComment,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(createPostComment.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.createPostComment = {
+        ...state.createPostComment,
         fetch: false,
         error: payload,
       };

@@ -22,6 +22,7 @@ import styles from "../styles/PostCard.module.css";
 
 interface Props {
   data: {
+    id: number;
     postId: string;
     User: {
       avatar: string;
@@ -47,6 +48,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 ) => {
   const {
     data: {
+      id: PostId,
       postId,
       User: {avatar = "", username = ""} = {},
       files = [
@@ -102,7 +104,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       <ModalDetailPost
         open={showModalDetail}
         toggle={toggleModalDetail}
-        data={{postId, User: {avatar, username}, files, caption, likes}}
+        data={{postId, User: {avatar, username}, files, caption, likes, PostId}}
       />
       <Card sx={{width: "34rem"}} className={styles.container}>
         <CardHeader
