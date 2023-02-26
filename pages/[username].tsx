@@ -14,6 +14,7 @@ import {CogIcon, CameraIcon} from "@heroicons/react/outline";
 
 import ModalSettings from "../components/ModalSettings";
 import ModalUsers from "../components/ModalUsers";
+import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Profile.module.css";
 
@@ -90,6 +91,13 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const [ownUsername, setOwnUsername] = useState("");
   const [ownUserId, setOwnUserId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [selectedPost, setSelectedPost] = useState({});
+  const [showModalPost, setShowModalPost] = useState(false);
+
+  const toggleModalPost = (post: object) => {
+    setSelectedPost(post);
+    setShowModalPost(!showModalPost);
+  };
 
   const isOwnProfile = useMemo(() => {
     if (username === ownUsername) return true;
@@ -201,6 +209,11 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
 
   return (
     <Fragment>
+      <ModalDetailPost
+        open={showModalPost}
+        toggle={toggleModalPost}
+        data={selectedPost}
+      />
       <ModalSettings
         open={showModalSettings}
         toggle={toggleModalOptions}
@@ -290,12 +303,10 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
           <CameraIcon className="h-6 w-6 text-zinc-900 dark:text-white mr-1" />
           <p>POSTS</p>
         </div>
-        <div className="grid grid-cols-3 gap-8 mt-4 w-3/5">
-          {rows &&
-            rows.length &&
-            Array.isArray(rows) &&
-            rows.map((row: {files: string[]}, idx: number) => (
-              <div className="" key={idx}>
+        {rows && rows.length && Array.isArray(rows) ? (
+          <div className="grid grid-cols-3 gap-8 mt-4 w-3/5">
+            {rows.map((row: {files: string[]}, idx: number) => (
+              <div role="button" onClick={() => toggleModalPost(row)} key={idx}>
                 <img
                   className="w-full h-full"
                   src={
@@ -306,7 +317,10 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                 />
               </div>
             ))}
-        </div>
+          </div>
+        ) : (
+          <p className="text-md">No post yet</p>
+        )}
       </div>
     </Fragment>
   );

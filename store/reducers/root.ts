@@ -9,6 +9,7 @@ import {
   followUnfollow,
   getFollowersFollowing,
   getPosts,
+  getPostsLiked,
   createPosts,
   likeUnLike,
   getPostComments,
@@ -74,6 +75,11 @@ const rootSlice = createSlice({
         count: 0,
         rows: [],
       },
+      error: "",
+    },
+    getPostsLiked: {
+      fetch: false,
+      data: [],
       error: "",
     },
     createPosts: {
@@ -274,6 +280,26 @@ const rootSlice = createSlice({
       const payload = action?.payload;
       state.getPosts = {
         ...state.getPosts,
+        fetch: false,
+        error: payload,
+      };
+    });
+
+    builder.addCase(getPostsLiked.pending, (state, action) => {
+      state.getPostsLiked = {...state.getPostsLiked, fetch: true};
+    });
+    builder.addCase(getPostsLiked.fulfilled, (state, action) => {
+      const payload = action?.payload;
+      state.getPostsLiked = {
+        ...state.getPostsLiked,
+        fetch: false,
+        data: payload?.data?.data,
+      };
+    });
+    builder.addCase(getPostsLiked.rejected, (state, action) => {
+      const payload = action?.payload;
+      state.getPostsLiked = {
+        ...state.getPostsLiked,
         fetch: false,
         error: payload,
       };

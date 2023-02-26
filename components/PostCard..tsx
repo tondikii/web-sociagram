@@ -17,6 +17,7 @@ import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
 import Carousel from "react-material-ui-carousel";
 import {likeUnLike as likeUnLikeProps} from "../store/actions";
 import ModalDetailPost from "./ModalDetailPost";
+import ModalDevelopment from "./ModalDevelopment";
 
 import styles from "../styles/PostCard.module.css";
 
@@ -67,10 +68,13 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   const [isLiked, setIsLiked] = useState(false);
   const [isShowMore, setIsShowMore] = useState(false);
   const [showModalDetail, setShowModalDetail] = useState(false);
+  const [showModalDevelopment, setShowModalDevelopment] = useState(false);
 
   const toggleModalDetail = () => {
     setShowModalDetail(!showModalDetail);
   };
+  const toggleModalDevelopment = () =>
+    setShowModalDevelopment(!showModalDevelopment);
 
   const usedLikes: string[] | undefined = useMemo(() => {
     if (postId === newPostId && newLikes?.length) {
@@ -101,6 +105,10 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 
   return (
     <>
+      <ModalDevelopment
+        open={showModalDevelopment}
+        toggle={toggleModalDevelopment}
+      />
       <ModalDetailPost
         open={showModalDetail}
         toggle={toggleModalDetail}
@@ -134,7 +142,10 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
             </span>
           }
         />
-        <Carousel indicators={files.length > 1 ? true : false}>
+        <Carousel
+          indicators={files.length > 1 ? true : false}
+          navButtonsAlwaysInvisible={files.length > 1 ? false : true}
+        >
           {files.map((url, idx) => (
             <CardMedia
               component="img"
@@ -172,7 +183,11 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
             <ChatAltIcon className={`${styles.text} h-6 w-6`} />
             <span className={`${styles.text} ml-1`}>0</span>
           </IconButton>
-          <IconButton aria-label="share" className="flex flex-row">
+          <IconButton
+            aria-label="share"
+            className="flex flex-row"
+            onClick={toggleModalDevelopment}
+          >
             <ShareIcon className={`${styles.text} h-6 w-6`} />
             <span className={`${styles.text} ml-1`}>0</span>
           </IconButton>

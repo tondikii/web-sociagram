@@ -2,6 +2,7 @@
 
 const nextConfig = {
   reactStrictMode: true,
+  use: ["@svgr/webpack"],
 };
 
 module.exports = nextConfig;

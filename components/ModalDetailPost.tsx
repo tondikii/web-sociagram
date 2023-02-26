@@ -118,7 +118,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   const [isLiked, setIsLiked] = useState(false);
 
   const usedLikes: string[] | undefined = useMemo(() => {
-    if (postId === newPostId && newLikes?.length) {
+    if (postId === newPostId) {
       return newLikes;
     }
     return likes;
@@ -183,7 +183,10 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     return (
       <div className="flex flex-row">
         <div className="flex flex-col justify-center w-2/3">
-          <Carousel indicators={files.length > 1 ? true : false}>
+          <Carousel
+            indicators={files.length > 1 ? true : false}
+            navButtonsAlwaysInvisible={files.length > 1 ? false : true}
+          >
             {files.map((url, idx) => (
               <CardMedia
                 component="img"
