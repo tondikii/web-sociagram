@@ -17,12 +17,13 @@ const boxStyle = {
 interface Props {
   open: boolean;
   toggle: Function;
+  feature: string;
 }
 
 const ModalDevelopment: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {open, toggle} = props;
+  const {open, toggle, feature} = props;
 
   return (
     <Modal
@@ -40,7 +41,7 @@ const ModalDevelopment: NextComponentType<NextPageContext, {}, Props> = (
         />
         <div className="flex flex-col justify-center items-center p-4">
           <img src="/restrict-development.svg" className="w-80" />
-          <span>This feature is under development</span>
+          <span>{feature || "The"} feature is under development</span>
         </div>
       </Box>
     </Modal>

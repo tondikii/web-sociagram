@@ -28,11 +28,10 @@ const ChatDrawer: NextComponentType<NextPageContext, {}, Props> = (
         open={showDrawer}
         onClose={() => setShowDrawer(false)}
       >
-        {
-          <div className="bg-white text-zinc-900 dark:text-white dark:bg-black border-l border-l-zinc-200 dark:border-l-zinc-800 min-h-screen">
-            Chat Drawer
-          </div>
-        }
+        <div className="flex flex-col justify-center items-center p-4 bg-white dark:bg-black text-black dark:text-white h-full">
+          <img src="/restrict-development.svg" className="w-80" />
+          <span>Chat feature is under development</span>
+        </div>
       </Drawer>
     </div>
   );

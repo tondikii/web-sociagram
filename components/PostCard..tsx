@@ -25,6 +25,7 @@ interface Props {
   data: {
     id: number;
     postId: string;
+    PostComments: object[];
     User: {
       avatar: string;
       username: string;
@@ -49,14 +50,15 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 ) => {
   const {
     data: {
-      id: PostId,
-      postId,
+      id: PostId = 0,
+      PostComments,
+      postId = "",
       User: {avatar = "", username = ""} = {},
       files = [
         "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
       ],
-      caption,
-      likes,
+      caption = "",
+      likes = [],
     } = {},
     likeUnLike,
     likeUnLikeState: {
@@ -108,6 +110,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       <ModalDevelopment
         open={showModalDevelopment}
         toggle={toggleModalDevelopment}
+        feature="Share"
       />
       <ModalDetailPost
         open={showModalDetail}
@@ -181,7 +184,9 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
             onClick={toggleModalDetail}
           >
             <ChatAltIcon className={`${styles.text} h-6 w-6`} />
-            <span className={`${styles.text} ml-1`}>0</span>
+            <span className={`${styles.text} ml-1`}>
+              {PostComments?.length}
+            </span>
           </IconButton>
           <IconButton
             aria-label="share"
