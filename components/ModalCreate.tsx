@@ -80,7 +80,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   const [loading, setLoading] = useState(false);
 
   const onClickFile = () => {
-    fileRef.current.click();
+    fileRef?.current.click();
   };
 
   const handleChangeFile = useCallback(
