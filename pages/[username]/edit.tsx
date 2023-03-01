@@ -47,7 +47,9 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     editProfileState,
     setReload,
   } = props;
-  const avatarRef = useRef(null);
+  const avatarRef = useRef<HTMLInputElement>(
+    typeof window === "object" ? document.createElement("input") : null
+  );
   const router = useRouter();
   const {username} = router.query;
 
@@ -94,14 +96,20 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   const toggleModalPreview = () => {
     setPreview("");
     setProfileForm({...profileForm, avatar: getProfileState?.data?.avatar});
-    avatarRef.current.value = "";
+    if (avatarRef?.current) {
+      avatarRef.current.value = "";
+    }
   };
   const submitModalPreview = () => {
     setModalPreview(false);
-    avatarRef.current.value = "";
+    if (avatarRef?.current) {
+      avatarRef.current.value = "";
+    }
   };
   const handleClickFile = () => {
-    avatarRef.current.click();
+    if (avatarRef?.current) {
+      avatarRef.current.click();
+    }
   };
   const handleChangeForm = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {

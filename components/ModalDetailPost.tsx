@@ -19,7 +19,7 @@ import {
 } from "@heroicons/react/outline";
 import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
 import Carousel from "react-material-ui-carousel";
-import EmojiPicker from "emoji-picker-react";
+import EmojiPicker, {Theme} from "emoji-picker-react";
 import * as Alert from "../components/Alert";
 
 import styles from "../styles/ModalDetailPost.module.css";
@@ -311,12 +311,13 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
               </small>
             </div>
             {showEmojiPicker && (
-              <EmojiPicker theme="auto" onEmojiClick={onEmojiClick} />
+              <EmojiPicker theme={Theme.AUTO} onEmojiClick={onEmojiClick} />
             )}
           </div>
         </div>
       </div>
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     files,
     username,

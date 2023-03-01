@@ -19,7 +19,7 @@ import {
   ArrowRightIcon,
 } from "@heroicons/react/outline";
 import Carousel from "react-material-ui-carousel";
-import EmojiPicker from "emoji-picker-react";
+import EmojiPicker, {Theme} from "emoji-picker-react";
 import ReactLoading from "react-loading";
 import * as Alert from "../components/Alert";
 
@@ -70,17 +70,22 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   } = props;
   const router = useRouter();
   const {username: usernameQuery = ""} = router.query;
-  const fileRef = useRef(null);
 
-  const [files, setFiles] = useState([]);
-  const [preview, setPreview] = useState([]);
+  const fileRef = useRef<HTMLInputElement>(
+    typeof window === "object" ? document.createElement("input") : null
+  );
+
+  const [files, setFiles] = useState<Array<never> | FileList>([]);
+  const [preview, setPreview] = useState<Array<string>>([]);
   const [currentStep, setCurrentStep] = useState(1);
   const [caption, setCaption] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const onClickFile = () => {
-    fileRef?.current.click();
+    if (fileRef?.current) {
+      fileRef?.current.click();
+    }
   };
 
   const handleChangeFile = useCallback(
@@ -266,7 +271,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
                   </small>
                 </div>
                 {showEmojiPicker && (
-                  <EmojiPicker theme="auto" onEmojiClick={onEmojiClick} />
+                  <EmojiPicker theme={Theme.AUTO} onEmojiClick={onEmojiClick} />
                 )}
               </div>
             </div>
