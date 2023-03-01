@@ -16,6 +16,7 @@ import {
 } from "@heroicons/react/solid";
 import ModalSearch from "./ModalSearch";
 import ModalCreate from "./ModalCreate";
+import {Avatar} from "@mui/material";
 
 interface Props {}
 
@@ -110,7 +111,7 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
             href={`/${user?.username}`}
             className={`horizontal p-1 items-center ${styles.menuContainer}`}
           >
-            <img
+            <Avatar
               className={`rounded-full w-11 h-11 ${
                 isProfile ? "border-4 border-primary" : ""
               }`}

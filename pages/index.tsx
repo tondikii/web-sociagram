@@ -41,10 +41,6 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     getData("");
   }, [getData]);
 
-  useEffect(() => {
-    console.log({rows});
-  }, [rows]);
-
   return (
     <div className={`${styles.container} verticalCenter`}>
       {rows && rows.length && Array.isArray(rows) && (

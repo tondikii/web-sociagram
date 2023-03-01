@@ -146,7 +146,6 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
   }, [data]);
   useEffect(() => {
     if (error?.length) {
-      console.log("sini 1");
       Alert.Error({text: error});
     }
   }, [error]);

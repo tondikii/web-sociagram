@@ -6,7 +6,7 @@ import {useRouter} from "next/router";
 
 import {searchUsers as searchUsersProps} from "../store/actions";
 
-import {Modal, Box, Divider} from "@mui/material";
+import {Modal, Box, Divider, Avatar} from "@mui/material";
 import {SearchIcon, XIcon} from "@heroicons/react/outline";
 import ReactLoading from "react-loading";
 
@@ -101,7 +101,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
                 router.push(`/${e?.username}`);
               }}
             >
-              <img
+              <Avatar
                 className="rounded-full w-14 h-14"
                 src={
                   e?.avatar ||

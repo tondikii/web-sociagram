@@ -10,7 +10,7 @@ import {
   getPosts as getPostsProps,
 } from "../store/actions";
 
-import {CardMedia} from "@mui/material";
+import {Avatar, CardMedia} from "@mui/material";
 import {Modal, Box, Divider, Button} from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import {
@@ -87,7 +87,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files || [];
       setFiles(files || []);
-      console.log({files});
       const tempPreview = [];
       for (let i = 0; i < files.length; i++) {
         tempPreview.push(URL.createObjectURL(files[i]));
@@ -130,7 +129,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     }
     Promise.all(tempUrls)
       .then((result) => {
-        console.log({result});
         createPosts({
           accessToken: localStorage.getItem("accessToken"),
           data: {
@@ -140,7 +138,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
         });
       })
       .catch((err) => {
-        console.log({err});
         Alert.Error({text: err});
         setLoading(false);
       });
@@ -241,7 +238,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
               style={{width: 300, minHeight: 600}}
             >
               <div className="flex flex-row items-center mb-4">
-                <img
+                <Avatar
                   className="rounded-full w-7 h-7"
                   src={
                     avatar ||
@@ -310,7 +307,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
 
   useEffect(() => {
     if (loading && postId) {
-      console.log({username, usernameQuery});
       setLoading(false);
       toggle();
       getPosts({

@@ -243,7 +243,6 @@ export const createPostComment = createAsyncThunk(
     {rejectWithValue}
   ) => {
     try {
-      console.log({payload}, "DI ACTION");
       const response = await createPostCommentApi(payload);
       return response;
     } catch (err) {

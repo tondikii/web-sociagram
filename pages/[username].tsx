@@ -184,14 +184,12 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   useEffect(() => {
     const {userId, avatar, followers, following, bio, name} =
       getProfileState?.data;
-    console.log({getProfileState});
     if (userId) {
       setUser({...user, userId, avatar, followers, following, bio, name});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getProfileState]);
   useEffect(() => {
-    console.log({fetchFollowUnfollow, loading});
     if (!fetchFollowUnfollow && loading) {
       getProfile({
         accessToken: localStorage.getItem("accessToken"),
@@ -230,7 +228,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       />
       <div className={`${styles.container} verticalCenter`}>
         <div className="horizontal p-4 w-3/5">
-          <img
+          <Avatar
             className="rounded-full w-44 h-44 mr-12"
             src={
               user?.avatar ||

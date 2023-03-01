@@ -149,7 +149,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       idx: number;
     }) => (
       <div className="flex flex-row p-4" key={data?.idx}>
-        <img
+        <Avatar
           className="rounded-full w-9 h-9 mr-4"
           src={
             data?.avatar ||
@@ -164,15 +164,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     );
 
     const handlePostComment = () => {
-      console.log(
-        {
-          PostId,
-          accessToken: localStorage.getItem("accessToken"),
-          comment,
-          fetchCreateComment,
-        },
-        "SINI YA"
-      );
       if (!comment?.length || fetchCreateComment) return;
       createPostComment({
         accessToken: localStorage.getItem("accessToken"),

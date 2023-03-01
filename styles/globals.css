@@ -161,3 +161,7 @@ a {
 .min-w-100 {
   min-width: 200rem !important;
 }
+
+.mh-22 {
+  min-height: 5.2rem;
+}

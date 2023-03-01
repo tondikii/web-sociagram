@@ -8,7 +8,7 @@ import {
   followUnfollow as followUnfollowProps,
 } from "../store/actions";
 
-import {Modal, Box, Divider, Button} from "@mui/material";
+import {Modal, Box, Divider, Button, Avatar} from "@mui/material";
 import {XIcon} from "@heroicons/react/outline";
 import ReactLoading from "react-loading";
 
@@ -111,7 +111,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
               }`}
               key={idx}
             >
-              <img
+              <Avatar
                 className="rounded-full w-12 h-12 cursor-pointer"
                 src={
                   e?.avatar ||

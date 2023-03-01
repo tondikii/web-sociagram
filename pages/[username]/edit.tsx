@@ -8,7 +8,8 @@ import {
 } from "../../store/actions";
 import {setReload as setReloadProps} from "../../store/reducers/root";
 
-import {Button} from "@mui/material";
+import ModalPreview from "../../components/ModalPreview";
+import {Avatar, Button} from "@mui/material";
 import * as Alert from "../../components/Alert";
 
 import styles from "../../styles/EditProfile.module.css";
@@ -58,6 +59,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     avatar: "",
   });
   const [preview, setPreview] = useState("");
+  const [modalPreview, setModalPreview] = useState(false);
 
   const profileFormRows = [
     {name: "name", label: "Name", type: "text", value: profileForm?.name},
@@ -77,6 +79,9 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   ];
 
   const disabledSubmit = useMemo(() => {
+    if (editProfileState?.fetch) {
+      return true;
+    }
     let disabled = false;
     for (const key in profileForm) {
       if (!profileForm[key]) {
@@ -84,8 +89,17 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       }
     }
     return disabled;
-  }, [profileForm]);
+  }, [profileForm, editProfileState?.fetch]);
 
+  const toggleModalPreview = () => {
+    setPreview("");
+    setProfileForm({...profileForm, avatar: getProfileState?.data?.avatar});
+    avatarRef.current.value = "";
+  };
+  const submitModalPreview = () => {
+    setModalPreview(false);
+    avatarRef.current.value = "";
+  };
   const handleClickFile = () => {
     avatarRef.current.click();
   };
@@ -117,7 +131,9 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                 type={row?.type}
                 placeholder={row?.label}
                 maxLength={150}
-                className={`${styles.input}`}
+                className={`${styles.input} ${
+                  row?.type === "textarea" ? "mh-22" : ""
+                }`}
                 value={row?.value}
                 onChange={handleChangeForm}
               />
@@ -192,6 +208,13 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     [profileForm]
   );
 
+  const usedAvatar = useMemo(() => {
+    if (preview) {
+      return preview;
+    }
+    return profileForm.avatar;
+  }, [preview, profileForm.avatar]);
+
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     if (username && accessToken) {
@@ -226,63 +249,73 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editProfileState]);
 
+  useEffect(() => {
+    if (preview) {
+      setModalPreview(true);
+    } else {
+      setModalPreview(false);
+    }
+  }, [preview]);
+
   return (
-    <div className={`${styles.container} verticalCenter`}>
-      <form
-        className={`${styles.formContainer} vertical`}
-        onSubmit={handleSubmitForm}
-      >
-        <div className={`${styles.formRow}`}>
-          <div className="flex flex-row-reverse w-1/4">
-            <img
-              className="rounded-full w-14 h-14 mr-8"
-              src={
-                preview
-                  ? preview
-                  : profileForm.avatar ||
-                    "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-              }
-              alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-            />
-          </div>
-          <div className="vertical w-3/4">
-            <input
-              name="avatar"
-              type="file"
-              accept="image/*"
-              hidden
-              ref={avatarRef}
-              onChange={handleChangeFile}
-            />
-            <p className="">{username}</p>
-            <p
-              className="text-sky-500 hover:text-zinc-900 font-bold text-sm dark:hover:text-white"
-              role="button"
-              onClick={handleClickFile}
-            >
-              Change profile photo
-            </p>
-          </div>
-        </div>
-        {profileFormRows.map((row, idx) => (
-          <div className={`${styles.formRow}`} key={idx}>
-            <div className="flex flex-row-reverse w-1/4">
-              <strong className="mr-8">{row?.label}</strong>
-            </div>
-            {renderInput(row)}
-          </div>
-        ))}
-        <Button
-          type="submit"
-          variant="contained"
-          style={{textTransform: "none"}}
-          className={`${styles.btnPrimary}`}
-          disabled={disabledSubmit}
+    <>
+      <ModalPreview
+        open={modalPreview}
+        toggle={toggleModalPreview}
+        file={preview}
+        onSubmit={submitModalPreview}
+      />
+      <div className={`${styles.container} verticalCenter`}>
+        <form
+          className={`${styles.formContainer} vertical`}
+          onSubmit={handleSubmitForm}
         >
-          Submit
-        </Button>
-      </form>
-    </div>
+          <div className={`${styles.formRow}`}>
+            <div className="flex flex-row-reverse w-1/4">
+              <Avatar
+                className="rounded-full w-14 h-14 mr-8"
+                src={usedAvatar}
+              />
+            </div>
+            <div className="vertical w-3/4">
+              <input
+                name="avatar"
+                type="file"
+                accept="image/*"
+                hidden
+                ref={avatarRef}
+                onChange={handleChangeFile}
+              />
+              <p className="">{username}</p>
+              <p
+                className="text-sky-500 hover:text-zinc-900 font-bold text-sm dark:hover:text-white"
+                role="button"
+                onClick={handleClickFile}
+              >
+                Change profile photo
+              </p>
+            </div>
+          </div>
+          {profileFormRows.map((row, idx) => (
+            <div className={`${styles.formRow}`} key={idx}>
+              <div className="flex flex-row-reverse w-1/4">
+                <strong className="mr-8">{row?.label}</strong>
+              </div>
+              {renderInput(row)}
+            </div>
+          ))}
+          <Button
+            type="submit"
+            variant="contained"
+            style={{textTransform: "none"}}
+            className={`${styles.btnPrimary}`}
+            disabled={disabledSubmit}
+          >
+            Submit
+          </Button>
+        </form>
+      </div>
+    </>
   );
 };
 
