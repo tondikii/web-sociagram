@@ -124,14 +124,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     return likes;
   }, [likes, newLikes, postId, newPostId]);
 
-  const onClickLike = () => {
-    setIsLiked(!isLiked);
-    likeUnLike({
-      accessToken: localStorage.getItem("accessToken"),
-      data: {postId},
-    });
-  };
-
   const Content = useMemo(() => {
     const handleChangeCaption = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setComment(e?.target?.value);
@@ -168,6 +160,14 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       createPostComment({
         accessToken: localStorage.getItem("accessToken"),
         data: {PostId, comment},
+      });
+    };
+
+    const onClickLike = () => {
+      setIsLiked(!isLiked);
+      likeUnLike({
+        accessToken: localStorage.getItem("accessToken"),
+        data: {postId},
       });
     };
 
@@ -330,7 +330,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     dataComments,
     fetchComments,
     isLiked,
-    onClickLike,
     usedLikes,
     fetchCreateComment,
   ]);

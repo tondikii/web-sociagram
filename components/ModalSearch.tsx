@@ -1,6 +1,13 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {connect} from "react-redux";
-import {useState, useCallback, useMemo, Fragment, useEffect} from "react";
+import {
+  useState,
+  useCallback,
+  useMemo,
+  Fragment,
+  useEffect,
+  useRef,
+} from "react";
 import {debounce} from "lodash";
 import {useRouter} from "next/router";
 
@@ -51,24 +58,33 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const debounced = useCallback(
-    debounce((value: string) => {
+  const debouncedSearch = useRef(
+    debounce(async (value: string) => {
       searchUsers({
         accessToken: localStorage.getItem("accessToken"),
         data: value,
       });
-    }, 500),
-    []
-  );
+    }, 300)
+  ).current;
+
+  // const debounced = useCallback(
+  //   debounce((value: string) => {
+  //     searchUsers({
+  //       accessToken: localStorage.getItem("accessToken"),
+  //       data: value,
+  //     });
+  //   }, 500),
+  //   []
+  // );
 
   const handleChangeForm = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const {value} = e.target;
       setLoading(true);
       setSearchState(value);
-      debounced(value);
+      debouncedSearch(value);
     },
-    [debounced]
+    [debouncedSearch]
   );
 
   const UsersComponent = useMemo(() => {

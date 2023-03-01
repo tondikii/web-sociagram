@@ -11,8 +11,7 @@ const ChatDrawer: NextComponentType<NextPageContext, {}, Props> = (
 ) => {
   const [showDrawer, setShowDrawer] = useState(false);
 
-  const onClickDrawer = (e: MouseEvent) => {
-    e.preventDefault();
+  const onClickDrawer = () => {
     setShowDrawer(!showDrawer);
   };
   return (
