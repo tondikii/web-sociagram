@@ -6,13 +6,16 @@ import type {NextRequest} from "next/server";
 export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get("accessToken");
   const url = request.url;
+  const baseUrl =
+    process.env.NODE_ENV === "production"
+      ? "https://web-sociagram-fixed.vercel.app/"
+      : "http://localhost:3000/";
   if (url.includes("/signin") || url.includes("/signup")) {
     if (accessToken?.value) {
-      return NextResponse.redirect("http://localhost:3001/");
+      return NextResponse.redirect(baseUrl);
     }
   } else {
-    if (!accessToken?.value)
-      return NextResponse.redirect("http://localhost:3001/signin");
+    if (!accessToken?.value) return NextResponse.redirect(baseUrl + "signin");
   }
   return NextResponse.next();
 }
