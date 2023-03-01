@@ -67,16 +67,6 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
     }, 300)
   ).current;
 
-  // const debounced = useCallback(
-  //   debounce((value: string) => {
-  //     searchUsers({
-  //       accessToken: localStorage.getItem("accessToken"),
-  //       data: value,
-  //     });
-  //   }, 500),
-  //   []
-  // );
-
   const handleChangeForm = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const {value} = e.target;
