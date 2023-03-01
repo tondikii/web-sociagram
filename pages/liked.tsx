@@ -6,6 +6,7 @@ import {getPostsLiked as getPostsLikedProps} from "../store/actions";
 
 import {HeartIcon} from "@heroicons/react/solid";
 import ModalDetailPost from "../components/ModalDetailPost";
+import {CardMedia} from "@mui/material";
 
 import styles from "../styles/Liked.module.css";
 
@@ -55,20 +56,24 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
           {data && data.length && Array.isArray(data) ? (
             <div className="grid grid-cols-3 gap-8 w-full">
               {data.map((row: {files: string[]}, idx: number) => (
-                <div role="button" onClick={() => toggleModalPost(row)}>
-                  <img
+                <div
+                  role="button"
+                  onClick={() => toggleModalPost(row)}
+                  key={idx}
+                >
+                  <CardMedia
+                    component="img"
                     className="w-full h-full"
-                    src={
+                    image={
                       row?.files[0] ||
                       "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
                     }
-                    alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
                   />
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-md">No post yet</p>
+            <p className="text-md">No posts yet</p>
           )}
         </div>
       </div>

@@ -88,7 +88,7 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
       router.push("/");
       Alert.Success({text: "Sign in success!"});
     }
-  }, [data]);
+  }, [data, router]);
   useEffect(() => {
     if (error) {
       Alert.Error({text: error});

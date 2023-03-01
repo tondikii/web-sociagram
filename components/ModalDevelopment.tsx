@@ -1,7 +1,7 @@
 import type {NextComponentType, NextPageContext} from "next";
 
 import {XIcon} from "@heroicons/react/outline";
-import {Modal, Box} from "@mui/material";
+import {Modal, Box, CardMedia} from "@mui/material";
 
 import styles from "../styles/ModalDevelopment.module.css";
 
@@ -40,7 +40,11 @@ const ModalDevelopment: NextComponentType<NextPageContext, {}, Props> = (
           }}
         />
         <div className="flex flex-col justify-center items-center p-4">
-          <img src="/restrict-development.svg" className="w-80" />
+          <CardMedia
+            component="img"
+            className="w-80"
+            image={"/restrict-development.svg"}
+          />
           <span>{feature || "The"} feature is under development</span>
         </div>
       </Box>

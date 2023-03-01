@@ -9,7 +9,7 @@ import {
   getPosts as getPostsProps,
 } from "../store/actions";
 
-import {Button, IconButton} from "@mui/material";
+import {Button, IconButton, Avatar, CardMedia} from "@mui/material";
 import {CogIcon, CameraIcon} from "@heroicons/react/outline";
 
 import ModalSettings from "../components/ModalSettings";
@@ -305,19 +305,19 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
           <div className="grid grid-cols-3 gap-8 mt-4 w-3/5">
             {rows.map((row: {files: string[]}, idx: number) => (
               <div role="button" onClick={() => toggleModalPost(row)} key={idx}>
-                <img
+                <CardMedia
+                  component="img"
                   className="w-full h-full"
-                  src={
+                  image={
                     row?.files[0] ||
                     "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
                   }
-                  alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
                 />
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-md">No post yet</p>
+          <p className="text-md">No posts yet</p>
         )}
       </div>
     </Fragment>

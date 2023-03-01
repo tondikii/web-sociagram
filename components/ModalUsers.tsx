@@ -156,7 +156,16 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
         )}
       </div>
     );
-  }, [data, error, router, toggle, ownUserId, loading]);
+  }, [
+    data,
+    error,
+    router,
+    toggle,
+    ownUserId,
+    loading,
+    followUnfollow,
+    setLoading,
+  ]);
 
   useEffect(() => {
     getFollowersFollowing({

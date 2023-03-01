@@ -203,9 +203,8 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
         accessToken: localStorage.getItem("accessToken"),
         data: formData,
       });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [profileForm]
+    [profileForm, editProfile]
   );
 
   const usedAvatar = useMemo(() => {

@@ -43,12 +43,14 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
 
   return (
     <div className={`${styles.container} verticalCenter`}>
-      {rows && rows.length && Array.isArray(rows) && (
+      {rows && rows.length && Array.isArray(rows) ? (
         <>
           {rows.map((row, idx) => (
             <PostCard data={row} key={idx} />
           ))}
         </>
+      ) : (
+        <p className="text-md">No posts yet</p>
       )}
     </div>
   );

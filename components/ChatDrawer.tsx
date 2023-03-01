@@ -1,5 +1,5 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {Drawer} from "@mui/material";
+import {Drawer, CardMedia} from "@mui/material";
 import {ChatAlt2Icon} from "@heroicons/react/outline";
 import styles from "../styles/ChatDrawer.module.css";
 import {useState} from "react";
@@ -29,7 +29,11 @@ const ChatDrawer: NextComponentType<NextPageContext, {}, Props> = (
         onClose={() => setShowDrawer(false)}
       >
         <div className="flex flex-col justify-center items-center p-4 bg-white dark:bg-black text-black dark:text-white h-full">
-          <img src="/restrict-development.svg" className="w-80" />
+          <CardMedia
+            component="img"
+            className="w-80"
+            image={"/restrict-development.svg"}
+          />
           <span>Chat feature is under development</span>
         </div>
       </Drawer>

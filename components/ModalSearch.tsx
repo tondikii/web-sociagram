@@ -120,7 +120,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
         )}
       </div>
     );
-  }, [users, error, searchState, fetch]);
+  }, [users, error, searchState, router, toggle]);
 
   useEffect(() => {
     if (rows.length && Array.isArray(rows)) {

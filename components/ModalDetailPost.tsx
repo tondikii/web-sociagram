@@ -332,6 +332,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     isLiked,
     onClickLike,
     usedLikes,
+    fetchCreateComment,
   ]);
 
   // Updates the height of a <textarea> when the value changes.
