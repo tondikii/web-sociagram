@@ -2,6 +2,7 @@ import type {NextComponentType, NextPageContext} from "next";
 import {connect} from "react-redux";
 import {useEffect, useState, useCallback} from "react";
 import {signIn as signInProps} from "../store/actions";
+import {resetSignIn as resetSignInProps} from "../store/reducers/root";
 import {setCookie} from "cookies-next";
 import {useRouter} from "next/router";
 
@@ -17,6 +18,7 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
 import styles from "../styles/Auth.module.css";
+import ReactLoading from "react-loading";
 
 import * as Alert from "../components/Alert";
 
@@ -47,6 +49,7 @@ interface Props {
     };
     error: any;
   };
+  resetSignIn: Function;
 }
 
 const SignIn: NextComponentType<NextPageContext, {}, Props> = (
@@ -54,7 +57,8 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
 ) => {
   const {
     signIn,
-    signInState: {data, error},
+    signInState: {fetch, data, error},
+    resetSignIn,
   } = props;
   const router = useRouter();
 
@@ -92,8 +96,9 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
   useEffect(() => {
     if (error) {
       Alert.Error({text: error});
+      resetSignIn();
     }
-  }, [error]);
+  }, [error, resetSignIn]);
 
   return (
     <div className="verticalCenter p-4 min-h-screen bg-gradient-to-r from-purple-500 to-pink-500">
@@ -159,9 +164,22 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
                 variant="contained"
                 sx={{mt: 3, mb: 2}}
                 style={{textTransform: "none"}}
-                className={styles.btnPrimary}
+                className={`${styles.btnPrimary} horizontal`}
               >
-                Sign in
+                {fetch ? (
+                  <>
+                    <ReactLoading
+                      type="spin"
+                      height={16}
+                      width={16}
+                      color="white"
+                      className="mr-2"
+                    />
+                    Loading...
+                  </>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
               <Grid container justifyContent="flex-end">
                 <Grid item>
@@ -187,6 +205,8 @@ const mapStateToProps = (state: {rootReducer: {signIn: Object}}) => ({
 });
 const mapDispatchToProps = {
   signIn: (payload: {email: string; password: string}) => signInProps(payload),
+  resetSignIn: (payload: {email: string; password: string}) =>
+    resetSignInProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SignIn);

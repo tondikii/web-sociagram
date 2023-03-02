@@ -109,6 +109,20 @@ const rootSlice = createSlice({
     setReload(state, action) {
       state.reload = action.payload;
     },
+    resetSignIn(state) {
+      state.signIn = {
+        fetch: false,
+        data: {accessToken: ""},
+        error: "",
+      };
+    },
+    resetSignUp(state) {
+      state.signUp = {
+        fetch: false,
+        data: {userId: ""},
+        error: [],
+      };
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(signUp.pending, (state, action) => {
@@ -390,6 +404,6 @@ const rootSlice = createSlice({
   },
 });
 
-export const {setReload} = rootSlice.actions;
+export const {setReload, resetSignIn, resetSignUp} = rootSlice.actions;
 
 export default rootSlice.reducer;

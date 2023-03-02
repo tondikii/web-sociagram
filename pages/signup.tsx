@@ -2,6 +2,7 @@ import type {NextComponentType, NextPageContext} from "next";
 import {useEffect, useState, useCallback, useMemo} from "react";
 import {connect} from "react-redux";
 import {signUp as signUpProps, signIn as signInProps} from "../store/actions";
+import {resetSignUp as resetSignUpProps} from "../store/reducers/root";
 import {setCookie} from "cookies-next";
 import {useRouter} from "next/router";
 
@@ -42,6 +43,7 @@ interface Props {
     data: {userId: string};
     error: any;
   };
+  resetSignUp: Function;
   signIn: Function;
   signInState: {
     fetch: boolean;
@@ -61,6 +63,7 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
   const {
     signUp,
     signUpState: {data, error},
+    resetSignUp,
     signIn,
     signInState,
   } = props;
@@ -106,7 +109,7 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
         switch (name) {
           case "username":
             if (username.length < 3) {
-              return "Password should be more than equal 3 characters";
+              return "Username should be more than equal 3 characters";
             }
             break;
           case "email":
@@ -147,8 +150,9 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
   useEffect(() => {
     if (error?.length) {
       Alert.Error({text: error});
+      resetSignUp();
     }
-  }, [error]);
+  }, [error, resetSignUp]);
 
   useEffect(() => {
     const {accessToken, userId, username, avatar} = signInState.data;
@@ -285,6 +289,8 @@ const mapDispatchToProps = {
   signUp: (payload: {email: string; password: string; username: string}) =>
     signUpProps(payload),
   signIn: (payload: {email: string; password: string}) => signInProps(payload),
+  resetSignUp: (payload: {email: string; password: string}) =>
+    resetSignUpProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SignUp);
