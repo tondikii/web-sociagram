@@ -64,19 +64,33 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   const [modalPreview, setModalPreview] = useState(false);
 
   const profileFormRows = [
-    {name: "name", label: "Name", type: "text", value: profileForm?.name},
+    {
+      name: "name",
+      label: "Name",
+      type: "text",
+      value: profileForm?.name,
+      maxLength: 48,
+    },
     {
       name: "username",
       label: "Username",
       type: "text",
       value: profileForm?.username,
+      maxLength: 16,
     },
-    {name: "bio", label: "Bio", type: "textarea", value: profileForm?.bio},
+    {
+      name: "bio",
+      label: "Bio",
+      type: "textarea",
+      value: profileForm?.bio,
+      maxLength: 150,
+    },
     {
       name: "gender",
       label: "Gender",
       type: "select",
       value: profileForm?.gender,
+      maxLength: 0,
     },
   ];
 
@@ -113,8 +127,10 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   };
   const handleChangeForm = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const {name, value} = e.target;
+      let {name, value} = e.target;
       if (name === "username") {
+        value = value.toLowerCase();
+        if (value) value = value.trim();
         localStorage.username = value;
       }
       setProfileForm({...profileForm, [name]: value});
@@ -129,7 +145,13 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   };
 
   const renderInput = useCallback(
-    (row: {type: string; name: string; label: string; value: string}) => {
+    (row: {
+      type: string;
+      name: string;
+      label: string;
+      value: string;
+      maxLength: number;
+    }) => {
       switch (row?.type) {
         case "textarea":
           return (
@@ -138,7 +160,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                 name={row?.name}
                 type={row?.type}
                 placeholder={row?.label}
-                maxLength={150}
+                maxLength={row?.maxLength}
                 className={`${styles.input} ${
                   row?.type === "textarea" ? "mh-22" : ""
                 }`}
@@ -188,7 +210,11 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                 className={`${styles.input}`}
                 value={row?.value}
                 onChange={handleChangeForm}
+                maxLength={row?.maxLength}
               />
+              <small className={styles.textSecondary}>
+                character limit is {row?.maxLength}
+              </small>
             </div>
           );
       }

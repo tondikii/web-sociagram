@@ -15,7 +15,7 @@
 }
 
 .textSecondary {
-  @apply mt-1 text-xs text-zinc-400;
+  @apply mt-1 text-xs text-zinc-500 dark:text-zinc-400 text-end;
 }
 
 .btnPrimary {

@@ -96,7 +96,12 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
 
   const handleChangeForm = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const {name, value} = e.target;
+      let {name, value} = e.target;
+      if (name === "username") {
+        value = value.toLowerCase();
+        if (value) value = value.trim();
+        localStorage.username = value;
+      }
       setSignUpForm({...signUpForm, [name]: value});
     },
     [signUpForm]
@@ -212,6 +217,7 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
                     autoFocus
                     value={signUpForm.username}
                     onChange={handleChangeForm}
+                    inputProps={{maxLength: 16}}
                   />
                   {renderWarning("username")}
                 </Grid>
