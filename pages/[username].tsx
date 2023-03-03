@@ -8,6 +8,7 @@ import {
   followUnfollow as followUnfollowProps,
   getPosts as getPostsProps,
 } from "../store/actions";
+import {resetGetProfile as resetGetProfileProps} from "../store/reducers/root";
 
 import {Button, IconButton, Avatar, CardMedia} from "@mui/material";
 import {CogIcon, CameraIcon} from "@heroicons/react/outline";
@@ -33,6 +34,7 @@ interface Props {
     };
     error: string;
   };
+  resetGetProfile: Function;
   followUnfollow: Function;
   followUnfollowState: {
     fetch: boolean;
@@ -62,6 +64,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     signOut,
     getProfile,
     getProfileState,
+    resetGetProfile,
     followUnfollow,
     followUnfollowState: {fetch: fetchFollowUnfollow, data: dataFollowUnFollow},
     reload,
@@ -166,6 +169,9 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   }, [isOwnProfile, user?.followers]);
 
   useEffect(() => {
+    resetGetProfile();
+  }, [resetGetProfile]);
+  useEffect(() => {
     getData();
   }, [getData]);
   useEffect(() => {
@@ -238,13 +244,13 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
           />
           <div className="vertical">
             <div className="horizontalCenter w-fit">
-              <p className="text-2xl">{username}</p>
+              <p className="text-2xl mr-4">{username}</p>
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 style={{textTransform: "none"}}
-                className={`${styles.btnPrimary} ${
+                className={`${styles.btnPrimary} mr-1 ${
                   labelButton === "Following"
                     ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-900 dark:bg-zinc-400 dark:hover:bg-zinc-500"
                     : "bg-primary"
@@ -292,7 +298,9 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             </div>
             <div className="vertical">
               <strong className="text-md">{user?.name || "No name yet"}</strong>
-              <p className="text-md">{user?.bio || "No bio yet"}</p>
+              <p className="text-md break-spaces">
+                {user?.bio || "No bio yet"}
+              </p>
             </div>
           </div>
         </div>
@@ -341,6 +349,8 @@ const mapDispatchToProps = {
   signOut: () => signOutProps(),
   getProfile: (payload: {accessToken: string; data: string}) =>
     getProfileProps(payload),
+  resetGetProfile: (payload: {accessToken: string; data: string}) =>
+    resetGetProfileProps(payload),
   followUnfollow: (payload: {accessToken: string; data: {userId: string}}) =>
     followUnfollowProps(payload),
   getPosts: (payload: {accessToken: string; data: string}) =>

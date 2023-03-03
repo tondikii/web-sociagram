@@ -165,3 +165,7 @@ a {
 .mh-22 {
   min-height: 5.2rem;
 }
+
+.break-spaces {
+  white-space: break-spaces;
+}

@@ -51,7 +51,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   const {
     data: {
       id: PostId = 0,
-      PostComments,
+      PostComments = [],
       postId = "",
       User: {avatar = "", username = ""} = {},
       files = [
@@ -115,7 +115,15 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       <ModalDetailPost
         open={showModalDetail}
         toggle={toggleModalDetail}
-        data={{postId, User: {avatar, username}, files, caption, likes, PostId}}
+        data={{
+          postId,
+          User: {avatar, username},
+          files,
+          caption,
+          likes,
+          PostId,
+          PostComments,
+        }}
       />
       <Card sx={{width: "34rem"}} className={styles.container}>
         <CardHeader

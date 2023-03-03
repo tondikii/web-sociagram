@@ -123,6 +123,15 @@ const rootSlice = createSlice({
         error: [],
       };
     },
+    resetGetProfile(state) {
+      state.getProfile = {
+        fetch: false,
+        data: {
+          userId: "",
+        },
+        error: "",
+      };
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(signUp.pending, (state, action) => {
@@ -404,6 +413,7 @@ const rootSlice = createSlice({
   },
 });
 
-export const {setReload, resetSignIn, resetSignUp} = rootSlice.actions;
+export const {setReload, resetSignIn, resetSignUp, resetGetProfile} =
+  rootSlice.actions;
 
 export default rootSlice.reducer;

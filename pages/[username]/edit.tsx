@@ -144,14 +144,17 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     setProfileForm({...profileForm, [e.target.name]: file});
   };
 
-  const renderInput = useCallback(
-    (row: {
-      type: string;
-      name: string;
-      label: string;
-      value: string;
-      maxLength: number;
+  const FormComponent = useCallback(
+    (props: {
+      row: {
+        type: string;
+        name: string;
+        label: string;
+        value: string;
+        maxLength: number;
+      };
     }) => {
+      const {row} = props;
       switch (row?.type) {
         case "textarea":
           return (
@@ -219,8 +222,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
           );
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [profileForm]
+    [profileForm, handleChangeForm]
   );
 
   const handleSubmitForm = useCallback(
@@ -334,7 +336,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
               <div className="flex flex-row-reverse w-1/4">
                 <strong className="mr-8">{row?.label}</strong>
               </div>
-              {renderInput(row)}
+              <FormComponent row={row} />
             </div>
           ))}
           <Button
