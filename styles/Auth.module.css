@@ -17,3 +17,7 @@
 .anchor {
   @apply text-slate-300 decoration-slate-300 hover:text-white hover:decoration-white;
 }
+
+.title {
+  @apply text-white text-lg font-semibold md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl;
+}
