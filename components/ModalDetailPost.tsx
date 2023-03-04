@@ -30,7 +30,6 @@ interface Props {
   data: {
     PostId: number;
     postId: string;
-    PostComments: object[];
     User: {
       avatar: string;
       username: string;
@@ -87,7 +86,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     data: {
       PostId,
       postId,
-      PostComments = [],
       User: {avatar = "", username = ""} = {},
       files = [
         "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
@@ -183,10 +181,10 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
             {files.map((url, idx) => (
               <CardMedia
                 component="img"
-                height="194"
                 image={url}
                 alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
                 key={idx}
+                sx={{maxHeight: "80vh"}}
               />
             ))}
           </Carousel>
@@ -274,7 +272,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
               <IconButton aria-label="add to favorites" className="mx-2">
                 <ChatAltIcon className={`${styles.text} h-5 w-5`} />
                 <span className={`${styles.text} ml-1`}>
-                  {PostComments?.length}
+                  {dataComments?.length}
                 </span>
               </IconButton>
               <IconButton aria-label="share" className="flex flex-row pl-0">

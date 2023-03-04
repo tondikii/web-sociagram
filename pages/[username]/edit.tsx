@@ -144,17 +144,14 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     setProfileForm({...profileForm, [e.target.name]: file});
   };
 
-  const FormComponent = useCallback(
-    (props: {
-      row: {
-        type: string;
-        name: string;
-        label: string;
-        value: string;
-        maxLength: number;
-      };
+  const RenderForm = useCallback(
+    (row: {
+      type: string;
+      name: string;
+      label: string;
+      value: string;
+      maxLength: number;
     }) => {
-      const {row} = props;
       switch (row?.type) {
         case "textarea":
           return (
@@ -336,7 +333,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
               <div className="flex flex-row-reverse w-1/4">
                 <strong className="mr-8">{row?.label}</strong>
               </div>
-              <FormComponent row={row} />
+              {RenderForm(row)}
             </div>
           ))}
           <Button

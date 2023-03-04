@@ -68,6 +68,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                       row?.files[0] ||
                       "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
                     }
+                    sx={{height: 250, width: 250}}
                   />
                 </div>
               ))}

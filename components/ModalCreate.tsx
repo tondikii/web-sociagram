@@ -214,7 +214,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
             {preview.map((url, idx) => (
               <CardMedia
                 component="img"
-                height="194"
+                sx={{maxHeight: "80vh"}}
                 image={url}
                 alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
                 key={idx}
@@ -230,7 +230,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
                 {preview.map((url, idx) => (
                   <CardMedia
                     component="img"
-                    height="194"
+                    sx={{maxHeight: "80vh"}}
                     image={url}
                     alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
                     key={idx}

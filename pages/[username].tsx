@@ -315,11 +315,11 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
               <div role="button" onClick={() => toggleModalPost(row)} key={idx}>
                 <CardMedia
                   component="img"
-                  className="w-full h-full"
                   image={
                     row?.files[0] ||
                     "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
                   }
+                  sx={{height: 250, width: 250}}
                 />
               </div>
             ))}

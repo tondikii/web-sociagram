@@ -122,10 +122,9 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
           caption,
           likes,
           PostId,
-          PostComments,
         }}
       />
-      <Card sx={{width: "34rem"}} className={styles.container}>
+      <Card sx={{width: "34vw"}} className={styles.container}>
         <CardHeader
           avatar={
             <Avatar
@@ -163,6 +162,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
               image={url}
               alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
               key={idx}
+              sx={{maxHeight: "70vh"}}
             />
           ))}
         </Carousel>
