@@ -18,8 +18,9 @@ const Layout: NextComponentType<NextPageContext, {}, Props> = (
     return <div className="layout">{children}</div>;
 
   return (
-    <div className="min-h-screen flex flex-row justify-between">
-      <Sidebar />
+    // <div className="min-h-screen flex flex-row justify-between">
+    <div className="min-h-screen flex flex-col-reverse justify-between">
+      <Sidebar className="hidden" />
       <div className={`${styles.content} bg-custom-zinc`}>{children}</div>
       <ChatDrawer />
     </div>

@@ -18,11 +18,14 @@ import ModalSearch from "./ModalSearch";
 import ModalCreate from "./ModalCreate";
 import {Avatar} from "@mui/material";
 
-interface Props {}
+interface Props {
+  className: string;
+}
 
 const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
+  const {className} = props;
   const {pathname, query} = useRouter();
   const [isProfile, setIsProfile] = useState(false);
 
@@ -53,7 +56,7 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
   }, []);
 
   return (
-    <Fragment>
+    <div className={className}>
       <ModalSearch toggle={toggleModalSearch} open={showModalSearch} />
       <ModalCreate
         toggle={toggleModalCreate}
@@ -134,7 +137,7 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
           </Link>
         </section>
       </nav>
-    </Fragment>
+    </div>
   );
 };
 

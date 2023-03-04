@@ -15,7 +15,7 @@ const ChatDrawer: NextComponentType<NextPageContext, {}, Props> = (
     setShowDrawer(!showDrawer);
   };
   return (
-    <div className={`${styles.container} p-4 fixed min-h-screen`}>
+    <div className={`${styles.container} p-4 fixed min-h-screen hidden`}>
       <div
         className={`${styles.menuContainer} p-1 rounded-full cursor-pointer`}
         onClick={onClickDrawer}
