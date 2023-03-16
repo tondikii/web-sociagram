@@ -2,7 +2,7 @@ import type {NextComponentType, NextPageContext} from "next";
 import Link from "next/link";
 import {useRouter} from "next/router";
 import {Fragment, useCallback, useEffect, useMemo, useState} from "react";
-import styles from "../styles/Sidebar.module.css";
+import styles from "../styles/SideBar.module.css";
 import {
   HomeIcon,
   HeartIcon,
@@ -22,7 +22,7 @@ interface Props {
   className: string;
 }
 
-const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
+const SideBar: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
   const {className} = props;
@@ -141,4 +141,4 @@ const Sidebar: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-export default Sidebar;
+export default SideBar;

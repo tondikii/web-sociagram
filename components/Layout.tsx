@@ -1,7 +1,9 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
-import Sidebar from "./Sidebar";
+import SideBar from "./SideBar";
+import BottomBar from "./BottomBar";
 import ChatDrawer from "./ChatDrawer";
+
 import styles from "../styles/Layout.module.css";
 
 interface Props {
@@ -18,12 +20,15 @@ const Layout: NextComponentType<NextPageContext, {}, Props> = (
     return <div className="layout">{children}</div>;
 
   return (
-    // <div className="min-h-screen flex flex-row justify-between">
-    <div className="min-h-screen flex flex-col-reverse justify-between">
-      <Sidebar className="hidden" />
-      <div className={`${styles.content} bg-custom-zinc`}>{children}</div>
-      <ChatDrawer />
-    </div>
+    // <div className="min-h-screen flex flex-row justify-between"> desktop
+    <>
+      <div className="min-h-screen flex flex-col justify-between">
+        <SideBar className="hidden" />
+        <div className={`${styles.content} bg-custom-zinc`}>{children}</div>
+        <BottomBar />
+        <ChatDrawer className="hidden" />
+      </div>
+    </>
   );
 };
 
