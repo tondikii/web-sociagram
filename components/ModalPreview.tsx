@@ -39,7 +39,7 @@ const ModalPreview: NextComponentType<NextPageContext, {}, Props> = (
       onClose={() => toggle()}
       sx={{zIndex: 1059}}
     >
-      <Box sx={boxStyle} className="bg-white dark:bg-zinc-800 rounded-lg">
+      <Box sx={boxStyle} className={`bg-white dark:bg-zinc-800 rounded-lg`}>
         <div className="p-4 flex justify-between items-center">
           <ArrowLeftIcon className={styles.icon} onClick={() => toggle()} />
           <span className="font-medium">Preview</span>
@@ -48,7 +48,7 @@ const ModalPreview: NextComponentType<NextPageContext, {}, Props> = (
         <Divider className="dark:bg-zinc-400" />
         <CardMedia
           component="img"
-          sx={{height: 400, width: 400}}
+          className={styles.imageContainer}
           image={file}
         />
       </Box>

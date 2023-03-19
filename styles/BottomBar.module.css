@@ -1,0 +1,21 @@
+.container {
+  @apply dark:bg-black bg-white fixed bottom-0 flex flex-row lg:hidden;
+}
+
+.icon {
+  @apply text-white;
+}
+
+.selectedIcon {
+  color: #9c27b0;
+}
+
+.iconImage {
+  @apply rounded-full w-7 h-7;
+}
+
+.selectedIconImage {
+  @apply rounded-full w-7 h-7;
+  border-color: #9c27b0;
+  border-width: 3px;
+}

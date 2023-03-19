@@ -1,6 +1,6 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
-import SideBar from "./SideBar";
+import SideBarNav from "./SideBarNav";
 import BottomBar from "./BottomBar";
 import ChatDrawer from "./ChatDrawer";
 
@@ -20,15 +20,12 @@ const Layout: NextComponentType<NextPageContext, {}, Props> = (
     return <div className="layout">{children}</div>;
 
   return (
-    // <div className="min-h-screen flex flex-row justify-between"> desktop
-    <>
-      <div className="min-h-screen flex flex-col justify-between">
-        <SideBar className="hidden" />
-        <div className={`${styles.content} bg-custom-zinc`}>{children}</div>
-        <BottomBar />
-        <ChatDrawer className="hidden" />
-      </div>
-    </>
+    <div className="min-h-screen flex flex-col lg:flex-row lg:justify-between mb-10 lg mb:0">
+      <SideBarNav />
+      <div className={styles.content}>{children}</div>
+      <BottomBar />
+      <ChatDrawer />
+    </div>
   );
 };
 

@@ -2,8 +2,8 @@ import type {NextComponentType, NextPageContext} from "next";
 import {useEffect, useMemo, useState} from "react";
 import {connect} from "react-redux";
 import {useRouter} from "next/router";
+import moment from "moment";
 
-import {red} from "@mui/material/colors";
 import {
   Avatar,
   CardActions,
@@ -22,18 +22,21 @@ import ModalDevelopment from "./ModalDevelopment";
 import styles from "../styles/PostCard.module.css";
 
 interface Props {
-  data: {
-    id: number;
-    postId: string;
-    PostComments: object[];
-    User: {
-      avatar: string;
-      username: string;
-    };
-    files: string[];
-    likes: string[];
-    caption: string;
-  };
+  data:
+    | {
+        id: number;
+        postId: string;
+        PostComments: object[];
+        User: {
+          avatar: string;
+          username: string;
+        };
+        files: string[];
+        likes: string[];
+        caption: string;
+        createdAt: string;
+      }
+    | {};
   likeUnLike: Function;
   likeUnLikeState: {
     fetch: boolean;
@@ -59,6 +62,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       ],
       caption = "",
       likes = [],
+      createdAt = new Date(),
     } = {},
     likeUnLike,
     likeUnLikeState: {
@@ -122,13 +126,13 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
           caption,
           likes,
           PostId,
+          createdAt,
         }}
       />
-      <Card sx={{width: "34vw"}} className={styles.container}>
+      <Card className={styles.container}>
         <CardHeader
           avatar={
             <Avatar
-              sx={{bgcolor: red[500]}}
               aria-label="recipe"
               src={
                 avatar ||
@@ -148,7 +152,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
           }
           subheader={
             <span className={`${styles.textSecondary} text-xs`}>
-              16 hours ago
+              {moment(createdAt).startOf("day").fromNow()}
             </span>
           }
         />
@@ -162,7 +166,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
               image={url}
               alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
               key={idx}
-              sx={{maxHeight: "70vh"}}
+              sx={{maxHeight: "60vh"}}
             />
           ))}
         </Carousel>

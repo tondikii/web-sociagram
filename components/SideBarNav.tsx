@@ -1,8 +1,8 @@
 import type {NextComponentType, NextPageContext} from "next";
 import Link from "next/link";
 import {useRouter} from "next/router";
-import {Fragment, useCallback, useEffect, useMemo, useState} from "react";
-import styles from "../styles/SideBar.module.css";
+import {useCallback, useEffect, useState, Fragment} from "react";
+import styles from "../styles/SideBarNav.module.css";
 import {
   HomeIcon,
   HeartIcon,
@@ -18,14 +18,9 @@ import ModalSearch from "./ModalSearch";
 import ModalCreate from "./ModalCreate";
 import {Avatar} from "@mui/material";
 
-interface Props {
-  className: string;
-}
+interface Props {}
 
-const SideBar: NextComponentType<NextPageContext, {}, Props> = (
-  props: Props
-) => {
-  const {className} = props;
+const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
   const {pathname, query} = useRouter();
   const [isProfile, setIsProfile] = useState(false);
 
@@ -56,7 +51,7 @@ const SideBar: NextComponentType<NextPageContext, {}, Props> = (
   }, []);
 
   return (
-    <div className={className}>
+    <Fragment>
       <ModalSearch toggle={toggleModalSearch} open={showModalSearch} />
       <ModalCreate
         toggle={toggleModalCreate}
@@ -137,8 +132,8 @@ const SideBar: NextComponentType<NextPageContext, {}, Props> = (
           </Link>
         </section>
       </nav>
-    </div>
+    </Fragment>
   );
 };
 
-export default SideBar;
+export default SideBarNav;

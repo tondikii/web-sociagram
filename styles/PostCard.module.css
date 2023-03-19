@@ -1,5 +1,5 @@
 .container {
-  @apply dark:bg-black border border-zinc-200 dark:border-zinc-800 my-2 rounded-lg;
+  @apply dark:bg-black border border-zinc-200 dark:border-zinc-800 my-2 rounded-lg md:w-2/3 lg:w-1/3 w-full;
 }
 
 .text {

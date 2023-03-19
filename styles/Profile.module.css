@@ -1,6 +1,8 @@
 .container {
-  @aplly min-h-screen text-zinc-900 dark:text-white;
-}
-
-.btnPrimary {
+  min-height: 100vh !important;
+  width: 100vw !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  @apply text-zinc-900 dark:text-white p-4;
 }

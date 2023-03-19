@@ -94,10 +94,12 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const [ownUsername, setOwnUsername] = useState("");
   const [ownUserId, setOwnUserId] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedPost, setSelectedPost] = useState({});
+  const [selectedPost, setSelectedPost] = useState<Object>({});
   const [showModalPost, setShowModalPost] = useState(false);
 
   const toggleModalPost = (post: object) => {
+    console.log({post}, "sini");
+
     setSelectedPost(post);
     setShowModalPost(!showModalPost);
   };
@@ -232,10 +234,10 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         setLoading={setLoading}
         username={`${username}`}
       />
-      <div className={`${styles.container} verticalCenter`}>
-        <div className="horizontal p-4 w-3/5">
+      <div className={styles.container}>
+        <div className="horizontal w-full lg:w-3/5 items-center">
           <Avatar
-            className="rounded-full w-44 h-44 mr-12"
+            className="rounded-full w-20 h-20 mr-8 lg:mr-12 lg:w-44 lg:h-44"
             src={
               user?.avatar ||
               "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
@@ -243,8 +245,22 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
           />
           <div className="vertical">
-            <div className="horizontalCenter w-fit">
-              <p className="text-2xl mr-4">{username}</p>
+            <div className="vertical flex lg:flex-row lg:justify-center lg:items-center w-fit">
+              <div className="horizontalCenter">
+                <p className="lg:text-2xl text-xl mr-4">{username}</p>
+                <div className="lg:hidden">
+                  <IconButton
+                    aria-label="settings"
+                    onClick={toggleModalOptions}
+                  >
+                    {isOwnProfile ? (
+                      <CogIcon className="h-8 w-8 text-zinc-900 dark:text-white" />
+                    ) : (
+                      <Fragment>{EllipsisIcon}</Fragment>
+                    )}
+                  </IconButton>
+                </div>
+              </div>
               <Button
                 type="submit"
                 fullWidth
@@ -259,7 +275,11 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
               >
                 {labelButton}
               </Button>
-              <IconButton aria-label="settings" onClick={toggleModalOptions}>
+              <IconButton
+                aria-label="settings"
+                onClick={toggleModalOptions}
+                className="hidden lg:flex"
+              >
                 {isOwnProfile ? (
                   <CogIcon className="h-8 w-8 text-zinc-900 dark:text-white" />
                 ) : (
@@ -267,9 +287,9 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                 )}
               </IconButton>
             </div>
-            <div className="horizontalCenter my-4 w-fit">
+            <div className="my-4 w-fit hidden lg:flex flex-row justify-center items-center">
               <p className="text-lg mr-4">
-                <strong>{user?.posts.length}</strong> posts
+                <strong>{rows?.length}</strong> posts
               </p>
               <div
                 className="cursor-pointer"
@@ -296,7 +316,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                 </p>
               </div>
             </div>
-            <div className="vertical">
+            <div className="hidden lg:flex flex-col">
               <strong className="text-md">{user?.name || "No name yet"}</strong>
               <p className="text-md break-spaces">
                 {user?.bio || "No bio yet"}
@@ -304,22 +324,67 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             </div>
           </div>
         </div>
-        <hr className="w-3/5 mt-8" />
+        <div className="vertical lg:hidden mt-4">
+          <strong className="lg:text-md text-sm">
+            {user?.name || "No name yet"}
+          </strong>
+          <p className="lg:text-md text-sm break-spaces">
+            {user?.bio || "No bio yet"}
+          </p>
+        </div>
+        <hr className="w-full lg:w-3/5 mt-8 lg:hidden" />
+        <div className="my-4 horizontal lg:hidden justify-around w-full">
+          <div className="text-sm mr-4 flex flex-col items-center">
+            <strong>{rows?.length}</strong>
+            <span className="">posts</span>
+          </div>
+          <div
+            className="cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              setTitleModalUsers("followers");
+              toggleModalUsers();
+            }}
+          >
+            <div className="text-sm mx-4 flex flex-col items-center">
+              <strong>{user?.followers.length}</strong>
+              <span className="">followers</span>
+            </div>
+          </div>
+          <div
+            className="cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              setTitleModalUsers("following");
+              toggleModalUsers();
+            }}
+          >
+            <div className="text-sm ml-4 flex flex-col items-center">
+              <strong>{user?.following.length}</strong>
+              <span className="">following</span>
+            </div>
+          </div>
+        </div>
+        <hr className="w-full lg:w-3/5 mt-0 lg:mt-8" />
         <div className="horizontalCenter mt-4">
           <CameraIcon className="h-6 w-6 text-zinc-900 dark:text-white mr-1" />
           <p>POSTS</p>
         </div>
         {rows && rows.length && Array.isArray(rows) ? (
-          <div className="grid grid-cols-3 gap-8 mt-4 w-3/5">
-            {rows.map((row: {files: string[]}, idx: number) => (
-              <div role="button" onClick={() => toggleModalPost(row)} key={idx}>
+          <div className="grid grid-cols-3 lg:gap-8 gap-1 mt-4 w-full lg:w-3/5">
+            {rows.map((row: {files: string[]; id: number}, idx: number) => (
+              <div
+                role="button"
+                onClick={() => toggleModalPost({...row, PostId: row?.id})}
+                key={idx}
+              >
                 <CardMedia
                   component="img"
                   image={
                     row?.files[0] ||
                     "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
                   }
-                  sx={{height: 250, width: 250}}
+                  className="lg:w-64 lg:h-64 w-full h-32"
                 />
               </div>
             ))}

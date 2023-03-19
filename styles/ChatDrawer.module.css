@@ -1,5 +1,5 @@
 .container {
-  @apply bg-white dark:bg-black fixed border-l border-l-zinc-200 dark:border-l-zinc-800;
+  @apply bg-white dark:bg-black fixed border-l border-l-zinc-200 dark:border-l-zinc-800 hidden lg:flex;
   right: 0;
 }
 

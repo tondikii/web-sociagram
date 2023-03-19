@@ -4,23 +4,16 @@ import {ChatAlt2Icon} from "@heroicons/react/outline";
 import styles from "../styles/ChatDrawer.module.css";
 import {useState} from "react";
 
-interface Props {
-  className: string;
-}
+interface Props {}
 
-const ChatDrawer: NextComponentType<NextPageContext, {}, Props> = (
-  props: Props
-) => {
-  const {className} = props;
+const ChatDrawer: NextComponentType<NextPageContext, {}, Props> = () => {
   const [showDrawer, setShowDrawer] = useState(false);
 
   const onClickDrawer = () => {
     setShowDrawer(!showDrawer);
   };
   return (
-    <div
-      className={`${styles.container} p-4 fixed min-h-screen hidden ${className}`}
-    >
+    <div className={`${styles.container} p-4 fixed min-h-screen hidden`}>
       <div
         className={`${styles.menuContainer} p-1 rounded-full cursor-pointer`}
         onClick={onClickDrawer}

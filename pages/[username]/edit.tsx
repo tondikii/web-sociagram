@@ -1,6 +1,13 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
-import {useCallback, useEffect, useState, useRef, useMemo} from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  useRef,
+  useMemo,
+  Fragment,
+} from "react";
 import {connect} from "react-redux";
 import {
   getProfile as getProfileProps,
@@ -290,7 +297,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   }, [preview]);
 
   return (
-    <>
+    <Fragment>
       <ModalPreview
         open={modalPreview}
         toggle={toggleModalPreview}
@@ -330,8 +337,10 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
           </div>
           {profileFormRows.map((row, idx) => (
             <div className={`${styles.formRow}`} key={idx}>
-              <div className="flex flex-row-reverse w-1/4">
-                <strong className="mr-8">{row?.label}</strong>
+              <div className="flex flex-row-reverse w-1/5 lg:w-1/4">
+                <strong className="mr-4 text-sm lg:text-md lg:mr-8">
+                  {row?.label}
+                </strong>
               </div>
               {RenderForm(row)}
             </div>
@@ -347,7 +356,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
           </Button>
         </form>
       </div>
-    </>
+    </Fragment>
   );
 };
 

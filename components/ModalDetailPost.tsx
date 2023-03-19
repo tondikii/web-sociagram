@@ -1,7 +1,8 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {useState, useMemo, useCallback, useEffect, useRef} from "react";
+import {useState, useMemo, useEffect, useRef} from "react";
 import {connect} from "react-redux";
 import {useRouter} from "next/router";
+import moment from "moment";
 
 import {
   likeUnLike as likeUnLikeProps,
@@ -9,7 +10,7 @@ import {
   createPostComment as createPostCommentProps,
 } from "../store/actions";
 
-import {CardMedia, Avatar, CardHeader} from "@mui/material";
+import {CardMedia, Avatar, CardHeader, Card} from "@mui/material";
 import {Modal, Box, Divider, CardActions, IconButton} from "@mui/material";
 import {
   HeartIcon,
@@ -21,6 +22,7 @@ import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
 import Carousel from "react-material-ui-carousel";
 import EmojiPicker, {Theme} from "emoji-picker-react";
 import * as Alert from "../components/Alert";
+import ModalDevelopment from "./ModalDevelopment";
 
 import styles from "../styles/ModalDetailPost.module.css";
 
@@ -37,6 +39,7 @@ interface Props {
     files: string[];
     likes: string[];
     caption: string;
+    createdAt: string | Date;
   };
   likeUnLike: Function;
   likeUnLikeState: {
@@ -67,7 +70,7 @@ const boxStyle = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 1200,
+  width: "80vw",
   boxShadow: 24,
 };
 
@@ -92,6 +95,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       ],
       caption,
       likes,
+      createdAt = new Date(),
     } = {},
     likeUnLike,
     likeUnLikeState: {
@@ -116,6 +120,10 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   const [comment, setComment] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const [showModalDevelopment, setShowModalDevelopment] = useState(false);
+
+  const toggleModalDevelopment = () =>
+    setShowModalDevelopment(!showModalDevelopment);
 
   const usedLikes: string[] | undefined = useMemo(() => {
     if (postId === newPostId) {
@@ -140,9 +148,9 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       username: string;
       idx: number;
     }) => (
-      <div className="flex flex-row p-4" key={data?.idx}>
+      <div className={`flex flex-row lg:p-4 mt-4`} key={data?.idx}>
         <Avatar
-          className="rounded-full w-9 h-9 mr-4"
+          className="rounded-full w-7 h-7 mr-4"
           src={
             data?.avatar ||
             "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
@@ -172,8 +180,142 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     };
 
     return (
-      <div className="flex flex-row">
-        <div className="flex flex-col justify-center w-2/3">
+      <div className="flex flex-col lg:flex-row">
+        <CardHeader
+          avatar={
+            <Avatar
+              aria-label="recipe"
+              src={
+                avatar ||
+                "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+              }
+              className="cursor-pointer"
+              onClick={() => router.push(`/${username}`)}
+            />
+          }
+          title={
+            <span
+              className={`${styles.title} cursor-pointer`}
+              onClick={() => router.push(`/${username}`)}
+            >
+              {username}
+            </span>
+          }
+          subheader={
+            <span className={`${styles.textSecondary} text-xs`}>
+              {moment(createdAt).startOf("day").fromNow()}
+            </span>
+          }
+          className="lg:hidden"
+        />
+        <Carousel
+          indicators={files.length > 1 ? true : false}
+          navButtonsAlwaysInvisible={files.length > 1 ? false : true}
+          className="lg:hidden"
+        >
+          {files.map((url, idx) => (
+            <CardMedia
+              component="img"
+              image={url}
+              alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
+              key={idx}
+              sx={{maxHeight: "50vh"}}
+            />
+          ))}
+        </Carousel>
+        <CardActions disableSpacing className="lg:hidden">
+          {isLiked ? (
+            <IconButton
+              aria-label="add to favorites"
+              className="flex flex-row"
+              onClick={onClickLike}
+            >
+              <HeartIconSolid className={`text-rose-600 h-6 w-6`} />
+              <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
+            </IconButton>
+          ) : (
+            <IconButton
+              aria-label="add to favorites"
+              className="flex flex-row"
+              onClick={onClickLike}
+            >
+              <HeartIcon className={`${styles.text} h-6 w-6`} />
+              <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
+            </IconButton>
+          )}
+          <IconButton aria-label="add to favorites" className="mx-2">
+            <ChatAltIcon className={`${styles.text} h-6 w-6`} />
+            <span className={`${styles.text} ml-1`}>
+              {dataComments?.length}
+            </span>
+          </IconButton>
+          <IconButton
+            aria-label="share"
+            className="flex flex-row"
+            onClick={toggleModalDevelopment}
+          >
+            <ShareIcon className={`${styles.text} h-6 w-6`} />
+            <span className={`${styles.text} ml-1`}>0</span>
+          </IconButton>
+        </CardActions>
+        <div className="px-4 pb-4 lg:hidden">
+          <p className={`${styles.caption}`}>
+            <span className={`${styles.text} font-bold`}>{username}</span>{" "}
+            {caption}
+          </p>
+          {fetchComments ? (
+            <span>Loading fetch comments</span>
+          ) : (
+            [...dataComments].map(
+              (
+                e: {
+                  User: {avatar: string; username: string};
+                  comment: string;
+                },
+                idx: number
+              ) =>
+                commentCard({
+                  avatar: e?.User?.avatar || "",
+                  username: e?.User?.username,
+                  comment: e?.comment,
+                  idx: idx + 1,
+                })
+            )
+          )}
+          <div className="horizontal justify-between mt-4">
+            <textarea
+              placeholder="Add a comment..."
+              className={`${styles.textarea}`}
+              value={comment}
+              onChange={handleChangeCaption}
+              ref={textAreaRef}
+              rows={1}
+              maxLength={255}
+            />
+            <span
+              className={`${
+                comment?.length && !fetchCreateComment
+                  ? "text-primary"
+                  : "text-zinc-400"
+              } font-semibold`}
+              role="button"
+              onClick={handlePostComment}
+            >
+              Post
+            </span>
+          </div>
+          <div className="horizontal justify-between">
+            <EmojiHappyIcon
+              className="w-5 h-5 text-zinc-400"
+              role="button"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            />
+            <small className={styles.textSecondary}>
+              {comment?.length}/255
+            </small>
+          </div>
+        </div>
+        <div className="flex-col justify-center w-2/3 hidden lg:flex">
           <Carousel
             indicators={files.length > 1 ? true : false}
             navButtonsAlwaysInvisible={files.length > 1 ? false : true}
@@ -190,7 +332,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
           </Carousel>
         </div>
         <div
-          className="flex flex-col p-4 justify-between"
+          className="flex-col p-4 justify-between hidden lg:flex"
           style={{width: 400, minHeight: 600}}
         >
           <div>
@@ -275,7 +417,11 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
                   {dataComments?.length}
                 </span>
               </IconButton>
-              <IconButton aria-label="share" className="flex flex-row pl-0">
+              <IconButton
+                aria-label="share"
+                className="flex flex-row pl-0"
+                onClick={toggleModalDevelopment}
+              >
                 <ShareIcon className={`${styles.text} h-5 w-5`} />
                 <span className={`${styles.text} ml-1`}>0</span>
               </IconButton>
@@ -396,17 +542,27 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   }, [errorCreateComment]);
 
   return (
-    <Modal
-      open={open}
-      aria-labelledby="modal-modal-title"
-      aria-describedby="modal-modal-description"
-      onClose={() => toggle()}
-      sx={{zIndex: 1059}}
-    >
-      <Box sx={{...boxStyle}} className="bg-white dark:bg-zinc-800 rounded-lg">
-        {Content}
-      </Box>
-    </Modal>
+    <>
+      <ModalDevelopment
+        open={showModalDevelopment}
+        toggle={toggleModalDevelopment}
+        feature="Share"
+      />
+      <Modal
+        open={open}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+        onClose={() => toggle()}
+        sx={{zIndex: 1059}}
+      >
+        <Box
+          sx={{...boxStyle}}
+          className="bg-white dark:bg-zinc-800 rounded-lg h-5/6  overflow-y-scroll"
+        >
+          {Content}
+        </Box>
+      </Modal>
+    </>
   );
 };
 

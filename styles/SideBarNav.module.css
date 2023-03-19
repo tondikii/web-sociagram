@@ -1,5 +1,5 @@
 .container {
-  @apply bg-white dark:bg-black flex flex-col justify-between w-2/12 fixed border-r border-r-zinc-200 dark:border-r-zinc-800;
+  @apply bg-white dark:bg-black flex-col justify-between w-2/12 fixed border-r border-r-zinc-200 dark:border-r-zinc-800 hidden lg:flex;
 }
 
 .section {

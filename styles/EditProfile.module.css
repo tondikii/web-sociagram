@@ -1,13 +1,13 @@
 .container {
-  @aplly min-h-screen;
+  @aplly min-h-screen p-4 dark:bg-black lg:dark:bg-zinc-900;
 }
 
 .formContainer {
-  @apply dark:bg-black border border-zinc-300 dark:border-zinc-800 my-2 rounded-lg w-1/2 py-8 px-12;
+  @apply dark:bg-black border border-zinc-300 dark:border-zinc-800 lg:my-2 lg:rounded-lg w-screen lg:w-1/2 lg:py-8 lg:px-12 lg:h-fit min-h-screen;
 }
 
 .formRow {
-  @apply flex flex-row items-center mb-4 w-full;
+  @apply flex flex-row items-center mb-4 w-full pl-4 lg:pl-0;
 }
 
 .input {
