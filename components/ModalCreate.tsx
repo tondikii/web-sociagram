@@ -1,5 +1,12 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {useRef, useState, useMemo, useCallback, useEffect} from "react";
+import {
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  Fragment,
+} from "react";
 import {getDownloadURL, ref, uploadBytes} from "@firebase/storage";
 import {storage} from "../config/firebase";
 import {connect} from "react-redux";
@@ -40,11 +47,10 @@ interface Props {
 }
 
 const boxStyle = {
-  position: "absolute" as "absolute",
+  position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 600,
   boxShadow: 24,
 };
 
@@ -164,7 +170,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
             onClick={() => changeStep("previous")}
           />
         )}
-        <span className="text-xl font-medium">
+        <span className="text-md md:text-lg lg:text-xl font-medium">
           {steps[currentStep - 1].label}
         </span>
         {currentStep !== steps[2].value && currentStep !== steps[0].value && (
@@ -177,7 +183,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
           <Button
             variant="contained"
             style={{textTransform: "none"}}
-            className="bg-primary flex flex-row"
+            className="bg-primary flex flex-row text-xs md:text-base"
             onClick={handleClickPost}
             disabled={loading}
           >
@@ -207,73 +213,96 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       setShowEmojiPicker(false);
     };
 
+    const FormComponent = () => (
+      <Fragment>
+        <div className="flex flex-row items-center mb-4">
+          <Avatar
+            className="rounded-full w-7 h-7"
+            src={
+              avatar ||
+              "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+            }
+          />
+          <p className="ml-2 font-bold text-sm">{username}</p>
+        </div>
+        <div className="vertical">
+          <textarea
+            placeholder="Write a caption..."
+            className={`${styles.textarea}`}
+            value={caption}
+            onChange={handleChangeCaption}
+            maxLength={255}
+          />
+          <div className="flex flex-row-reverse lg:flex-row  lg:justify-between">
+            <EmojiHappyIcon
+              className="w-7 h-7 text-zinc-400 hidden lg:block"
+              role="button"
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            />
+            <small className={styles.textSecondary}>
+              {caption?.length}/255
+            </small>
+          </div>
+          {showEmojiPicker && (
+            <EmojiPicker theme={Theme.AUTO} onEmojiClick={onEmojiClick} />
+          )}
+        </div>
+      </Fragment>
+    );
+
     switch (currentStep) {
       case steps[1]?.value:
         return (
-          <Carousel indicators={preview.length > 1 ? true : false}>
-            {preview.map((url, idx) => (
-              <CardMedia
-                component="img"
-                sx={{maxHeight: "80vh"}}
-                image={url}
-                alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
-                key={idx}
-              />
-            ))}
-          </Carousel>
+          <Fragment>
+            <Carousel indicators={preview.length > 1 ? true : false}>
+              {preview.map((url, idx) => (
+                <CardMedia
+                  component="img"
+                  sx={{maxHeight: "80vh"}}
+                  image={url}
+                  alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
+                  key={idx}
+                />
+              ))}
+            </Carousel>
+          </Fragment>
         );
       case steps[2]?.value:
         return (
-          <div className="flex flex-row">
-            <div className="flex flex-col justify-center w-2/3">
+          <div className="flex flex-col lg:flex-row">
+            <div className="flex flex-col justify-center w-full lg:w-2/3">
               <Carousel indicators={preview.length > 1 ? true : false}>
                 {preview.map((url, idx) => (
-                  <CardMedia
-                    component="img"
-                    sx={{maxHeight: "80vh"}}
-                    image={url}
-                    alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
+                  <div
                     key={idx}
-                  />
+                    className="flex flex-column justify-center lg:block"
+                  >
+                    <CardMedia
+                      component="img"
+                      sx={{maxHeight: "45vw", maxWidth: "45vw"}}
+                      image={url}
+                      alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
+                      className="lg:hidden block"
+                    />
+                    <CardMedia
+                      component="img"
+                      sx={{maxHeight: "80vh"}}
+                      image={url}
+                      alt="https://www.ruparupa.com/blog/wp-content/uploads/2022/05/sneaky-arts-main-2.jpg"
+                      className="lg:block hidden"
+                    />
+                  </div>
                 ))}
               </Carousel>
             </div>
+            <div className="flex flex-col p-4 w-full lg:hidden">
+              {FormComponent()}
+            </div>
             <div
-              className="flex flex-col p-4"
+              className="hidden lg:flex flex-col p-4"
               style={{width: 300, minHeight: 600}}
             >
-              <div className="flex flex-row items-center mb-4">
-                <Avatar
-                  className="rounded-full w-7 h-7"
-                  src={
-                    avatar ||
-                    "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-                  }
-                />
-                <p className="ml-2 font-bold text-sm">{username}</p>
-              </div>
-              <div className="vertical">
-                <textarea
-                  placeholder="Write a caption..."
-                  className={`${styles.textarea}`}
-                  value={caption}
-                  onChange={handleChangeCaption}
-                  maxLength={255}
-                />
-                <div className="horizontal justify-between">
-                  <EmojiHappyIcon
-                    className="w-7 h-7 text-zinc-400"
-                    role="button"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  />
-                  <small className={styles.textSecondary}>
-                    {caption?.length}/255
-                  </small>
-                </div>
-                {showEmojiPicker && (
-                  <EmojiPicker theme={Theme.AUTO} onEmojiClick={onEmojiClick} />
-                )}
-              </div>
+              {FormComponent()}
             </div>
           </div>
         );
@@ -329,13 +358,25 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       onClose={() => toggle()}
       sx={{zIndex: 1059}}
     >
-      <Box
-        sx={{...boxStyle, width: currentStep === steps[2].value ? 900 : 600}}
-        className="bg-white dark:bg-zinc-800 rounded-lg"
-      >
-        {Header}
-        <Divider className="dark:bg-zinc-400" />
-        {Content}
+      <Box sx={boxStyle}>
+        <div
+          style={{width: "90vw", maxHeight: "82vh"}}
+          className="bg-white dark:bg-zinc-800 rounded-lg lg:hidden"
+        >
+          {Header}
+          <Divider className="dark:bg-zinc-400" />
+          {Content}
+        </div>
+        <div
+          className="bg-white dark:bg-zinc-800 rounded-lg hidden lg:flex flex-col"
+          style={{
+            width: currentStep === steps[2].value ? 900 : 600,
+          }}
+        >
+          {Header}
+          <Divider className="dark:bg-zinc-400" />
+          {Content}
+        </div>
       </Box>
     </Modal>
   );
