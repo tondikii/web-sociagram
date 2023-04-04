@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   const url = request.url;
   const baseUrl =
     process.env.NODE_ENV === "production"
-      ? "https://web-sociagram-fixed.vercel.app/"
+      ? "https://sociagram.vercel.app/"
       : "http://localhost:3000/";
   if (url.includes("/signin") || url.includes("/signup")) {
     if (accessToken?.value) {
