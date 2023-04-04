@@ -9,7 +9,7 @@ export function middleware(request: NextRequest) {
   const baseUrl =
     process.env.NODE_ENV === "production"
       ? "https://sociagram.vercel.app/"
-      : "http://localhost:3000/";
+      : "http://localhost:3001/";
   if (url.includes("/signin") || url.includes("/signup")) {
     if (accessToken?.value) {
       return NextResponse.redirect(baseUrl);

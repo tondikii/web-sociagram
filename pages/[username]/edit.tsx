@@ -106,11 +106,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       return true;
     }
     let disabled = false;
-    for (const key in profileForm) {
-      if (!profileForm[key]) {
-        disabled = true;
-      }
-    }
+    if (!profileForm?.username) return true;
     return disabled;
   }, [profileForm, editProfileState?.fetch]);
 
@@ -340,6 +336,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
               <div className="flex flex-row-reverse w-1/5 lg:w-1/4">
                 <strong className="mr-4 text-sm lg:text-md lg:mr-8">
                   {row?.label}
+                  {idx === 1 && <span className="text-red-500">*</span>}
                 </strong>
               </div>
               {RenderForm(row)}
