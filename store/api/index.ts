@@ -12,7 +12,10 @@ export const signInApi = (payload: {email: string; password: string}) => {
   return api.post("/users/signIn", payload);
 };
 
-export const getProfileApi = (payload: {accessToken: string; data: string}) => {
+export const getProfileApi = (payload: {
+  accessToken: string;
+  data: string | null;
+}) => {
   api.defaults.headers.common = {
     Authorization: `Bearer ${payload?.accessToken}`,
   };

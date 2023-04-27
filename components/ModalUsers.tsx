@@ -32,7 +32,7 @@ interface Props {
     error: string;
   };
   title: string;
-  ownUserId: string;
+  ownUserId: number;
   loading: boolean;
   setLoading: Function;
   username: string;

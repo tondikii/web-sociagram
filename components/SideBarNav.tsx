@@ -17,14 +17,29 @@ import {
 import ModalSearch from "./ModalSearch";
 import ModalCreate from "./ModalCreate";
 import {Avatar} from "@mui/material";
+import {useSelector} from "react-redux";
 
 interface Props {}
 
+interface Session {
+  accessToken: string;
+  id: number;
+  username: string;
+  avatar: string;
+}
+
 const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
   const {pathname, query} = useRouter();
-  const [isProfile, setIsProfile] = useState(false);
+  const {username, avatar} =
+    useSelector(
+      (state: {
+        rootReducer: {
+          session: Session;
+        };
+      }) => state?.rootReducer?.session
+    ) || {};
 
-  const [user, setUser] = useState({username: "", avatar: ""});
+  const [isProfile, setIsProfile] = useState(false);
   const [showModalSearch, setShowModalSearch] = useState(false);
   const [showModalCreate, setShowModalCreate] = useState(false);
 
@@ -37,18 +52,12 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
   }, [showModalCreate]);
 
   useEffect(() => {
-    if (query?.username === user?.username) {
+    if (query?.username === username) {
       setIsProfile(true);
     } else {
       setIsProfile(false);
     }
-  }, [user, query?.username]);
-  useEffect(() => {
-    setUser({
-      username: localStorage.getItem("username") || "",
-      avatar: localStorage.getItem("avatar") || "",
-    });
-  }, []);
+  }, [query?.username, username]);
 
   return (
     <Fragment>
@@ -56,8 +65,8 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
       <ModalCreate
         toggle={toggleModalCreate}
         open={showModalCreate}
-        username={user.username}
-        avatar={user.avatar}
+        username={username}
+        avatar={avatar}
       />
       <nav className={styles.container}>
         <section className={`${styles.section} vertical h-100 container`}>
@@ -106,7 +115,7 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
           className={`${styles.section} h-100 flex flex-col-reverse container`}
         >
           <Link
-            href={`/${user?.username}`}
+            href={`/${username}`}
             className={`horizontal p-1 items-center ${styles.menuContainer}`}
           >
             <Avatar
@@ -114,7 +123,7 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
                 isProfile ? "border-4 border-primary" : ""
               }`}
               src={
-                user?.avatar ||
+                avatar ||
                 "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
               }
               alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
@@ -123,7 +132,7 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
               <p
                 className={`ml-2 text-primary ${isProfile ? "font-bold" : ""}`}
               >
-                {user?.username}
+                {username}
               </p>
               <p className="ml-2 text-sm text-zinc-400">
                 {isProfile ? "Viewing" : "View"} profile

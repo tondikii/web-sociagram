@@ -20,6 +20,7 @@ const rootSlice = createSlice({
   name: "root",
   initialState: {
     reload: false,
+    session: {accessToken: "", id: 0, username: "", avatar: ""},
     signIn: {
       fetch: false,
       data: {accessToken: ""},
@@ -106,6 +107,9 @@ const rootSlice = createSlice({
     },
   },
   reducers: {
+    setSession(state, action) {
+      state.session = action.payload;
+    },
     setReload(state, action) {
       state.reload = action.payload;
     },
@@ -413,7 +417,12 @@ const rootSlice = createSlice({
   },
 });
 
-export const {setReload, resetSignIn, resetSignUp, resetGetProfile} =
-  rootSlice.actions;
+export const {
+  setSession,
+  setReload,
+  resetSignIn,
+  resetSignUp,
+  resetGetProfile,
+} = rootSlice.actions;
 
 export default rootSlice.reducer;

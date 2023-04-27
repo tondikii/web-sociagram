@@ -1,7 +1,7 @@
 import {Fragment, useEffect, useMemo, useState, useCallback} from "react";
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
-import {connect} from "react-redux";
+import {connect, useSelector} from "react-redux";
 import {
   signOut as signOutProps,
   getProfile as getProfileProps,
@@ -57,6 +57,13 @@ interface Props {
   };
 }
 
+interface Session {
+  accessToken: string;
+  id: number;
+  username: string;
+  avatar: string;
+}
+
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
@@ -75,6 +82,17 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       error: errorGetPosts,
     },
   } = props;
+  const {
+    accessToken,
+    username: ownUsername,
+    id,
+  } = useSelector(
+    (state: {
+      rootReducer: {
+        session: Session;
+      };
+    }) => state?.rootReducer?.session
+  ) || {};
 
   const router = useRouter();
   const {username = ""} = router.query;
@@ -91,8 +109,6 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     bio: "",
     name: "",
   });
-  const [ownUsername, setOwnUsername] = useState("");
-  const [ownUserId, setOwnUserId] = useState("");
   const [loading, setLoading] = useState(false);
   const [selectedPost, setSelectedPost] = useState<Object>({});
   const [showModalPost, setShowModalPost] = useState(false);
@@ -127,11 +143,13 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   );
 
   const getData = useCallback(() => {
-    getPosts({
-      accessToken: localStorage.getItem("accessToken"),
-      data: username,
-    });
-  }, [getPosts, username]);
+    if (accessToken) {
+      getPosts({
+        accessToken,
+        data: username,
+      });
+    }
+  }, [getPosts, username, accessToken]);
 
   const toggleModalOptions = () => {
     if (isOwnProfile) {
@@ -176,10 +194,6 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   useEffect(() => {
     getData();
   }, [getData]);
-  useEffect(() => {
-    setOwnUsername(localStorage.getItem("username") || "");
-    setOwnUserId(localStorage.getItem("userId") || "");
-  }, []);
   useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     if (username && accessToken) {
@@ -229,7 +243,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         open={showModalUsers}
         toggle={toggleModalUsers}
         title={titleModalUsers}
-        ownUserId={ownUserId}
+        ownUserId={id}
         loading={loading}
         setLoading={setLoading}
         username={`${username}`}
@@ -414,8 +428,7 @@ const mapDispatchToProps = {
   signOut: () => signOutProps(),
   getProfile: (payload: {accessToken: string; data: string}) =>
     getProfileProps(payload),
-  resetGetProfile: (payload: {accessToken: string; data: string}) =>
-    resetGetProfileProps(payload),
+  resetGetProfile: () => resetGetProfileProps(),
   followUnfollow: (payload: {accessToken: string; data: {userId: string}}) =>
     followUnfollowProps(payload),
   getPosts: (payload: {accessToken: string; data: string}) =>

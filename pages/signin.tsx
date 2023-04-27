@@ -1,8 +1,6 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {connect} from "react-redux";
-import {useEffect, useState, useCallback} from "react";
-import {signIn as signInProps} from "../store/actions";
-import {resetSignIn as resetSignInProps} from "../store/reducers/root";
+import {useDispatch} from "react-redux";
+import {useState} from "react";
 import {setCookie} from "cookies-next";
 import {useRouter} from "next/router";
 
@@ -21,6 +19,8 @@ import ReactLoading from "react-loading";
 import * as Alert from "../components/Alert";
 
 import styles from "../styles/Auth.module.css";
+import {api} from "../config/api";
+import {setSession} from "../store/reducers/root";
 
 const theme = createTheme();
 
@@ -37,67 +37,41 @@ const focusColor = {
   },
 };
 
-interface Props {
-  signIn: Function;
-  signInState: {
-    fetch: boolean;
-    data: {
-      accessToken: string;
-      username: string;
-      avatar: string;
-      userId: string;
-    };
-    error: any;
-  };
-  resetSignIn: Function;
-}
+interface Props {}
 
 const SignIn: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {
-    signIn,
-    signInState: {fetch, data, error},
-    resetSignIn,
-  } = props;
   const router = useRouter();
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
-  const [signInForm, setSignInForm] = useState({email: "", password: ""});
-
-  const handleChangeForm = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const {name, value} = e.target;
-      setSignInForm({...signInForm, [name]: value});
-    },
-    [signInForm]
-  );
-
-  const handleSubmit = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    try {
       event.preventDefault();
-      signIn(signInForm);
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [signInForm]
-  );
-
-  useEffect(() => {
-    const {accessToken, username, avatar, userId} = data;
-    if (accessToken) {
-      setCookie("accessToken", accessToken);
-      localStorage.accessToken = accessToken;
-      localStorage.userId = userId;
-      localStorage.username = username;
-      localStorage.avatar = avatar;
-      router.push("/");
+      setLoading(true);
+      const email = (document.getElementById("email") as HTMLInputElement)
+        .value;
+      const password = (document.getElementById("password") as HTMLInputElement)
+        .value;
+      const {data} = await api.post("/users/signIn", {
+        email,
+        password,
+      });
+      if (data?.data?.accessToken) {
+        const {accessToken, username, avatar, id} = data?.data || {};
+        setCookie("accessToken", accessToken);
+        localStorage.accessToken = accessToken;
+        dispatch(setSession({accessToken, username, avatar, id}));
+        router.push("/");
+      }
+    } catch (err: {response: {data: {error: string}}} | any) {
+      const {error: errorMessage} = err?.response?.data || {};
+      Alert.Error({text: errorMessage || "Unknown error while sign in!"});
+    } finally {
+      setLoading(false);
     }
-  }, [data, router]);
-  useEffect(() => {
-    if (error) {
-      Alert.Error({text: error});
-      resetSignIn();
-    }
-  }, [error, resetSignIn]);
+  };
 
   return (
     <div className="verticalCenter p-4 min-h-screen bg-gradient-to-r from-purple-500 to-pink-500">
@@ -136,8 +110,6 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
                     label="Email Address"
                     name="email"
                     autoComplete="email"
-                    value={signInForm.email}
-                    onChange={handleChangeForm}
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -152,8 +124,6 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
                     type="password"
                     id="password"
                     autoComplete="new-password"
-                    value={signInForm.password}
-                    onChange={handleChangeForm}
                   />
                 </Grid>
               </Grid>
@@ -165,7 +135,7 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
                 style={{textTransform: "none"}}
                 className={`${styles.btnPrimary} horizontal`}
               >
-                {fetch ? (
+                {loading ? (
                   <>
                     <ReactLoading
                       type="spin"
@@ -199,13 +169,4 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {rootReducer: {signIn: Object}}) => ({
-  signInState: state.rootReducer.signIn,
-});
-const mapDispatchToProps = {
-  signIn: (payload: {email: string; password: string}) => signInProps(payload),
-  resetSignIn: (payload: {email: string; password: string}) =>
-    resetSignInProps(payload),
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
+export default SignIn;
