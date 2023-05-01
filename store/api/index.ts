@@ -44,7 +44,7 @@ export const searchUsersApi = (payload: {
 
 export const followUnfollowApi = (payload: {
   accessToken: string;
-  data: {userId: string};
+  data: {id: number};
 }) => {
   api.defaults.headers.common = {
     Authorization: `Bearer ${payload?.accessToken}`,
@@ -55,12 +55,14 @@ export const followUnfollowApi = (payload: {
 export const getFollowersFollowingApi = (payload: {
   accessToken: string;
   menu: string;
-  username: string;
+  id: number;
+  signal: AbortSignal;
 }) => {
+  const {accessToken, menu, id, signal} = payload || {};
   api.defaults.headers.common = {
-    Authorization: `Bearer ${payload?.accessToken}`,
+    Authorization: `Bearer ${accessToken}`,
   };
-  return api.get(`users/${payload?.menu}/${payload?.username}`);
+  return api.get(`users/${menu}/${id}`, {signal});
 };
 
 export const getPostsApi = (payload: {accessToken: string; data: string}) => {

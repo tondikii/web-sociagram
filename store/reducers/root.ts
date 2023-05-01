@@ -1,8 +1,6 @@
 import {createSlice} from "@reduxjs/toolkit";
 import {
-  signIn,
   signOut,
-  signUp,
   getProfile,
   editProfile,
   searchUsers,
@@ -21,16 +19,6 @@ const rootSlice = createSlice({
   initialState: {
     reload: false,
     session: {accessToken: "", id: 0, username: "", avatar: ""},
-    signIn: {
-      fetch: false,
-      data: {accessToken: ""},
-      error: "",
-    },
-    signUp: {
-      fetch: false,
-      data: {userId: ""},
-      error: [],
-    },
     getProfile: {
       fetch: false,
       data: {
@@ -113,20 +101,6 @@ const rootSlice = createSlice({
     setReload(state, action) {
       state.reload = action.payload;
     },
-    resetSignIn(state) {
-      state.signIn = {
-        fetch: false,
-        data: {accessToken: ""},
-        error: "",
-      };
-    },
-    resetSignUp(state) {
-      state.signUp = {
-        fetch: false,
-        data: {userId: ""},
-        error: [],
-      };
-    },
     resetGetProfile(state) {
       state.getProfile = {
         fetch: false,
@@ -138,55 +112,8 @@ const rootSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(signUp.pending, (state, action) => {
-      state.signUp = {...state.signUp, fetch: true};
-    });
-    builder.addCase(signUp.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.signUp = {
-        ...state.signUp,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(signUp.rejected, (state, action) => {
-      let payload = action?.payload;
-      if (Array.isArray(payload)) {
-        payload = payload[0];
-      }
-      state.signUp = {
-        ...state.signUp,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(signIn.pending, (state, action) => {
-      state.signIn = {...state.signIn, fetch: true};
-    });
-    builder.addCase(signIn.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.signIn = {
-        ...state.signIn,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(signIn.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.signIn = {
-        ...state.signIn,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(signOut.fulfilled, (state, action) => {
-      state.signIn = {
-        fetch: false,
-        data: {accessToken: ""},
-        error: "",
-      };
+    builder.addCase(signOut.fulfilled, (state) => {
+      state.session = {accessToken: "", id: 0, username: "", avatar: ""};
     });
 
     builder.addCase(getProfile.pending, (state, action) => {

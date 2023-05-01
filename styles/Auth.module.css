@@ -15,7 +15,7 @@
 }
 
 .anchor {
-  @apply text-slate-300 decoration-slate-300 hover:text-white hover:decoration-white;
+  @apply text-slate-300 text-sm underline decoration-slate-300 hover:text-white hover:decoration-white;
 }
 
 .title {

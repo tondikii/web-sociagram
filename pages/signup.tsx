@@ -1,8 +1,7 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {useEffect, useState, useCallback, useMemo} from "react";
-import {connect} from "react-redux";
-import {signUp as signUpProps, signIn as signInProps} from "../store/actions";
-import {resetSignUp as resetSignUpProps} from "../store/reducers/root";
+import {useState, useCallback, useMemo} from "react";
+import {useDispatch} from "react-redux";
+import {setSession} from "../store/reducers/root";
 import {setCookie} from "cookies-next";
 import {useRouter} from "next/router";
 
@@ -10,7 +9,6 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -19,7 +17,10 @@ import Container from "@mui/material/Container";
 import {createTheme, ThemeProvider} from "@mui/material/styles";
 import styles from "../styles/Auth.module.css";
 import {ExclamationCircleIcon} from "@heroicons/react/outline";
+import ReactLoading from "react-loading";
 import * as Alert from "../components/Alert";
+
+import {signInApi, signUpApi} from "../store/api";
 
 const theme = createTheme();
 
@@ -36,62 +37,69 @@ const focusColor = {
   },
 };
 
-interface Props {
-  signUp: Function;
-  signUpState: {
-    fetch: boolean;
-    data: {userId: string};
-    error: any;
-  };
-  resetSignUp: Function;
-  signIn: Function;
-  signInState: {
-    fetch: boolean;
-    data: {
-      accessToken: string;
-      username: string;
-      avatar: string;
-      userId: string;
-    };
-    error: any;
-  };
+interface Props {}
+
+interface SignUpForm {
+  username: string;
+  email: string;
+  password: string;
+}
+interface SignInForm {
+  email: string;
+  password: string;
 }
 
 const SignUp: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {
-    signUp,
-    signUpState: {data, error},
-    resetSignUp,
-    signIn,
-    signInState,
-  } = props;
+  const {} = props;
 
   const router = useRouter();
+  const dispatch = useDispatch();
 
-  const [signUpForm, setSignUpForm] = useState({
+  const [signUpForm, setSignUpForm] = useState<SignUpForm>({
     username: "",
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState<boolean>(false);
 
   const disabledSubmit = useMemo(() => {
+    if (loading) return true;
     let disabled = false;
     const {username, email, password} = signUpForm;
     if (username.length < 3 || !email || password.length < 8) {
       disabled = true;
     }
     return disabled;
-  }, [signUpForm]);
+  }, [signUpForm, loading]);
 
   const handleSubmit = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      signUp(signUpForm);
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      try {
+        if (loading) return;
+        setLoading(true);
+        event.preventDefault();
+        const {data} = await signUpApi(signUpForm);
+        if (data?.data?.id) {
+          const {email, password}: SignInForm = signUpForm;
+          const {data: dataLogin} = await signInApi({email, password});
+          if (dataLogin?.data?.accessToken) {
+            const {accessToken, username, avatar, id} = dataLogin?.data || {};
+            setCookie("accessToken", accessToken);
+            localStorage.accessToken = accessToken;
+            dispatch(setSession({accessToken, username, avatar, id}));
+            router.push("/");
+          }
+        }
+      } catch (err: {response: {data: {error: string}}} | any) {
+        const {error: errorMessage} = err?.response?.data || {};
+        Alert.Error({text: errorMessage || "Unknown error while sign up!"});
+      } finally {
+        setLoading(false);
+      }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [signUpForm]
+    [signUpForm, router, dispatch, loading]
   );
 
   const handleChangeForm = useCallback(
@@ -143,38 +151,6 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
     },
     [signUpForm]
   );
-
-  useEffect(() => {
-    const {userId} = data;
-    const {email, password} = signUpForm;
-    if (userId) {
-      signIn({email, password});
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
-  useEffect(() => {
-    if (error?.length) {
-      Alert.Error({text: error});
-      resetSignUp();
-    }
-  }, [error, resetSignUp]);
-
-  useEffect(() => {
-    const {accessToken, userId, username, avatar} = signInState.data;
-    if (accessToken) {
-      setCookie("accessToken", accessToken);
-      localStorage.accessToken = accessToken;
-      localStorage.userId = userId;
-      localStorage.username = username;
-      localStorage.avatar = avatar;
-      router.push("/");
-    }
-  }, [signInState.data, router]);
-  useEffect(() => {
-    if (signInState.error) {
-      Alert.Error({text: signInState.error});
-    }
-  }, [signInState.error]);
 
   return (
     <div className="verticalCenter p-4 min-h-screen bg-gradient-to-r from-purple-500 to-pink-500">
@@ -260,20 +236,33 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
                 variant="contained"
                 sx={{mt: 3, mb: 2}}
                 style={{textTransform: "none"}}
-                className={styles.btnPrimary}
+                className={`${styles.btnPrimary} horizontal`}
                 disabled={disabledSubmit}
               >
-                Sign Up
+                {loading ? (
+                  <>
+                    <ReactLoading
+                      type="spin"
+                      height={16}
+                      width={16}
+                      color="white"
+                      className="mr-2"
+                    />
+                    Loading...
+                  </>
+                ) : (
+                  "Sign Up"
+                )}
               </Button>
               <Grid container justifyContent="flex-end">
                 <Grid item>
-                  <Link
-                    href="/signin"
+                  <span
+                    role="button"
                     className={styles.anchor}
-                    variant="body2"
+                    onClick={() => router.push("/signin")}
                   >
                     Already have an account? Sign in
-                  </Link>
+                  </span>
                 </Grid>
               </Grid>
             </Box>
@@ -284,18 +273,4 @@ const SignUp: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {
-  rootReducer: {signUp: Object; signIn: Object};
-}) => ({
-  signUpState: state.rootReducer.signUp,
-  signInState: state.rootReducer.signIn,
-});
-const mapDispatchToProps = {
-  signUp: (payload: {email: string; password: string; username: string}) =>
-    signUpProps(payload),
-  signIn: (payload: {email: string; password: string}) => signInProps(payload),
-  resetSignUp: (payload: {email: string; password: string}) =>
-    resetSignUpProps(payload),
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(SignUp);
+export default SignUp;

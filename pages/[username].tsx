@@ -1,60 +1,56 @@
 import {Fragment, useEffect, useMemo, useState, useCallback} from "react";
-import type {NextComponentType, NextPageContext} from "next";
+import type {
+  NextComponentType,
+  NextPageContext,
+  GetServerSidePropsContext,
+} from "next";
+import {getCookie} from "cookies-next";
 import {useRouter} from "next/router";
-import {connect, useSelector} from "react-redux";
-import {
-  signOut as signOutProps,
-  getProfile as getProfileProps,
-  followUnfollow as followUnfollowProps,
-  getPosts as getPostsProps,
-} from "../store/actions";
-import {resetGetProfile as resetGetProfileProps} from "../store/reducers/root";
+import {useDispatch, useSelector} from "react-redux";
+import {followUnfollowApi, getProfileApi} from "../store/api";
 
 import {Button, IconButton, Avatar, CardMedia} from "@mui/material";
 import {CogIcon, CameraIcon} from "@heroicons/react/outline";
 
+import * as Alert from "../components/Alert";
 import ModalSettings from "../components/ModalSettings";
 import ModalUsers from "../components/ModalUsers";
 import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Profile.module.css";
 
+interface PostComment {
+  id: number;
+  comment: string;
+  UserId: number;
+  PostId: number;
+}
+
+interface Post {
+  id: number;
+  files: string[];
+  caption: string;
+  UserId: number;
+  createdAt: string;
+  PostComments: PostComment[];
+}
+
+interface Profile {
+  id: number;
+  username: string;
+  email: string;
+  avatar: string;
+  name: string;
+  bio: string;
+  gender: string;
+  followers: number[];
+  following: number[];
+  Posts: Post[];
+}
+
 interface Props {
   signOut: Function;
-  getProfile: Function;
-  getProfileState: {
-    fetch: boolean;
-    data: {
-      userId: string;
-      avatar: string;
-      followers: never[];
-      following: never[];
-      bio: string;
-      name: string;
-    };
-    error: string;
-  };
-  resetGetProfile: Function;
-  followUnfollow: Function;
-  followUnfollowState: {
-    fetch: boolean;
-    data: {
-      userId: string;
-      avatar: string;
-      followers: never[];
-      following: never[];
-      bio: string;
-      name: string;
-    };
-    error: string;
-  };
-  reload: boolean;
-  getPosts: Function;
-  getPostsState: {
-    fetch: boolean;
-    data: {count: number; rows: []};
-    error: any;
-  };
+  dataProfile: {data: Profile | any; error: string} | any;
 }
 
 interface Session {
@@ -67,21 +63,13 @@ interface Session {
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {
-    signOut,
-    getProfile,
-    getProfileState,
-    resetGetProfile,
-    followUnfollow,
-    followUnfollowState: {fetch: fetchFollowUnfollow, data: dataFollowUnFollow},
-    reload,
-    getPosts,
-    getPostsState: {
-      fetch: fetchGetPosts,
-      data: {rows = []},
-      error: errorGetPosts,
-    },
-  } = props;
+  const {signOut, dataProfile} = props;
+  const rows: Post[] = dataProfile?.Posts || [];
+
+  console.log({dataProfile, id: dataProfile?.id});
+
+  const dispatch = useDispatch();
+
   const {
     accessToken,
     username: ownUsername,
@@ -100,17 +88,8 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const [showModalSettings, setShowModalSettings] = useState(false);
   const [showModalUsers, setShowModalUsers] = useState(false);
   const [titleModalUsers, setTitleModalUsers] = useState("");
-  const [user, setUser] = useState({
-    userId: "",
-    avatar: "",
-    posts: [],
-    followers: [],
-    following: [],
-    bio: "",
-    name: "",
-  });
   const [loading, setLoading] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<Object>({});
+  const [selectedPost, setSelectedPost] = useState<any>({});
   const [showModalPost, setShowModalPost] = useState(false);
 
   const toggleModalPost = (post: object) => {
@@ -142,90 +121,76 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     []
   );
 
-  const getData = useCallback(() => {
-    if (accessToken) {
-      getPosts({
-        accessToken,
-        data: username,
-      });
-    }
-  }, [getPosts, username, accessToken]);
-
   const toggleModalOptions = () => {
     if (isOwnProfile) {
       setShowModalSettings(!showModalSettings);
     }
   };
-  const toggleModalUsers = () => {
+  const toggleModalUsers = useCallback(() => {
     setShowModalUsers(!showModalUsers);
-  };
-  const onClickActionButton = () => {
-    if (isOwnProfile) {
-      router.push(`/${username}/edit`);
-    } else {
-      setLoading(true);
-      followUnfollow({
-        accessToken: localStorage.getItem("accessToken"),
-        data: {userId: user?.userId},
-      });
+  }, [showModalUsers]);
+  const onClickActionButton = async () => {
+    try {
+      if (isOwnProfile) {
+        router.push(`/${username}/edit`);
+      } else {
+        if (loading) return;
+        setLoading(true);
+        await followUnfollowApi({
+          accessToken,
+          data: {id: dataProfile?.id},
+        });
+        router.replace(router.asPath);
+      }
+    } catch (err) {
+      if (!isOwnProfile) {
+        Alert.Error({text: "Failed do action"});
+      }
+    } finally {
+      setLoading(false);
     }
   };
   const handleSignOut = () => {
-    signOut();
+    dispatch(signOut());
     router.push("/signin");
   };
   const labelButton = useMemo(() => {
+    if (loading) {
+      return "Loading...";
+    }
     if (isOwnProfile) {
       return "Edit profile";
     }
-    const followers = user?.followers || [];
+    const followers = dataProfile?.followers || [];
     if (followers.length) {
-      if (followers.find((id) => id === localStorage.getItem("userId"))) {
+      if (followers.find((eId: number) => eId === id)) {
         return "Following";
       }
       return "Follow";
     }
     return "Follow";
-  }, [isOwnProfile, user?.followers]);
+  }, [isOwnProfile, dataProfile?.followers, id, loading]);
 
-  useEffect(() => {
-    resetGetProfile();
-  }, [resetGetProfile]);
-  useEffect(() => {
-    getData();
-  }, [getData]);
-  useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    if (username && accessToken) {
-      getProfile({
-        accessToken,
-        data: username,
-      });
-    }
-  }, [username, getProfile]);
-  useEffect(() => {
-    const {userId, avatar, followers, following, bio, name} =
-      getProfileState?.data;
-    if (userId) {
-      setUser({...user, userId, avatar, followers, following, bio, name});
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getProfileState]);
-  useEffect(() => {
-    if (!fetchFollowUnfollow && loading) {
-      getProfile({
-        accessToken: localStorage.getItem("accessToken"),
-        data: username,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchFollowUnfollow, loading]);
-
-  useEffect(() => {
-    if (reload) {
-      window.location.reload();
-    }
-  }, [reload]);
+  const ComponentModalUsers = useMemo(
+    () => (
+      <ModalUsers
+        open={showModalUsers}
+        toggle={toggleModalUsers}
+        title={titleModalUsers}
+        ownUserId={id}
+        targetUserId={dataProfile?.id}
+        accessToken={accessToken}
+      />
+    ),
+    [
+      accessToken,
+      dataProfile?.id,
+      id,
+      showModalUsers,
+      titleModalUsers,
+      toggleModalUsers,
+    ]
+  );
 
   return (
     <Fragment>
@@ -239,21 +204,13 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         toggle={toggleModalOptions}
         signOut={handleSignOut}
       />
-      <ModalUsers
-        open={showModalUsers}
-        toggle={toggleModalUsers}
-        title={titleModalUsers}
-        ownUserId={id}
-        loading={loading}
-        setLoading={setLoading}
-        username={`${username}`}
-      />
+      {ComponentModalUsers}
       <div className={styles.container}>
         <div className="horizontal w-full lg:w-3/5 items-center">
           <Avatar
             className="rounded-full w-20 h-20 mr-8 lg:mr-12 lg:w-44 lg:h-44"
             src={
-              user?.avatar ||
+              dataProfile?.avatar ||
               "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
             }
             alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
@@ -286,6 +243,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                     : "bg-primary"
                 }`}
                 onClick={onClickActionButton}
+                disabled={loading}
               >
                 {labelButton}
               </Button>
@@ -314,7 +272,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                 }}
               >
                 <p className="text-lg mx-4">
-                  <strong>{user?.followers.length}</strong> followers
+                  <strong>{dataProfile?.followers.length}</strong> followers
                 </p>
               </div>
               <div
@@ -326,24 +284,26 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                 }}
               >
                 <p className="text-lg ml-4">
-                  <strong>{user?.following.length}</strong> following
+                  <strong>{dataProfile?.following.length}</strong> following
                 </p>
               </div>
             </div>
             <div className="hidden lg:flex flex-col">
-              <strong className="text-md">{user?.name || "No name yet"}</strong>
+              <strong className="text-md">
+                {dataProfile?.name || "No name yet"}
+              </strong>
               <p className="text-md break-spaces">
-                {user?.bio || "No bio yet"}
+                {dataProfile?.bio || "No bio yet"}
               </p>
             </div>
           </div>
         </div>
         <div className="vertical lg:hidden mt-4">
           <strong className="lg:text-md text-sm">
-            {user?.name || "No name yet"}
+            {dataProfile?.name || "No name yet"}
           </strong>
           <p className="lg:text-md text-sm break-spaces">
-            {user?.bio || "No bio yet"}
+            {dataProfile?.bio || "No bio yet"}
           </p>
         </div>
         <hr className="w-full lg:w-3/5 mt-8 lg:hidden" />
@@ -361,7 +321,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             }}
           >
             <div className="text-sm mx-4 flex flex-col items-center">
-              <strong>{user?.followers.length}</strong>
+              <strong>{dataProfile?.followers.length}</strong>
               <span className="">followers</span>
             </div>
           </div>
@@ -374,7 +334,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             }}
           >
             <div className="text-sm ml-4 flex flex-col items-center">
-              <strong>{user?.following.length}</strong>
+              <strong>{dataProfile?.following.length}</strong>
               <span className="">following</span>
             </div>
           </div>
@@ -411,28 +371,23 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {
-  rootReducer: {
-    getProfile: Object;
-    followUnfollow: Object;
-    reload: boolean;
-    getPosts: Object;
-  };
-}) => ({
-  getProfileState: state.rootReducer.getProfile,
-  followUnfollowState: state.rootReducer.followUnfollow,
-  reload: state.rootReducer.reload,
-  getPostsState: state.rootReducer.getPosts,
-});
-const mapDispatchToProps = {
-  signOut: () => signOutProps(),
-  getProfile: (payload: {accessToken: string; data: string}) =>
-    getProfileProps(payload),
-  resetGetProfile: () => resetGetProfileProps(),
-  followUnfollow: (payload: {accessToken: string; data: {userId: string}}) =>
-    followUnfollowProps(payload),
-  getPosts: (payload: {accessToken: string; data: string}) =>
-    getPostsProps(payload),
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  try {
+    const {params, req, res} = context;
+    const username: string | any = params?.username || "";
+    const accessToken: string | any =
+      getCookie("accessToken", {req, res}) || "";
+    const {data} = await getProfileApi({accessToken, data: username || null});
+    return {
+      props: {dataProfile: data?.data},
+    };
+  } catch (err) {
+    return {
+      props: {dataProfile: {error: "error"}, dataPosts: {error: "error"}},
+    };
+  }
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Profile);
+export default Profile;

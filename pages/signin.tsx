@@ -8,7 +8,6 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -19,8 +18,8 @@ import ReactLoading from "react-loading";
 import * as Alert from "../components/Alert";
 
 import styles from "../styles/Auth.module.css";
-import {api} from "../config/api";
 import {setSession} from "../store/reducers/root";
+import {signInApi} from "../store/api";
 
 const theme = createTheme();
 
@@ -48,16 +47,14 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     try {
+      if (loading) return;
       event.preventDefault();
       setLoading(true);
       const email = (document.getElementById("email") as HTMLInputElement)
         .value;
       const password = (document.getElementById("password") as HTMLInputElement)
         .value;
-      const {data} = await api.post("/users/signIn", {
-        email,
-        password,
-      });
+      const {data} = await signInApi({email, password});
       if (data?.data?.accessToken) {
         const {accessToken, username, avatar, id} = data?.data || {};
         setCookie("accessToken", accessToken);
@@ -134,6 +131,7 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
                 sx={{mt: 3, mb: 2}}
                 style={{textTransform: "none"}}
                 className={`${styles.btnPrimary} horizontal`}
+                disabled={loading}
               >
                 {loading ? (
                   <>
@@ -152,13 +150,13 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
               </Button>
               <Grid container justifyContent="flex-end">
                 <Grid item>
-                  <Link
-                    href="/signup"
-                    variant="body2"
+                  <span
+                    role="button"
                     className={styles.anchor}
+                    onClick={() => router.push("/signup")}
                   >
                     {"Don't have an account? Sign Up"}
-                  </Link>
+                  </span>
                 </Grid>
               </Grid>
             </Box>

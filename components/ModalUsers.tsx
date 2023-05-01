@@ -1,41 +1,24 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {connect} from "react-redux";
 import {useState, useCallback, useMemo, Fragment, useEffect} from "react";
 import {useRouter} from "next/router";
 
-import {
-  getFollowersFollowing as getFollowersFollowingProps,
-  followUnfollow as followUnfollowProps,
-} from "../store/actions";
+import {followUnfollowApi, getFollowersFollowingApi} from "../store/api";
 
 import {Modal, Box, Divider, Button, Avatar} from "@mui/material";
 import {XIcon} from "@heroicons/react/outline";
 import ReactLoading from "react-loading";
+import * as Alert from "../components/Alert";
 
 import styles from "../styles/ModalUsers.module.css";
+import useFetch from "../hooks/useFetch";
 
 interface Props {
   open: boolean;
   toggle: Function;
-  getFollowersFollowing: Function;
-  getFollowersFollowingState: {
-    fetch: boolean;
-    data: [];
-    error: any;
-  };
-  followUnfollow: Function;
-  followUnfollowState: {
-    fetch: boolean;
-    data: {
-      userId: string;
-    };
-    error: string;
-  };
   title: string;
   ownUserId: number;
-  loading: boolean;
-  setLoading: Function;
-  username: string;
+  targetUserId: number;
+  accessToken: string;
 }
 
 const boxStyle = {
@@ -50,36 +33,52 @@ const boxStyle = {
 const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {
-    open,
-    toggle,
-    getFollowersFollowing,
-    getFollowersFollowingState: {fetch, data, error},
-    title,
-    ownUserId,
-    followUnfollow,
-    followUnfollowState: {fetch: fetchFollowUnfollow},
-    loading,
-    setLoading,
-    username,
-  } = props;
+  const {open, toggle, title, ownUserId, accessToken, targetUserId} = props;
+
   const router = useRouter();
 
+  const [loadingAction, setLoadingAction] = useState<boolean>(false);
+  const [refetch, setRefetch] = useState<boolean>(false);
+  const {data, loading, error}: {data: any; loading: boolean; error: boolean} =
+    useFetch({
+      api: getFollowersFollowingApi,
+      payload: {
+        accessToken,
+        menu: title,
+        id: targetUserId,
+      },
+      prevent: !open,
+      refetch,
+      setRefetch,
+    });
+  console.log({data, loading, error});
+
   const UsersComponent = useMemo(() => {
-    const isFollowing = (userIds: string[]) => {
-      if (userIds.find((userId) => userId === ownUserId)) {
+    const isFollowing = (ids: number[]) => {
+      if (ids.find((eId) => eId === ownUserId)) {
         return true;
       }
       return false;
     };
-    const onClickActionButton = (userId: string) => {
-      setLoading(true);
-      followUnfollow({
-        accessToken: localStorage.getItem("accessToken"),
-        data: {userId},
-      });
+    const onClickActionButton = async (id: number) => {
+      try {
+        if (loadingAction) return;
+        setLoadingAction(true);
+        await followUnfollowApi({
+          accessToken,
+          data: {id},
+        });
+        setLoadingAction(false);
+        router.replace(router.asPath);
+        setRefetch(true);
+      } catch (err) {
+        Alert.Error({text: `Failed do action`});
+      } finally {
+        setLoadingAction(false);
+      }
     };
-    if (error || data.length < 1) {
+
+    if (error || !data || data?.length < 1) {
       return (
         <div className="flex flex-col items-center my-4">
           <span
@@ -87,23 +86,24 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
               error ? "text-red-600" : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
-            {error || "No followers found"}
+            {error || `No ${title} found`}
           </span>
         </div>
       );
     }
+
     return (
       <div className="flex flex-col overflow-y-scroll max-h-96">
         {data.map(
           (
             e: {
-              userId: string;
+              id: number;
               avatar: string;
               username: string;
               name: string;
-              followers: string[];
+              followers: number[];
             },
-            idx
+            idx: number
           ) => (
             <div
               className={`${styles.userCard} ${
@@ -135,7 +135,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
                 <span className="font-medium">{e?.username || "-"}</span>
                 <span className="text-zinc-400">{e?.name || "-"}</span>
               </div>
-              {ownUserId !== e?.userId ? (
+              {ownUserId !== e?.id ? (
                 <Button
                   fullWidth
                   variant="contained"
@@ -145,8 +145,8 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
                       ? "bg-zinc-200 hover:bg-zinc-300 text-zinc-900 dark:bg-zinc-400 dark:hover:bg-zinc-500"
                       : "bg-primary"
                   }`}
-                  disabled={loading}
-                  onClick={() => onClickActionButton(e?.userId)}
+                  disabled={loadingAction}
+                  onClick={() => onClickActionButton(e?.id)}
                 >
                   {isFollowing(e?.followers || []) ? "Following" : "Follow"}
                 </Button>
@@ -162,31 +162,10 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
     router,
     toggle,
     ownUserId,
-    loading,
-    followUnfollow,
-    setLoading,
+    loadingAction,
+    accessToken,
+    title,
   ]);
-
-  useEffect(() => {
-    getFollowersFollowing({
-      accessToken: localStorage.getItem("accessToken"),
-      menu: title,
-      username,
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getFollowersFollowing, title, open]);
-
-  useEffect(() => {
-    if (!fetchFollowUnfollow && loading) {
-      getFollowersFollowing({
-        accessToken: localStorage.getItem("accessToken"),
-        menu: title,
-        username,
-      });
-      setLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fetchFollowUnfollow, loading]);
 
   return (
     <Modal
@@ -208,9 +187,9 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
 
         <Divider className="dark:bg-zinc-400" />
         <div className="p-4 items-center">
-          {fetch && !data?.length ? (
+          {loading && !data?.length ? (
             <Fragment>
-              {fetch ? (
+              {loading ? (
                 <div className="flex flex-col items-center my-4">
                   <ReactLoading
                     type="bars"
@@ -230,17 +209,4 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {
-  rootReducer: {getFollowersFollowing: Object; followUnfollow: Object};
-}) => ({
-  getFollowersFollowingState: state.rootReducer.getFollowersFollowing,
-  followUnfollowState: state.rootReducer.followUnfollow,
-});
-const mapDispatchToProps = {
-  getFollowersFollowing: (payload: {accessToken: string; menu: string}) =>
-    getFollowersFollowingProps(payload),
-  followUnfollow: (payload: {accessToken: string; data: {userId: string}}) =>
-    followUnfollowProps(payload),
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(ModalSearch);
+export default ModalSearch;
