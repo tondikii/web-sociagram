@@ -14,14 +14,13 @@ const useFetch = ({
   refetch: boolean;
   setRefetch: Function;
 }) => {
-  const {accessToken} =
-    useSelector(
-      (state: {
-        rootReducer: {
-          session: {accessToken: string};
-        };
-      }) => state?.rootReducer?.session
-    ) || {};
+  const accessToken = useSelector(
+    (state: {
+      rootReducer: {
+        session: {accessToken: string};
+      };
+    }) => state?.rootReducer?.session?.accessToken
+  );
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);

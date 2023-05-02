@@ -22,7 +22,6 @@ const App = ({Component, pageProps}: AppProps) => {
           }
         }
       } catch (err) {
-        console.log({err});
         Alert.Error({text: "Failed fetch data profile"});
       }
     };

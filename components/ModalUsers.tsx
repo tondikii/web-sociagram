@@ -21,6 +21,14 @@ interface Props {
   accessToken: string;
 }
 
+interface Profile {
+  id: number;
+  avatar: string;
+  username: string;
+  name: string;
+  followers: number[];
+}
+
 const boxStyle = {
   position: "absolute" as "absolute",
   top: "50%",
@@ -39,19 +47,20 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
 
   const [loadingAction, setLoadingAction] = useState<boolean>(false);
   const [refetch, setRefetch] = useState<boolean>(false);
-  const {data, loading, error}: {data: any; loading: boolean; error: boolean} =
-    useFetch({
-      api: getFollowersFollowingApi,
-      payload: {
-        accessToken,
-        menu: title,
-        id: targetUserId,
-      },
-      prevent: !open,
-      refetch,
-      setRefetch,
-    });
-  console.log({data, loading, error});
+  const {
+    data,
+    loading,
+    error,
+  }: {data: Profile[] | any; loading: boolean; error: boolean} = useFetch({
+    api: getFollowersFollowingApi,
+    payload: {
+      menu: title,
+      id: targetUserId,
+    },
+    prevent: !open,
+    refetch,
+    setRefetch,
+  });
 
   const UsersComponent = useMemo(() => {
     const isFollowing = (ids: number[]) => {
@@ -187,7 +196,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
 
         <Divider className="dark:bg-zinc-400" />
         <div className="p-4 items-center">
-          {loading && !data?.length ? (
+          {loading && !data ? (
             <Fragment>
               {loading ? (
                 <div className="flex flex-col items-center my-4">

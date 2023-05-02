@@ -19,11 +19,22 @@ import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Profile.module.css";
 
+interface PostCommentUser {
+  id: number;
+  username: string;
+  avatar: string;
+}
+
 interface PostComment {
   id: number;
   comment: string;
-  UserId: number;
+  User: PostCommentUser;
+}
+
+interface PostLike {
+  id: number;
   PostId: number;
+  UserId: number;
 }
 
 interface Post {
@@ -33,6 +44,7 @@ interface Post {
   UserId: number;
   createdAt: string;
   PostComments: PostComment[];
+  PostLikes: PostLike[];
 }
 
 interface Profile {
@@ -66,8 +78,6 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const {signOut, dataProfile} = props;
   const rows: Post[] = dataProfile?.Posts || [];
 
-  console.log({dataProfile, id: dataProfile?.id});
-
   const dispatch = useDispatch();
 
   const {
@@ -89,15 +99,16 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const [showModalUsers, setShowModalUsers] = useState(false);
   const [titleModalUsers, setTitleModalUsers] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<any>({});
-  const [showModalPost, setShowModalPost] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<Post | any>({});
+  const [showModalPost, setShowModalPost] = useState<boolean>(false);
 
-  const toggleModalPost = (post: object) => {
-    console.log({post}, "sini");
-
-    setSelectedPost(post);
-    setShowModalPost(!showModalPost);
-  };
+  const toggleModalPost = useCallback(
+    (post: object) => {
+      setSelectedPost(post);
+      setShowModalPost(!showModalPost);
+    },
+    [showModalPost]
+  );
 
   const isOwnProfile = useMemo(() => {
     if (username === ownUsername) return true;
@@ -192,18 +203,34 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     ]
   );
 
-  return (
-    <Fragment>
+  const ComponentModalDetailPost = useMemo(
+    () => (
       <ModalDetailPost
         open={showModalPost}
         toggle={toggleModalPost}
         data={selectedPost}
       />
+    ),
+    [showModalPost, toggleModalPost, selectedPost]
+  );
+
+  useEffect(() => {
+    if (selectedPost?.id) {
+      setSelectedPost(
+        rows?.find((e: {id: number}) => e?.id === selectedPost?.id)
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows]);
+
+  return (
+    <Fragment>
       <ModalSettings
         open={showModalSettings}
         toggle={toggleModalOptions}
         signOut={handleSignOut}
       />
+      {ComponentModalDetailPost}
       {ComponentModalUsers}
       <div className={styles.container}>
         <div className="horizontal w-full lg:w-3/5 items-center">
@@ -349,7 +376,15 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             {rows.map((row: {files: string[]; id: number}, idx: number) => (
               <div
                 role="button"
-                onClick={() => toggleModalPost({...row, PostId: row?.id})}
+                onClick={() =>
+                  toggleModalPost({
+                    ...row,
+                    User: {
+                      avatar: dataProfile?.avatar,
+                      username: dataProfile?.username,
+                    },
+                  })
+                }
                 key={idx}
               >
                 <CardMedia

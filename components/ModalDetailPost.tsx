@@ -1,14 +1,7 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {useState, useMemo, useEffect, useRef} from "react";
-import {connect} from "react-redux";
 import {useRouter} from "next/router";
 import moment from "moment";
-
-import {
-  likeUnLike as likeUnLikeProps,
-  getPostComments as getPostCommentsProps,
-  createPostComment as createPostCommentProps,
-} from "../store/actions";
 
 import {CardMedia, Avatar, CardHeader, Card} from "@mui/material";
 import {Modal, Box, Divider, CardActions, IconButton} from "@mui/material";
@@ -25,43 +18,41 @@ import * as Alert from "../components/Alert";
 import ModalDevelopment from "./ModalDevelopment";
 
 import styles from "../styles/ModalDetailPost.module.css";
+import {createPostCommentApi, likeUnLikeApi} from "../store/api";
+import {useSelector} from "react-redux";
+
+interface PostCommentUser {
+  id: number;
+  username: string;
+  avatar: string;
+}
+
+interface PostComment {
+  id: number;
+  comment: string;
+  User: PostCommentUser;
+}
+
+interface PostLike {
+  id: number;
+  PostId: number;
+  UserId: number;
+}
 
 interface Props {
   open: boolean;
   toggle: Function;
   data: {
-    PostId: number;
-    postId: string;
+    id: number;
     User: {
       avatar: string;
       username: string;
     };
     files: string[];
-    likes: string[];
+    PostComments: PostComment[];
+    PostLikes: PostLike[];
     caption: string;
     createdAt: string | Date;
-  };
-  likeUnLike: Function;
-  likeUnLikeState: {
-    fetch: boolean;
-    data: {
-      postId: string;
-      likes: string[];
-    };
-    error: string;
-  };
-  getPostComments: Function;
-  getPostCommentsState: {
-    fetch: boolean;
-    data: [];
-    error: string;
-  };
-
-  createPostComment: Function;
-  createPostCommentState: {
-    fetch: boolean;
-    data: {id: number};
-    error: string;
   };
 }
 
@@ -74,12 +65,6 @@ const boxStyle = {
   boxShadow: 24,
 };
 
-const steps = [
-  {label: "Create new post", value: 1},
-  {label: "Preview", value: 2},
-  {label: "Create new post", value: 3},
-];
-
 const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
@@ -87,50 +72,38 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     open,
     toggle,
     data: {
-      PostId,
-      postId,
+      id: PostId = 0,
       User: {avatar = "", username = ""} = {},
       files = [
         "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
       ],
       caption,
-      likes,
+      PostLikes = [],
+      PostComments = [],
       createdAt = new Date(),
     } = {},
-    likeUnLike,
-    likeUnLikeState: {
-      data: {postId: newPostId, likes: newLikes},
-    },
-    getPostComments,
-    getPostCommentsState: {
-      fetch: fetchComments,
-      data: dataComments,
-      error: errorComments,
-    },
-    createPostComment,
-    createPostCommentState: {
-      fetch: fetchCreateComment,
-      data: {id: PostCommentId},
-      error: errorCreateComment,
-    },
   } = props;
   const router = useRouter();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const {accessToken = "", id: ownUserId = 0} =
+    useSelector(
+      (state: {
+        rootReducer: {
+          session: {accessToken: string; id: number};
+        };
+      }) => state?.rootReducer?.session
+    ) || {};
 
   const [comment, setComment] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [showModalDevelopment, setShowModalDevelopment] = useState(false);
+  const [loadingComment, setLoadingComment] = useState(false);
+  const [loadingLike, setLoadingLike] = useState(false);
+  const [error, setError] = useState("");
 
   const toggleModalDevelopment = () =>
     setShowModalDevelopment(!showModalDevelopment);
-
-  const usedLikes: string[] | undefined = useMemo(() => {
-    if (postId === newPostId) {
-      return newLikes;
-    }
-    return likes;
-  }, [likes, newLikes, postId, newPostId]);
 
   const Content = useMemo(() => {
     const handleChangeCaption = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -163,20 +136,36 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       </div>
     );
 
-    const handlePostComment = () => {
-      if (!comment?.length || fetchCreateComment) return;
-      createPostComment({
-        accessToken: localStorage.getItem("accessToken"),
-        data: {PostId, comment},
-      });
+    const handlePostComment = async () => {
+      try {
+        if (loadingComment || !comment?.length) return;
+        setLoadingComment(true);
+        await createPostCommentApi({
+          accessToken,
+          data: {PostId, comment},
+        });
+        router.replace(router.asPath);
+        setComment("");
+      } catch (err) {
+        Alert.Error({text: "Error create comment"});
+      }
     };
 
-    const onClickLike = () => {
-      setIsLiked(!isLiked);
-      likeUnLike({
-        accessToken: localStorage.getItem("accessToken"),
-        data: {postId},
-      });
+    const onClickLike = async () => {
+      try {
+        if (loadingLike) return;
+        setLoadingLike(true);
+        await likeUnLikeApi({
+          accessToken,
+          data: {PostId},
+        });
+        setIsLiked(!isLiked);
+        router.replace(router.asPath);
+      } catch (err) {
+        Alert.Error({text: "Error like post"});
+      } finally {
+        setLoadingLike(false);
+      }
     };
 
     return (
@@ -231,7 +220,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
               onClick={onClickLike}
             >
               <HeartIconSolid className={`text-rose-600 h-6 w-6`} />
-              <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
+              <span className={`${styles.text} ml-1`}>{PostLikes?.length}</span>
             </IconButton>
           ) : (
             <IconButton
@@ -240,13 +229,13 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
               onClick={onClickLike}
             >
               <HeartIcon className={`${styles.text} h-6 w-6`} />
-              <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
+              <span className={`${styles.text} ml-1`}>{PostLikes?.length}</span>
             </IconButton>
           )}
           <IconButton aria-label="add to favorites" className="mx-2">
             <ChatAltIcon className={`${styles.text} h-6 w-6`} />
             <span className={`${styles.text} ml-1`}>
-              {dataComments?.length}
+              {PostComments?.length}
             </span>
           </IconButton>
           <IconButton
@@ -263,24 +252,13 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
             <span className={`${styles.text} font-bold`}>{username}</span>{" "}
             {caption}
           </p>
-          {fetchComments ? (
-            <span>Loading fetch comments</span>
-          ) : (
-            [...dataComments].map(
-              (
-                e: {
-                  User: {avatar: string; username: string};
-                  comment: string;
-                },
-                idx: number
-              ) =>
-                commentCard({
-                  avatar: e?.User?.avatar || "",
-                  username: e?.User?.username,
-                  comment: e?.comment,
-                  idx: idx + 1,
-                })
-            )
+          {[...PostComments].map((e: PostComment, idx: number) =>
+            commentCard({
+              avatar: e?.User?.avatar || "",
+              username: e?.User?.username,
+              comment: e?.comment,
+              idx: idx + 1,
+            })
           )}
           <div className="horizontal justify-between mt-4">
             <textarea
@@ -294,7 +272,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
             />
             <span
               className={`${
-                comment?.length && !fetchCreateComment
+                comment?.length && !loadingComment
                   ? "text-primary"
                   : "text-zinc-400"
               } font-semibold`}
@@ -365,24 +343,20 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
             <Divider className="dark:bg-zinc-400" />
             <div className={styles.commentsContainer}>
               {commentCard({avatar, comment: caption || "", username, idx: 0})}
-              {fetchComments ? (
-                <span>Loading fetch comments</span>
-              ) : (
-                dataComments.map(
-                  (
-                    e: {
-                      User: {avatar: string; username: string};
-                      comment: string;
-                    },
-                    idx: number
-                  ) =>
-                    commentCard({
-                      avatar: e?.User?.avatar || "",
-                      username: e?.User?.username,
-                      comment: e?.comment,
-                      idx: idx + 1,
-                    })
-                )
+              {PostComments.map(
+                (
+                  e: {
+                    User: {avatar: string; username: string};
+                    comment: string;
+                  },
+                  idx: number
+                ) =>
+                  commentCard({
+                    avatar: e?.User?.avatar || "",
+                    username: e?.User?.username,
+                    comment: e?.comment,
+                    idx: idx + 1,
+                  })
               )}
             </div>
           </div>
@@ -396,7 +370,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
                 >
                   <HeartIconSolid className={`text-rose-600 h-5 w-5`} />
                   <span className={`${styles.text} ml-1`}>
-                    {usedLikes?.length}
+                    {PostLikes?.length}
                   </span>
                 </IconButton>
               ) : (
@@ -407,14 +381,14 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
                 >
                   <HeartIcon className={`${styles.text} h-5 w-5`} />
                   <span className={`${styles.text} ml-1`}>
-                    {usedLikes?.length}
+                    {PostLikes?.length}
                   </span>
                 </IconButton>
               )}
               <IconButton aria-label="add to favorites" className="mx-2">
                 <ChatAltIcon className={`${styles.text} h-5 w-5`} />
                 <span className={`${styles.text} ml-1`}>
-                  {dataComments?.length}
+                  {PostComments?.length}
                 </span>
               </IconButton>
               <IconButton
@@ -438,7 +412,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
               />
               <span
                 className={`${
-                  comment?.length && !fetchCreateComment
+                  comment?.length && !loadingComment
                     ? "text-primary"
                     : "text-zinc-400"
                 } font-semibold`}
@@ -473,14 +447,12 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     comment,
     showEmojiPicker,
     router,
-    createPostComment,
     PostId,
     caption,
-    dataComments,
-    fetchComments,
+    PostComments,
     isLiked,
-    usedLikes,
-    fetchCreateComment,
+    PostLikes,
+    loadingComment,
   ]);
 
   // Updates the height of a <textarea> when the value changes.
@@ -503,43 +475,18 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   useAutosizeTextArea(textAreaRef.current, comment);
 
   useEffect(() => {
-    if (usedLikes) {
-      const userId = localStorage.getItem("userId");
-      const isFound = usedLikes.find((id) => id === userId);
+    if (PostLikes) {
+      const isFound = PostLikes.find(
+        (e: {UserId: number}) => e?.UserId === ownUserId
+      );
       if (isFound) setIsLiked(true);
       else setIsLiked(false);
     }
-  }, [usedLikes]);
+  }, [PostLikes, ownUserId]);
 
   useEffect(() => {
-    if (open) {
-      getPostComments({
-        accessToken: localStorage.getItem("accessToken"),
-        data: PostId,
-      });
-    }
-  }, [getPostComments, PostId, open]);
-
-  useEffect(() => {
-    if (open && PostCommentId) {
-      getPostComments({
-        accessToken: localStorage.getItem("accessToken"),
-        data: PostId,
-      });
-      setComment("");
-    }
-  }, [PostCommentId, PostId, getPostComments, open]);
-
-  useEffect(() => {
-    if (errorComments && errorComments?.length) {
-      Alert.Error({text: "Error fetching data comments"});
-    }
-  }, [errorComments]);
-  useEffect(() => {
-    if (errorCreateComment && errorCreateComment?.length) {
-      Alert.Error({text: "Error post comment"});
-    }
-  }, [errorCreateComment]);
+    setComment("");
+  }, [open]);
 
   return (
     <>
@@ -566,27 +513,4 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {
-  rootReducer: {
-    likeUnLike: Object;
-    getPostComments: Object;
-    createPostComment: Object;
-  };
-}) => ({
-  likeUnLikeState: state.rootReducer.likeUnLike,
-  getPostCommentsState: state.rootReducer.getPostComments,
-  createPostCommentState: state.rootReducer.createPostComment,
-});
-
-const mapDispatchToProps = {
-  likeUnLike: (payload: {accessToken: string; data: {postId: string}}) =>
-    likeUnLikeProps(payload),
-  getPostComments: (payload: {accessToken: string; data: number}) =>
-    getPostCommentsProps(payload),
-  createPostComment: (payload: {
-    accessToken: string;
-    data: {PostId: number; comment: string};
-  }) => createPostCommentProps(payload),
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(ModalCreate);
+export default ModalCreate;

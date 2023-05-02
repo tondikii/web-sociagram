@@ -91,7 +91,7 @@ export const createPostsApi = (payload: {
 
 export const likeUnLikeApi = (payload: {
   accessToken: string;
-  data: {postId: string};
+  data: {PostId: number};
 }) => {
   api.defaults.headers.common = {
     Authorization: `Bearer ${payload?.accessToken}`,
@@ -102,11 +102,13 @@ export const likeUnLikeApi = (payload: {
 export const getPostCommentsApi = (payload: {
   accessToken: string;
   data: number;
+  signal: AbortSignal;
 }) => {
+  const {accessToken, data, signal} = payload || {};
   api.defaults.headers.common = {
-    Authorization: `Bearer ${payload?.accessToken}`,
+    Authorization: `Bearer ${accessToken}`,
   };
-  return api.get(`postComments/${payload?.data || 0}`);
+  return api.get(`postComments/${data || 0}`, {signal});
 };
 
 export const createPostCommentApi = (payload: {
