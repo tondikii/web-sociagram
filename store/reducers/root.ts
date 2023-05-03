@@ -3,9 +3,6 @@ import {
   signOut,
   getProfile,
   editProfile,
-  searchUsers,
-  followUnfollow,
-  getFollowersFollowing,
   getPosts,
   getPostsLiked,
   createPosts,
@@ -30,39 +27,6 @@ const rootSlice = createSlice({
       fetch: false,
       data: {
         userId: "",
-      },
-      error: "",
-    },
-    searchUsers: {
-      fetch: false,
-      data: {
-        count: 0,
-        rows: [],
-      },
-      error: "",
-    },
-    followUnfollow: {
-      fetch: false,
-      data: {
-        userId: "",
-      },
-      error: "",
-    },
-    getFollowersFollowing: {
-      fetch: false,
-      data: [],
-      error: "",
-    },
-    getFollowing: {
-      fetch: false,
-      data: [],
-      error: "",
-    },
-    getPosts: {
-      fetch: false,
-      data: {
-        count: 0,
-        rows: [],
       },
       error: "",
     },
@@ -100,15 +64,6 @@ const rootSlice = createSlice({
     },
     setReload(state, action) {
       state.reload = action.payload;
-    },
-    resetGetProfile(state) {
-      state.getProfile = {
-        fetch: false,
-        data: {
-          userId: "",
-        },
-        error: "",
-      };
     },
   },
   extraReducers: (builder) => {
@@ -151,89 +106,6 @@ const rootSlice = createSlice({
       const payload = action?.payload;
       state.editProfile = {
         ...state.editProfile,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(searchUsers.pending, (state, action) => {
-      state.searchUsers = {...state.searchUsers, fetch: true};
-    });
-    builder.addCase(searchUsers.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.searchUsers = {
-        ...state.searchUsers,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(searchUsers.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.searchUsers = {
-        ...state.searchUsers,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(followUnfollow.pending, (state, action) => {
-      state.followUnfollow = {...state.followUnfollow, fetch: true};
-    });
-    builder.addCase(followUnfollow.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.followUnfollow = {
-        ...state.followUnfollow,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(followUnfollow.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.followUnfollow = {
-        ...state.followUnfollow,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(getFollowersFollowing.pending, (state, action) => {
-      state.getFollowersFollowing = {
-        ...state.getFollowersFollowing,
-        fetch: true,
-      };
-    });
-    builder.addCase(getFollowersFollowing.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.getFollowersFollowing = {
-        ...state.getFollowersFollowing,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(getFollowersFollowing.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.getFollowersFollowing = {
-        ...state.getFollowersFollowing,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(getPosts.pending, (state, action) => {
-      state.getPosts = {...state.getPosts, fetch: true};
-    });
-    builder.addCase(getPosts.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.getPosts = {
-        ...state.getPosts,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(getPosts.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.getPosts = {
-        ...state.getPosts,
         fetch: false,
         error: payload,
       };

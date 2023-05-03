@@ -12,10 +12,7 @@ import {storage} from "../config/firebase";
 import {connect} from "react-redux";
 import {useRouter} from "next/router";
 
-import {
-  createPosts as createPostsProps,
-  getPosts as getPostsProps,
-} from "../store/actions";
+import {createPosts as createPostsProps} from "../store/actions";
 
 import {Avatar, CardMedia} from "@mui/material";
 import {Modal, Box, Divider, Button} from "@mui/material";
@@ -43,7 +40,6 @@ interface Props {
     data: {postId: string};
     error: string[] | string;
   };
-  getPosts: Function;
 }
 
 const boxStyle = {
@@ -72,7 +68,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     createPostsState: {
       data: {postId},
     },
-    getPosts,
   } = props;
   const router = useRouter();
   const {username: usernameQuery = ""} = router.query;
@@ -343,12 +338,9 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     if (loading && postId) {
       setLoading(false);
       toggle();
-      getPosts({
-        accessToken: localStorage.getItem("accessToken"),
-        data: username === usernameQuery ? username : "",
-      });
+      router.replace(router.asPath);
     }
-  }, [loading, postId, toggle, getPosts, username, usernameQuery]);
+  }, [loading, postId, toggle, username, usernameQuery, router]);
 
   return (
     <Modal
@@ -391,8 +383,6 @@ const mapDispatchToProps = {
     accessToken: string;
     data: {caption: string; files: string[]};
   }) => createPostsProps(payload),
-  getPosts: (payload: {accessToken: string; data: string}) =>
-    getPostsProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(ModalCreate);

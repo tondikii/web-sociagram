@@ -1,19 +1,20 @@
 import {useState, useEffect} from "react";
 import {useSelector} from "react-redux";
 
+interface Props {
+  api: Function;
+  payload?: any;
+  prevent?: boolean;
+  refetch?: boolean;
+  setRefetch?: Function;
+}
 const useFetch = ({
   api,
   payload = {},
   prevent = false,
   refetch = false,
   setRefetch = () => {},
-}: {
-  api: Function;
-  payload: any;
-  prevent: boolean;
-  refetch: boolean;
-  setRefetch: Function;
-}) => {
+}: Props) => {
   const accessToken = useSelector(
     (state: {
       rootReducer: {

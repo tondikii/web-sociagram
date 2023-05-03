@@ -1,45 +1,57 @@
-import type {NextComponentType, NextPageContext} from "next";
-import {connect} from "react-redux";
-
-import {getPosts as getPostsProps} from "../store/actions";
+import type {
+  GetServerSidePropsContext,
+  NextComponentType,
+  NextPageContext,
+} from "next";
 
 import PostCard from "../components/PostCard.";
 
 import styles from "../styles/Home.module.css";
-import {useEffect, useCallback} from "react";
+import {getPostsApi} from "../store/api";
+import {getCookie} from "cookies-next";
+
+interface PostCommentUser {
+  id: number;
+  username: string;
+  avatar: string;
+}
+
+interface PostComment {
+  id: number;
+  comment: string;
+  User: PostCommentUser;
+}
+
+interface PostLike {
+  id: number;
+  PostId: number;
+  UserId: number;
+}
+
+interface Post {
+  id: number;
+  files: string[];
+  caption: string;
+  UserId: number;
+  createdAt: string;
+  PostComments: PostComment[];
+  PostLikes: PostLike[];
+}
 
 interface Props {
-  getPosts: Function;
-  getPostsState: {
-    fetch: boolean;
-    data: {count: number; rows: []};
-    error: any;
-  };
+  dataPosts:
+    | {
+        data: {
+          rows: Post[];
+        };
+      }
+    | any;
 }
 
 const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {
-    getPosts,
-    getPostsState: {
-      fetch,
-      data: {rows = []},
-      error,
-    },
-  } = props;
+  const {dataPosts} = props;
 
-  const getData = useCallback(
-    (username: string) => {
-      getPosts({
-        accessToken: localStorage.getItem("accessToken"),
-        data: username,
-      });
-    },
-    [getPosts]
-  );
-
-  useEffect(() => {
-    getData("");
-  }, [getData]);
+  const {rows = []} = dataPosts?.data || {};
 
   return (
     <div className={`${styles.container} verticalCenter`}>
@@ -56,12 +68,22 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   );
 };
 
-const mapStateToProps = (state: {rootReducer: {getPosts: Object}}) => ({
-  getPostsState: state.rootReducer.getPosts,
-});
-const mapDispatchToProps = {
-  getPosts: (payload: {accessToken: string; data: string}) =>
-    getPostsProps(payload),
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  try {
+    const {req, res} = context;
+    const accessToken: string | any =
+      getCookie("accessToken", {req, res}) || "";
+    const {data} = await getPostsApi({accessToken});
+    return {
+      props: {dataPosts: data},
+    };
+  } catch (error) {
+    return {
+      props: {dataPosts: {error, data: null}},
+    };
+  }
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Home);
+export default Home;

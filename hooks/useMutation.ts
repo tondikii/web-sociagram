@@ -12,12 +12,12 @@ const useMutation = (api: Function) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [data, setData] = useState<null | any>(null);
   const [error, setError] = useState<any | null>(null);
+  const [controller, setController] = useState<AbortController | null>(null);
 
-  const abortController = useMemo(() => new AbortController(), []);
   const hitApi = async (payload: any = {}) => {
     try {
       const {data} = await api({
-        signal: abortController?.signal,
+        signal: controller?.signal,
         accessToken,
         ...payload,
       });
@@ -32,8 +32,15 @@ const useMutation = (api: Function) => {
   };
 
   useEffect(() => {
-    return () => abortController.abort();
-  }, [abortController]);
+    if (!controller) {
+      setController(new AbortController());
+    }
+    return () => {
+      if (controller) {
+        controller.abort();
+      }
+    };
+  }, [controller]);
 
   return [hitApi, {data, loading, error}];
 };

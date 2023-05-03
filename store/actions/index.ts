@@ -1,13 +1,7 @@
 import * as CONST from "../constant";
 import {
-  signInApi,
-  signUpApi,
   getProfileApi,
   editProfileApi,
-  searchUsersApi,
-  followUnfollowApi,
-  getFollowersFollowingApi,
-  getPostsApi,
   getPostsLikedApi,
   createPostsApi,
   likeUnLikeApi,
@@ -55,60 +49,6 @@ export const editProfile = createAsyncThunk(
   }
 );
 
-export const searchUsers = createAsyncThunk(
-  CONST.SEARCH_USERS,
-  async (
-    payload: {
-      accessToken: string;
-      data: string;
-    },
-    {rejectWithValue}
-  ) => {
-    try {
-      const response = await searchUsersApi(payload);
-      return response;
-    } catch (err) {
-      const messageError = err?.response?.data?.error;
-      return rejectWithValue(messageError);
-    }
-  }
-);
-
-export const followUnfollow = createAsyncThunk(
-  CONST.FOLLOW_UNFOLLOW,
-  async (
-    payload: {
-      accessToken: string;
-      data: {userId: string};
-    },
-    {rejectWithValue}
-  ) => {
-    try {
-      const response = await followUnfollowApi(payload);
-      return response;
-    } catch (err) {
-      const messageError = err?.response?.data?.error;
-      return rejectWithValue(messageError);
-    }
-  }
-);
-
-export const getFollowersFollowing = createAsyncThunk(
-  CONST.GET_FOLLOWERS_FOLLOWING,
-  async (
-    payload: {accessToken: string; menu: string; username: string},
-    {rejectWithValue}
-  ) => {
-    try {
-      const response = await getFollowersFollowingApi(payload);
-      return response;
-    } catch (err) {
-      const messageError = err?.response?.data?.error;
-      return rejectWithValue(messageError);
-    }
-  }
-);
-
 export const getPostsLiked = createAsyncThunk(
   CONST.GET_POSTS_LIKED,
   async (
@@ -120,25 +60,6 @@ export const getPostsLiked = createAsyncThunk(
   ) => {
     try {
       const response = await getPostsLikedApi(payload);
-      return response;
-    } catch (err) {
-      const messageError = err?.response?.data?.error;
-      return rejectWithValue(messageError);
-    }
-  }
-);
-
-export const getPosts = createAsyncThunk(
-  CONST.GET_POSTS,
-  async (
-    payload: {
-      accessToken: string;
-      data: string;
-    },
-    {rejectWithValue}
-  ) => {
-    try {
-      const response = await getPostsApi(payload);
       return response;
     } catch (err) {
       const messageError = err?.response?.data?.error;

@@ -67,11 +67,11 @@ export const getFollowersFollowingApi = (payload: {
   return api.get(`users/${menu}/${id}`, {signal});
 };
 
-export const getPostsApi = (payload: {accessToken: string; data: string}) => {
+export const getPostsApi = (payload: {accessToken: string}) => {
   api.defaults.headers.common = {
     Authorization: `Bearer ${payload?.accessToken}`,
   };
-  return api.get(`posts?username=${payload?.data || ""}`);
+  return api.get(`posts`);
 };
 
 export const getPostsLikedApi = (payload: {accessToken: string}) => {

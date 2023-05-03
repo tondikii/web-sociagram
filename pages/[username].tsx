@@ -62,7 +62,7 @@ interface Profile {
 
 interface Props {
   signOut: Function;
-  dataProfile: {data: Profile | any; error: string} | any;
+  dataProfile: {data: Profile | any; error: any} | any;
 }
 
 interface Session {
@@ -75,8 +75,11 @@ interface Session {
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {signOut, dataProfile} = props;
-  const rows: Post[] = dataProfile?.Posts || [];
+  const {
+    signOut,
+    dataProfile: {data, error},
+  } = props;
+  const rows: Post[] = data?.Posts || [];
 
   const dispatch = useDispatch();
 
@@ -149,7 +152,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         setLoading(true);
         await followUnfollowApi({
           accessToken,
-          data: {id: dataProfile?.id},
+          data: {id: data?.id},
         });
         router.replace(router.asPath);
       }
@@ -172,7 +175,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     if (isOwnProfile) {
       return "Edit profile";
     }
-    const followers = dataProfile?.followers || [];
+    const followers = data?.followers || [];
     if (followers.length) {
       if (followers.find((eId: number) => eId === id)) {
         return "Following";
@@ -180,7 +183,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       return "Follow";
     }
     return "Follow";
-  }, [isOwnProfile, dataProfile?.followers, id, loading]);
+  }, [isOwnProfile, data?.followers, id, loading]);
 
   const ComponentModalUsers = useMemo(
     () => (
@@ -189,13 +192,13 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         toggle={toggleModalUsers}
         title={titleModalUsers}
         ownUserId={id}
-        targetUserId={dataProfile?.id}
+        targetUserId={data?.id}
         accessToken={accessToken}
       />
     ),
     [
       accessToken,
-      dataProfile?.id,
+      data?.id,
       id,
       showModalUsers,
       titleModalUsers,
@@ -237,7 +240,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
           <Avatar
             className="rounded-full w-20 h-20 mr-8 lg:mr-12 lg:w-44 lg:h-44"
             src={
-              dataProfile?.avatar ||
+              data?.avatar ||
               "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
             }
             alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
@@ -299,7 +302,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                 }}
               >
                 <p className="text-lg mx-4">
-                  <strong>{dataProfile?.followers.length}</strong> followers
+                  <strong>{data?.followers.length}</strong> followers
                 </p>
               </div>
               <div
@@ -311,26 +314,24 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                 }}
               >
                 <p className="text-lg ml-4">
-                  <strong>{dataProfile?.following.length}</strong> following
+                  <strong>{data?.following.length}</strong> following
                 </p>
               </div>
             </div>
             <div className="hidden lg:flex flex-col">
-              <strong className="text-md">
-                {dataProfile?.name || "No name yet"}
-              </strong>
+              <strong className="text-md">{data?.name || "No name yet"}</strong>
               <p className="text-md break-spaces">
-                {dataProfile?.bio || "No bio yet"}
+                {data?.bio || "No bio yet"}
               </p>
             </div>
           </div>
         </div>
         <div className="vertical lg:hidden mt-4">
           <strong className="lg:text-md text-sm">
-            {dataProfile?.name || "No name yet"}
+            {data?.name || "No name yet"}
           </strong>
           <p className="lg:text-md text-sm break-spaces">
-            {dataProfile?.bio || "No bio yet"}
+            {data?.bio || "No bio yet"}
           </p>
         </div>
         <hr className="w-full lg:w-3/5 mt-8 lg:hidden" />
@@ -348,7 +349,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             }}
           >
             <div className="text-sm mx-4 flex flex-col items-center">
-              <strong>{dataProfile?.followers.length}</strong>
+              <strong>{data?.followers.length}</strong>
               <span className="">followers</span>
             </div>
           </div>
@@ -361,7 +362,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             }}
           >
             <div className="text-sm ml-4 flex flex-col items-center">
-              <strong>{dataProfile?.following.length}</strong>
+              <strong>{data?.following.length}</strong>
               <span className="">following</span>
             </div>
           </div>
@@ -380,8 +381,8 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
                   toggleModalPost({
                     ...row,
                     User: {
-                      avatar: dataProfile?.avatar,
-                      username: dataProfile?.username,
+                      avatar: data?.avatar,
+                      username: data?.username,
                     },
                   })
                 }
@@ -416,11 +417,11 @@ export const getServerSideProps = async (
       getCookie("accessToken", {req, res}) || "";
     const {data} = await getProfileApi({accessToken, data: username || null});
     return {
-      props: {dataProfile: data?.data},
+      props: {dataProfile: data},
     };
-  } catch (err) {
+  } catch (error) {
     return {
-      props: {dataProfile: {error: "error"}, dataPosts: {error: "error"}},
+      props: {dataPosts: {error, data: null}},
     };
   }
 };
