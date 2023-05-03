@@ -35,11 +35,13 @@ export const editProfileApi = (payload: {
 export const searchUsersApi = (payload: {
   accessToken: string;
   data: string;
+  signal: AbortSignal;
 }) => {
+  const {accessToken, data, signal} = payload || {};
   api.defaults.headers.common = {
-    Authorization: `Bearer ${payload?.accessToken}`,
+    Authorization: `Bearer ${accessToken}`,
   };
-  return api.get(`users/find?search=${payload?.data || ""}`);
+  return api.get(`users/find?search=${data || ""}`, {signal});
 };
 
 export const followUnfollowApi = (payload: {

@@ -1,5 +1,4 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {connect} from "react-redux";
 import {
   useState,
   useCallback,
@@ -11,23 +10,17 @@ import {
 import {debounce} from "lodash";
 import {useRouter} from "next/router";
 
-import {searchUsers as searchUsersProps} from "../store/actions";
-
 import {Modal, Box, Divider, Avatar} from "@mui/material";
 import {SearchIcon, XIcon} from "@heroicons/react/outline";
 import ReactLoading from "react-loading";
+import {searchUsersApi} from "../store/api";
 
 import styles from "../styles/ModalSearch.module.css";
+import useMutation from "../hooks/useMutation";
 
 interface Props {
   open: boolean;
   toggle: Function;
-  searchUsers: Function;
-  searchUsersState: {
-    fetch: boolean;
-    data: {count: number; rows: []};
-    error: any;
-  };
 }
 
 const boxStyle = {
@@ -42,52 +35,52 @@ const boxStyle = {
 const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {
-    open,
-    toggle,
-    searchUsers,
-    searchUsersState: {
-      fetch,
-      data: {rows},
-      error,
-    },
-  } = props;
+  const {open, toggle} = props;
   const router = useRouter();
 
   const [searchState, setSearchState] = useState("");
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [searchUsers, {data, loading, error}]: any[] =
+    useMutation(searchUsersApi);
+  const [typing, setTyping] = useState<boolean>(false);
 
   const debouncedSearch = useRef(
     debounce(async (value: string) => {
-      searchUsers({
-        accessToken: localStorage.getItem("accessToken"),
-        data: value,
-      });
+      try {
+        await searchUsers({
+          accessToken: localStorage.getItem("accessToken"),
+          data: value,
+        });
+      } finally {
+        setTyping(false);
+      }
     }, 300)
   ).current;
 
   const handleChangeForm = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const {value} = e.target;
-      setLoading(true);
       setSearchState(value);
-      debouncedSearch(value);
+      setTyping(true);
+      if (value) {
+        debouncedSearch(value);
+      }
     },
     [debouncedSearch]
   );
 
   const UsersComponent = useMemo(() => {
-    if (!searchState) return null;
+    if (!searchState || typing) return null;
     if (searchState && (error || users.length < 1)) {
+      const errorMessage = error?.response?.data?.error || "";
       return (
         <div className="flex flex-col items-center my-4">
           <span
             className={`${
-              error ? "text-red-600" : "text-zinc-500 dark:text-zinc-400"
+              errorMessage ? "text-red-600" : "text-zinc-500 dark:text-zinc-400"
             }`}
           >
-            {error || "No users found"}
+            {errorMessage || "No users found"}
           </span>
         </div>
       );
@@ -126,12 +119,12 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
         )}
       </div>
     );
-  }, [users, error, searchState, router, toggle]);
+  }, [users, error, searchState, router, toggle, typing]);
 
   useEffect(() => {
-    if (rows.length && Array.isArray(rows)) {
+    if (data?.rows.length && Array.isArray(data?.rows)) {
       if (searchState) {
-        setUsers(rows);
+        setUsers(data?.rows);
       } else {
         setUsers([]);
       }
@@ -139,11 +132,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
       setUsers([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows]);
-
-  useEffect(() => {
-    if (!fetch) setLoading(false);
-  }, [fetch]);
+  }, [data?.rows]);
 
   return (
     <Modal
@@ -179,7 +168,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
           />
           {loading && !users?.length ? (
             <Fragment>
-              {fetch ? (
+              {loading ? (
                 <div className="flex flex-col items-center my-4">
                   <ReactLoading
                     type="bars"
@@ -199,12 +188,4 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {rootReducer: {searchUsers: Object}}) => ({
-  searchUsersState: state.rootReducer.searchUsers,
-});
-const mapDispatchToProps = {
-  searchUsers: (payload: {accessToken: string; data: string}) =>
-    searchUsersProps(payload),
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(ModalSearch);
+export default ModalSearch;
