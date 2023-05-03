@@ -1,43 +1,66 @@
-import type {NextComponentType, NextPageContext} from "next";
-import {connect} from "react-redux";
-import {useState, useEffect, useCallback} from "react";
-
-import {getPostsLiked as getPostsLikedProps} from "../store/actions";
+import type {
+  GetServerSidePropsContext,
+  NextComponentType,
+  NextPageContext,
+} from "next";
+import {useState, useEffect} from "react";
 
 import {HeartIcon} from "@heroicons/react/solid";
 import ModalDetailPost from "../components/ModalDetailPost";
 import {CardMedia} from "@mui/material";
 
 import styles from "../styles/Liked.module.css";
+import {getCookie} from "cookies-next";
+import {getPostsLikedApi} from "../store/api";
+
+interface PostCommentUser {
+  id: number;
+  username: string;
+  avatar: string;
+}
+
+interface PostComment {
+  id: number;
+  comment: string;
+  User: PostCommentUser;
+}
+
+interface Post {
+  id: number;
+  files: string[];
+  caption: string;
+  UserId: number;
+  createdAt: string;
+  PostComments: PostComment[];
+  PostLikes: PostLike[];
+}
+
+interface PostLike {
+  id: number;
+  PostId: number;
+  UserId: number;
+  Post: Post;
+}
 
 interface Props {
-  getPosts: Function;
-  getPostsState: {
-    fetch: boolean;
-    data: [];
-    error: any;
+  data: {
+    data: PostLike[];
   };
+  error: null | any;
 }
 
 const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {
-    getPosts,
-    getPostsState: {fetch, data = [], error},
-  } = props;
+  const {data, error} = props;
 
-  const [selectedPost, setSelectedPost] = useState({});
-  const [showModalPost, setShowModalPost] = useState(false);
+  const rows = data?.data || [];
+
+  const [selectedPost, setSelectedPost] = useState<Post | any>({});
+  const [showModalPost, setShowModalPost] = useState<boolean>(false);
 
   const toggleModalPost = (post: object) => {
     setSelectedPost(post);
     setShowModalPost(!showModalPost);
   };
-
-  useEffect(() => {
-    getPosts({
-      accessToken: localStorage.getItem("accessToken"),
-    });
-  }, [getPosts]);
 
   return (
     <>
@@ -53,9 +76,9 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
             <p>POSTS</p>
           </div>
           <hr className="w-full mt-4 mb-8" />
-          {data && data.length && Array.isArray(data) ? (
+          {rows && rows.length && Array.isArray(rows) ? (
             <div className="grid grid-cols-3 gap-8 w-full">
-              {data.map((row: {files: string[]}, idx: number) => (
+              {rows.map((row, idx: number) => (
                 <div
                   role="button"
                   onClick={() => toggleModalPost(row)}
@@ -65,7 +88,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                     component="img"
                     className="w-full h-full"
                     image={
-                      row?.files[0] ||
+                      row?.Post?.files[0] ||
                       "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
                     }
                     sx={{height: 250, width: 250}}
@@ -82,17 +105,22 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   );
 };
 
-const mapStateToProps = (state: {
-  rootReducer: {
-    getPostsLiked: Object;
-  };
-}) => ({
-  getPostsState: state.rootReducer.getPostsLiked,
-});
-
-const mapDispatchToProps = {
-  getPosts: (payload: {accessToken: string; data: string}) =>
-    getPostsLikedProps(payload),
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  try {
+    const {req, res} = context;
+    const accessToken: string | any =
+      getCookie("accessToken", {req, res}) || "";
+    const {data} = await getPostsLikedApi({accessToken});
+    return {
+      props: {data},
+    };
+  } catch (error) {
+    return {
+      props: {data: {error, data: null}},
+    };
+  }
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Liked);
+export default Liked;

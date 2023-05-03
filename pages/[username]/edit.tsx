@@ -13,7 +13,6 @@ import {
   getProfile as getProfileProps,
   editProfile as editProfileProps,
 } from "../../store/actions";
-import {setReload as setReloadProps} from "../../store/reducers/root";
 
 import ModalPreview from "../../components/ModalPreview";
 import {Avatar, Button} from "@mui/material";
@@ -43,17 +42,10 @@ interface Props {
     };
     error: any;
   };
-  setReload: Function;
 }
 
 const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {
-    getProfile,
-    getProfileState,
-    editProfile,
-    editProfileState,
-    setReload,
-  } = props;
+  const {getProfile, getProfileState, editProfile, editProfileState} = props;
   const avatarRef = useRef<HTMLInputElement>(
     typeof window === "object" ? document.createElement("input") : null
   );
@@ -277,7 +269,6 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     const {userId = "", avatar = ""} = editProfileState?.data || {};
     if (userId) {
       localStorage.avatar = avatar;
-      setReload(true);
       router.replace(`/${profileForm?.username}`);
       Alert.Success({text: "Success edit profile!"});
     }
@@ -368,7 +359,6 @@ const mapDispatchToProps = {
     getProfileProps(payload),
   editProfile: (payload: {accessToken: string; data: FormData}) =>
     editProfileProps(payload),
-  setReload: (payload: boolean) => setReloadProps(payload),
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Liked);

@@ -2,7 +2,6 @@ import * as CONST from "../constant";
 import {
   getProfileApi,
   editProfileApi,
-  getPostsLikedApi,
   createPostsApi,
   likeUnLikeApi,
   getPostCommentsApi,
@@ -41,25 +40,6 @@ export const editProfile = createAsyncThunk(
   ) => {
     try {
       const response = await editProfileApi(payload);
-      return response;
-    } catch (err) {
-      const messageError = err?.response?.data?.error;
-      return rejectWithValue(messageError);
-    }
-  }
-);
-
-export const getPostsLiked = createAsyncThunk(
-  CONST.GET_POSTS_LIKED,
-  async (
-    payload: {
-      accessToken: string;
-      data: string;
-    },
-    {rejectWithValue}
-  ) => {
-    try {
-      const response = await getPostsLikedApi(payload);
       return response;
     } catch (err) {
       const messageError = err?.response?.data?.error;

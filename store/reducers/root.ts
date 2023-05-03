@@ -3,8 +3,6 @@ import {
   signOut,
   getProfile,
   editProfile,
-  getPosts,
-  getPostsLiked,
   createPosts,
   likeUnLike,
   getPostComments,
@@ -28,11 +26,6 @@ const rootSlice = createSlice({
       data: {
         userId: "",
       },
-      error: "",
-    },
-    getPostsLiked: {
-      fetch: false,
-      data: [],
       error: "",
     },
     createPosts: {
@@ -61,9 +54,6 @@ const rootSlice = createSlice({
   reducers: {
     setSession(state, action) {
       state.session = action.payload;
-    },
-    setReload(state, action) {
-      state.reload = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -106,26 +96,6 @@ const rootSlice = createSlice({
       const payload = action?.payload;
       state.editProfile = {
         ...state.editProfile,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(getPostsLiked.pending, (state, action) => {
-      state.getPostsLiked = {...state.getPostsLiked, fetch: true};
-    });
-    builder.addCase(getPostsLiked.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.getPostsLiked = {
-        ...state.getPostsLiked,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(getPostsLiked.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.getPostsLiked = {
-        ...state.getPostsLiked,
         fetch: false,
         error: payload,
       };
@@ -216,12 +186,6 @@ const rootSlice = createSlice({
   },
 });
 
-export const {
-  setSession,
-  setReload,
-  resetSignIn,
-  resetSignUp,
-  resetGetProfile,
-} = rootSlice.actions;
+export const {setSession} = rootSlice.actions;
 
 export default rootSlice.reducer;

@@ -39,19 +39,20 @@ interface Post {
 }
 
 interface Props {
-  dataPosts:
+  data:
     | {
         data: {
           rows: Post[];
         };
       }
     | any;
+  error: null | any;
 }
 
 const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {dataPosts} = props;
+  const {data, error} = props;
 
-  const {rows = []} = dataPosts?.data || {};
+  const {rows = []} = data?.data || {};
 
   return (
     <div className={`${styles.container} verticalCenter`}>
@@ -77,11 +78,11 @@ export const getServerSideProps = async (
       getCookie("accessToken", {req, res}) || "";
     const {data} = await getPostsApi({accessToken});
     return {
-      props: {dataPosts: data},
+      props: {data: data},
     };
   } catch (error) {
     return {
-      props: {dataPosts: {error, data: null}},
+      props: {data: {error, data: null}},
     };
   }
 };
