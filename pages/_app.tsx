@@ -22,7 +22,7 @@ const App = ({Component, pageProps}: AppProps) => {
           }
         }
       } catch (err) {
-        Alert.Error({text: "Failed fetch data profile"});
+        Alert.Error("Failed fetch data profile");
       }
     };
     onRefresh();

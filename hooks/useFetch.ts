@@ -55,6 +55,12 @@ const useFetch = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [api, accessToken, prevent, refetch]);
 
+  useEffect(() => {
+    if (refetch && !loading) {
+      setLoading(true);
+    }
+  }, [refetch, loading]);
+
   return {data, loading, error};
 };
 export default useFetch;

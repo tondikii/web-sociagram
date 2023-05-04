@@ -25,11 +25,13 @@ export const getProfileApi = (payload: {
 export const editProfileApi = (payload: {
   accessToken: string;
   data: FormData;
+  signal: AbortSignal;
 }) => {
+  const {accessToken, data, signal} = payload || {};
   api.defaults.headers.common = {
-    Authorization: `Bearer ${payload?.accessToken}`,
+    Authorization: `Bearer ${accessToken}`,
   };
-  return api.put("/users/edit", payload?.data);
+  return api.put("/users/edit", data, {signal});
 };
 
 export const searchUsersApi = (payload: {

@@ -64,7 +64,7 @@ const SignIn: NextComponentType<NextPageContext, {}, Props> = (
       }
     } catch (err: {response: {data: {error: string}}} | any) {
       const {error: errorMessage} = err?.response?.data || {};
-      Alert.Error({text: errorMessage || "Unknown error while sign in!"});
+      Alert.Error(errorMessage || "Unknown error while sign in!");
     } finally {
       setLoading(false);
     }

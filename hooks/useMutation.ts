@@ -16,6 +16,10 @@ const useMutation = (api: Function) => {
 
   const hitApi = async (payload: any = {}) => {
     try {
+      if (loading) {
+        return;
+      }
+      setLoading(true);
       const {data} = await api({
         signal: controller?.signal,
         accessToken,

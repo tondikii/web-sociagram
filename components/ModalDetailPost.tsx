@@ -147,7 +147,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
         router.replace(router.asPath);
         setComment("");
       } catch (err) {
-        Alert.Error({text: "Error create comment"});
+        Alert.Error("Error create comment");
       }
     };
 
@@ -162,7 +162,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
         setIsLiked(!isLiked);
         router.replace(router.asPath);
       } catch (err) {
-        Alert.Error({text: "Error like post"});
+        Alert.Error("Error like post");
       } finally {
         setLoadingLike(false);
       }

@@ -1,26 +1,11 @@
 import {createSlice} from "@reduxjs/toolkit";
-import {
-  signOut,
-  getProfile,
-  editProfile,
-  createPosts,
-  likeUnLike,
-  getPostComments,
-  createPostComment,
-} from "../actions";
+import {signOut, createPosts, likeUnLike} from "../actions";
 
 const rootSlice = createSlice({
   name: "root",
   initialState: {
     reload: false,
     session: {accessToken: "", id: 0, username: "", avatar: ""},
-    getProfile: {
-      fetch: false,
-      data: {
-        userId: "",
-      },
-      error: "",
-    },
     editProfile: {
       fetch: false,
       data: {
@@ -45,11 +30,6 @@ const rootSlice = createSlice({
       data: [],
       error: "",
     },
-    createPostComment: {
-      fetch: false,
-      data: {id: 0},
-      error: [],
-    },
   },
   reducers: {
     setSession(state, action) {
@@ -59,46 +39,6 @@ const rootSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(signOut.fulfilled, (state) => {
       state.session = {accessToken: "", id: 0, username: "", avatar: ""};
-    });
-
-    builder.addCase(getProfile.pending, (state, action) => {
-      state.getProfile = {...state.getProfile, fetch: true};
-    });
-    builder.addCase(getProfile.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.getProfile = {
-        ...state.getProfile,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(getProfile.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.getProfile = {
-        ...state.getProfile,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(editProfile.pending, (state, action) => {
-      state.editProfile = {...state.editProfile, fetch: true};
-    });
-    builder.addCase(editProfile.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.editProfile = {
-        ...state.editProfile,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(editProfile.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.editProfile = {
-        ...state.editProfile,
-        fetch: false,
-        error: payload,
-      };
     });
 
     builder.addCase(createPosts.pending, (state, action) => {
@@ -139,46 +79,6 @@ const rootSlice = createSlice({
       const payload = action?.payload;
       state.likeUnLike = {
         ...state.likeUnLike,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(getPostComments.pending, (state, action) => {
-      state.getPostComments = {...state.getPostComments, fetch: true};
-    });
-    builder.addCase(getPostComments.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.getPostComments = {
-        ...state.getPostComments,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(getPostComments.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.getPostComments = {
-        ...state.getPostComments,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(createPostComment.pending, (state, action) => {
-      state.createPostComment = {...state.createPostComment, fetch: true};
-    });
-    builder.addCase(createPostComment.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.createPostComment = {
-        ...state.createPostComment,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(createPostComment.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.createPostComment = {
-        ...state.createPostComment,
         fetch: false,
         error: payload,
       };

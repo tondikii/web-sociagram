@@ -62,7 +62,7 @@ interface Profile {
 
 interface Props {
   signOut: Function;
-  dataProfile: {data: Profile | any; error: any} | any;
+  data: {data: Profile | any; error: any} | any;
 }
 
 interface Session {
@@ -77,7 +77,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
 ) => {
   const {
     signOut,
-    dataProfile: {data, error},
+    data: {data, error},
   } = props;
   const rows: Post[] = data?.Posts || [];
 
@@ -158,7 +158,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       }
     } catch (err) {
       if (!isOwnProfile) {
-        Alert.Error({text: "Failed do action"});
+        Alert.Error("Failed do action");
       }
     } finally {
       setLoading(false);
@@ -417,11 +417,11 @@ export const getServerSideProps = async (
       getCookie("accessToken", {req, res}) || "";
     const {data} = await getProfileApi({accessToken, data: username || null});
     return {
-      props: {dataProfile: data},
+      props: {data},
     };
   } catch (error) {
     return {
-      props: {dataPosts: {error, data: null}},
+      props: {data: {error, data: null}},
     };
   }
 };

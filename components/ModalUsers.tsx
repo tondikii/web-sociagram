@@ -81,7 +81,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
         router.replace(router.asPath);
         setRefetch(true);
       } catch (err) {
-        Alert.Error({text: `Failed do action`});
+        Alert.Error("Failed do action");
       } finally {
         setLoadingAction(false);
       }

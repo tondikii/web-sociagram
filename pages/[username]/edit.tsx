@@ -1,4 +1,8 @@
-import type {NextComponentType, NextPageContext} from "next";
+import type {
+  GetServerSidePropsContext,
+  NextComponentType,
+  NextPageContext,
+} from "next";
 import {useRouter} from "next/router";
 import {
   useCallback,
@@ -7,32 +11,31 @@ import {
   useRef,
   useMemo,
   Fragment,
+  ChangeEvent,
 } from "react";
-import {connect} from "react-redux";
-import {
-  getProfile as getProfileProps,
-  editProfile as editProfileProps,
-} from "../../store/actions";
 
 import ModalPreview from "../../components/ModalPreview";
 import {Avatar, Button} from "@mui/material";
 import * as Alert from "../../components/Alert";
 
 import styles from "../../styles/EditProfile.module.css";
+import {getCookie} from "cookies-next";
+import {editProfileApi, getProfileApi} from "../../store/api";
+import useMutation from "../../hooks/useMutation";
+import {useDispatch, useSelector} from "react-redux";
+import {setSession} from "../../store/reducers/root";
+
+interface Profile {
+  id: number;
+  username: string;
+  email: string;
+  avatar: string;
+  name: string;
+  bio: string;
+  gender: string;
+}
 
 interface Props {
-  getProfile: Function;
-  getProfileState: {
-    fetch: boolean;
-    data: {
-      userId: string;
-      avatar: string;
-      bio: string;
-      name: string;
-      gender: string;
-    };
-    error: any;
-  };
   editProfile: Function;
   editProfileState: {
     fetch: boolean;
@@ -42,15 +45,44 @@ interface Props {
     };
     error: any;
   };
+  data: {data: Profile | any; error: any} | any;
+}
+
+interface ProfileForm {
+  name: string;
+  label: string;
+  type: string;
+  value: string;
+  maxLength: number;
+}
+
+interface Session {
+  accessToken: string;
+  id: number;
+  username: string;
+  avatar: string;
 }
 
 const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {getProfile, getProfileState, editProfile, editProfileState} = props;
+  const {
+    data: {data, error},
+  } = props;
+  console.log({data, error});
+
   const avatarRef = useRef<HTMLInputElement>(
     typeof window === "object" ? document.createElement("input") : null
   );
   const router = useRouter();
   const {username} = router.query;
+  const dispatch = useDispatch();
+  const session =
+    useSelector(
+      (state: {
+        rootReducer: {
+          session: Session;
+        };
+      }) => state?.rootReducer?.session
+    ) || {};
 
   const [profileForm, setProfileForm] = useState({
     name: "",
@@ -62,7 +94,12 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   const [preview, setPreview] = useState("");
   const [modalPreview, setModalPreview] = useState(false);
 
-  const profileFormRows = [
+  const [
+    editProfile,
+    {data: dataEdit, loading: loadingEdit, error: errorEdit},
+  ]: any[] = useMutation(editProfileApi);
+
+  const profileFormRows: ProfileForm[] = [
     {
       name: "name",
       label: "Name",
@@ -94,17 +131,21 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   ];
 
   const disabledSubmit = useMemo(() => {
-    if (editProfileState?.fetch) {
+    if (loadingEdit) {
       return true;
     }
     let disabled = false;
     if (!profileForm?.username) return true;
     return disabled;
-  }, [profileForm, editProfileState?.fetch]);
+  }, [profileForm, loadingEdit]);
+
+  useEffect(() => {
+    console.log({disabledSubmit});
+  }, [disabledSubmit]);
 
   const toggleModalPreview = () => {
     setPreview("");
-    setProfileForm({...profileForm, avatar: getProfileState?.data?.avatar});
+    setProfileForm({...profileForm, avatar: data?.avatar});
     if (avatarRef?.current) {
       avatarRef.current.value = "";
     }
@@ -120,8 +161,32 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       avatarRef.current.click();
     }
   };
-  const handleChangeForm = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeInput = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      let {name, value} = e.target;
+      if (name === "username") {
+        value = value.toLowerCase();
+        if (value) value = value.trim();
+        localStorage.username = value;
+      }
+      setProfileForm({...profileForm, [name]: value});
+    },
+    [profileForm]
+  );
+  const handleChangeTextArea = useCallback(
+    (e: ChangeEvent<HTMLTextAreaElement>) => {
+      let {name, value} = e.target;
+      if (name === "username") {
+        value = value.toLowerCase();
+        if (value) value = value.trim();
+        localStorage.username = value;
+      }
+      setProfileForm({...profileForm, [name]: value});
+    },
+    [profileForm]
+  );
+  const handleChangeSelect = useCallback(
+    (e: ChangeEvent<HTMLSelectElement>) => {
       let {name, value} = e.target;
       if (name === "username") {
         value = value.toLowerCase();
@@ -133,34 +198,27 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     [profileForm]
   );
   const handleChangeFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files[0];
+    const file: Blob = e?.target?.files?.[0] || new Blob();
     const url = URL.createObjectURL(file);
     setPreview(url);
     setProfileForm({...profileForm, [e.target.name]: file});
   };
 
   const RenderForm = useCallback(
-    (row: {
-      type: string;
-      name: string;
-      label: string;
-      value: string;
-      maxLength: number;
-    }) => {
+    (row: ProfileForm) => {
       switch (row?.type) {
         case "textarea":
           return (
             <div className="vertical w-3/4">
               <textarea
                 name={row?.name}
-                type={row?.type}
                 placeholder={row?.label}
                 maxLength={row?.maxLength}
                 className={`${styles.input} ${
                   row?.type === "textarea" ? "mh-22" : ""
                 }`}
                 value={row?.value}
-                onChange={handleChangeForm}
+                onChange={handleChangeTextArea}
               />
               <small className={styles.textSecondary}>
                 {row?.value?.length}/150
@@ -173,7 +231,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
               <select
                 name={row?.name}
                 className={`${styles.input}`}
-                onChange={handleChangeForm}
+                onChange={handleChangeSelect}
               >
                 {!profileForm?.gender && (
                   <option selected hidden>
@@ -204,7 +262,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                 placeholder={row?.label}
                 className={`${styles.input}`}
                 value={row?.value}
-                onChange={handleChangeForm}
+                onChange={handleChangeInput}
                 maxLength={row?.maxLength}
               />
               <small className={styles.textSecondary}>
@@ -214,23 +272,26 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
           );
       }
     },
-    [profileForm, handleChangeForm]
+    [profileForm, handleChangeInput, handleChangeSelect, handleChangeTextArea]
   );
 
   const handleSubmitForm = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      const {name, username, bio, gender, avatar} = profileForm;
-      const formData = new FormData();
-      formData.append(typeof avatar === "string" ? "avatar" : "file", avatar);
-      formData.append("name", name);
-      formData.append("username", username);
-      formData.append("bio", bio);
-      formData.append("gender", gender);
-      editProfile({
-        accessToken: localStorage.getItem("accessToken"),
-        data: formData,
-      });
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      try {
+        event.preventDefault();
+        const {name, username, bio, gender, avatar} = profileForm;
+        const formData = new FormData();
+        formData.append(typeof avatar === "string" ? "avatar" : "file", avatar);
+        formData.append("name", name);
+        formData.append("username", username);
+        formData.append("bio", bio);
+        formData.append("gender", gender);
+        await editProfile({
+          data: formData,
+        });
+      } catch (err) {
+        console.error(err);
+      }
     },
     [profileForm, editProfile]
   );
@@ -243,17 +304,8 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   }, [preview, profileForm.avatar]);
 
   useEffect(() => {
-    const accessToken = localStorage.getItem("accessToken");
-    if (username && accessToken) {
-      getProfile({
-        accessToken,
-        data: username,
-      });
-    }
-  }, [username, getProfile]);
-  useEffect(() => {
-    const {userId, name, bio, gender, avatar} = getProfileState?.data;
-    if (userId) {
+    const {id, name, bio, gender, avatar} = data;
+    if (id) {
       setProfileForm({
         ...profileForm,
         username: `${username || ""}`,
@@ -264,16 +316,23 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getProfileState]);
+  }, [data]);
+
   useEffect(() => {
-    const {userId = "", avatar = ""} = editProfileState?.data || {};
-    if (userId) {
-      localStorage.avatar = avatar;
+    const {id = 0, avatar = "", username = ""} = dataEdit || {};
+    if (id) {
+      dispatch(setSession({...session, username, avatar, id}));
       router.replace(`/${profileForm?.username}`);
-      Alert.Success({text: "Success edit profile!"});
+      Alert.Success("Success edit profile!");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editProfileState]);
+  }, [dataEdit]);
+
+  useEffect(() => {
+    if (errorEdit) {
+      Alert.Error("Failed edit profile");
+    }
+  }, [errorEdit]);
 
   useEffect(() => {
     if (preview) {
@@ -348,17 +407,23 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   );
 };
 
-const mapStateToProps = (state: {
-  rootReducer: {getProfile: Object; editProfile: Object};
-}) => ({
-  getProfileState: state.rootReducer.getProfile,
-  editProfileState: state.rootReducer.editProfile,
-});
-const mapDispatchToProps = {
-  getProfile: (payload: {accessToken: string; data: string}) =>
-    getProfileProps(payload),
-  editProfile: (payload: {accessToken: string; data: FormData}) =>
-    editProfileProps(payload),
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  try {
+    const {params, req, res} = context;
+    const username: string | any = params?.username || "";
+    const accessToken: string | any =
+      getCookie("accessToken", {req, res}) || "";
+    const {data} = await getProfileApi({accessToken, data: username || null});
+    return {
+      props: {data: data},
+    };
+  } catch (error) {
+    return {
+      props: {data: {error, data: null}},
+    };
+  }
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Liked);
+export default Liked;

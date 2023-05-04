@@ -144,7 +144,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
         });
       })
       .catch((err) => {
-        Alert.Error({text: err});
+        Alert.Error(err);
         setLoading(false);
       });
   }, [files, createPosts, caption]);

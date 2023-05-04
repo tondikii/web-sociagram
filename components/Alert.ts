@@ -1,15 +1,15 @@
 import Swal from "sweetalert2";
 
-export const Error = (props: {text: string}) =>
+export const Error = (text: string) =>
   Swal.fire({
     icon: "error",
     title: "Oops...",
-    text: `${props.text}!`,
+    text: text,
   });
 
-export const Success = (props: {text: string}) =>
+export const Success = (text: string) =>
   Swal.fire({
     icon: "success",
     title: "Success",
-    text: props.text,
+    text: text,
   });
