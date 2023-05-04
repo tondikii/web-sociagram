@@ -9,6 +9,7 @@ import PostCard from "../components/PostCard.";
 import styles from "../styles/Home.module.css";
 import {getPostsApi} from "../store/api";
 import {getCookie} from "cookies-next";
+import {useSelector} from "react-redux";
 
 interface PostCommentUser {
   id: number;
@@ -28,11 +29,22 @@ interface PostLike {
   UserId: number;
 }
 
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  avatar: string;
+  name: string;
+  bio: string;
+  gender: string;
+}
+
 interface Post {
   id: number;
   files: string[];
   caption: string;
   UserId: number;
+  User: User;
   createdAt: string;
   PostComments: PostComment[];
   PostLikes: PostLike[];
@@ -54,12 +66,20 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
 
   const {rows = []} = data?.data || {};
 
+  const id = useSelector(
+    (state: {
+      rootReducer: {
+        session: {id: number};
+      };
+    }) => state?.rootReducer?.session?.id
+  );
+
   return (
     <div className={`${styles.container} verticalCenter`}>
       {rows && rows.length && Array.isArray(rows) ? (
         <>
-          {rows.map((row, idx) => (
-            <PostCard data={row} key={idx} />
+          {rows.map((row: Post, idx) => (
+            <PostCard data={row} key={idx} ownUserId={id} />
           ))}
         </>
       ) : (

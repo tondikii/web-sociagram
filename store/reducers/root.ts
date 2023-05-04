@@ -1,5 +1,5 @@
 import {createSlice} from "@reduxjs/toolkit";
-import {signOut, createPosts, likeUnLike} from "../actions";
+import {signOut, createPosts} from "../actions";
 
 const rootSlice = createSlice({
   name: "root",
@@ -17,13 +17,6 @@ const rootSlice = createSlice({
       fetch: false,
       data: {postId: ""},
       error: [],
-    },
-    likeUnLike: {
-      fetch: false,
-      data: {
-        postId: "",
-      },
-      error: "",
     },
     getPostComments: {
       fetch: false,
@@ -59,26 +52,6 @@ const rootSlice = createSlice({
       }
       state.createPosts = {
         ...state.createPosts,
-        fetch: false,
-        error: payload,
-      };
-    });
-
-    builder.addCase(likeUnLike.pending, (state, action) => {
-      state.likeUnLike = {...state.likeUnLike, fetch: true};
-    });
-    builder.addCase(likeUnLike.fulfilled, (state, action) => {
-      const payload = action?.payload;
-      state.likeUnLike = {
-        ...state.likeUnLike,
-        fetch: false,
-        data: payload?.data?.data,
-      };
-    });
-    builder.addCase(likeUnLike.rejected, (state, action) => {
-      const payload = action?.payload;
-      state.likeUnLike = {
-        ...state.likeUnLike,
         fetch: false,
         error: payload,
       };

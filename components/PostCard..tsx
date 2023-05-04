@@ -1,7 +1,6 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {useEffect, useMemo, useState} from "react";
-import {connect} from "react-redux";
 import {useRouter} from "next/router";
+import {useEffect, useMemo, useState} from "react";
 import moment from "moment";
 
 import {
@@ -15,60 +14,70 @@ import {
 import {HeartIcon, ShareIcon, ChatAltIcon} from "@heroicons/react/outline";
 import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
 import Carousel from "react-material-ui-carousel";
-import {likeUnLike as likeUnLikeProps} from "../store/actions";
 import ModalDetailPost from "./ModalDetailPost";
 import ModalDevelopment from "./ModalDevelopment";
+import * as Alert from "../components/Alert";
 
 import styles from "../styles/PostCard.module.css";
+import {likeUnLikeApi} from "../store/api";
+import useMutation from "../hooks/useMutation";
+import {useSelector} from "react-redux";
+
+interface PostCommentUser {
+  id: number;
+  username: string;
+  avatar: string;
+}
+
+interface PostComment {
+  id: number;
+  comment: string;
+  User: PostCommentUser;
+}
+
+interface PostLike {
+  id: number;
+  PostId: number;
+  UserId: number;
+}
+
+interface User {
+  username: string;
+  avatar: string;
+}
+
+interface Post {
+  id: number;
+  files: string[];
+  caption: string;
+  UserId: number;
+  User: User;
+  createdAt: string;
+  PostComments: PostComment[];
+  PostLikes: PostLike[];
+}
 
 interface Props {
-  data:
-    | {
-        id: number;
-        postId: string;
-        PostComments: object[];
-        User: {
-          avatar: string;
-          username: string;
-        };
-        files: string[];
-        likes: string[];
-        caption: string;
-        createdAt: string;
-      }
-    | {};
-  likeUnLike: Function;
-  likeUnLikeState: {
-    fetch: boolean;
-    data: {
-      postId: string;
-      likes: string[];
-    };
-    error: string;
-  };
+  data: Post;
+  ownUserId: number;
 }
 
 const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
+  const {data, ownUserId} = props;
   const {
-    data: {
-      id: PostId = 0,
-      PostComments = [],
-      postId = "",
-      User: {avatar = "", username = ""} = {},
-      files = [
-        "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
-      ],
-      caption = "",
-      likes = [],
-      createdAt = new Date(),
-    } = {},
-    likeUnLike,
-    likeUnLikeState: {
-      data: {postId: newPostId, likes: newLikes},
-    },
-  } = props;
+    id: PostId,
+    PostComments = [],
+    User: {avatar = "", username = ""} = {},
+    files = [
+      "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png",
+    ],
+    caption = "",
+    PostLikes = [],
+    createdAt = new Date(),
+  } = data || {};
+
   const router = useRouter();
 
   const [isLiked, setIsLiked] = useState(false);
@@ -76,38 +85,43 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   const [showModalDetail, setShowModalDetail] = useState(false);
   const [showModalDevelopment, setShowModalDevelopment] = useState(false);
 
+  const [likeUnLike, {loading: loadingLike, error: errorLike}]: any[] =
+    useMutation(likeUnLikeApi);
+
   const toggleModalDetail = () => {
     setShowModalDetail(!showModalDetail);
   };
   const toggleModalDevelopment = () =>
     setShowModalDevelopment(!showModalDevelopment);
 
-  const usedLikes: string[] | undefined = useMemo(() => {
-    if (postId === newPostId && newLikes?.length) {
-      return newLikes;
+  const onClickLike = async () => {
+    try {
+      if (loadingLike) return;
+      await likeUnLike({
+        data: {PostId},
+      });
+      router.replace(router.asPath);
+    } catch (err) {
+      console.error(err);
     }
-    return likes;
-  }, [likes, newLikes, postId, newPostId]);
-
-  const onClickLike = () => {
-    setIsLiked(!isLiked);
-    likeUnLike({
-      accessToken: localStorage.getItem("accessToken"),
-      data: {postId},
-    });
   };
   const onClickMore = () => {
     setIsShowMore(!isShowMore);
   };
 
   useEffect(() => {
-    if (usedLikes) {
-      const userId = localStorage.getItem("userId");
-      const isFound = usedLikes.find((id) => id === userId);
+    if (errorLike) {
+      Alert.Error("Error like post");
+    }
+  }, [errorLike]);
+
+  useEffect(() => {
+    if (PostLikes) {
+      const isFound = PostLikes.find((e: PostLike) => e?.UserId === ownUserId);
       if (isFound) setIsLiked(true);
       else setIsLiked(false);
     }
-  }, [usedLikes]);
+  }, [PostLikes, ownUserId]);
 
   return (
     <>
@@ -119,15 +133,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       <ModalDetailPost
         open={showModalDetail}
         toggle={toggleModalDetail}
-        data={{
-          postId,
-          User: {avatar, username},
-          files,
-          caption,
-          likes,
-          PostId,
-          createdAt,
-        }}
+        data={data}
       />
       <Card className={styles.container}>
         <CardHeader
@@ -178,7 +184,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
               onClick={onClickLike}
             >
               <HeartIconSolid className={`text-rose-600 h-6 w-6`} />
-              <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
+              <span className={`${styles.text} ml-1`}>{PostLikes?.length}</span>
             </IconButton>
           ) : (
             <IconButton
@@ -187,7 +193,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
               onClick={onClickLike}
             >
               <HeartIcon className={`${styles.text} h-6 w-6`} />
-              <span className={`${styles.text} ml-1`}>{usedLikes?.length}</span>
+              <span className={`${styles.text} ml-1`}>{PostLikes?.length}</span>
             </IconButton>
           )}
           <IconButton
@@ -230,16 +236,4 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {
-  rootReducer: {
-    likeUnLike: Object;
-  };
-}) => ({
-  likeUnLikeState: state.rootReducer.likeUnLike,
-});
-const mapDispatchToProps = {
-  likeUnLike: (payload: {accessToken: string; data: {postId: string}}) =>
-    likeUnLikeProps(payload),
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(PostCard);
+export default PostCard;
