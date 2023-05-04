@@ -11,7 +11,7 @@ const store = configureStore({
   middleware: [thunk, logger],
 });
 
-export type AppStore = ReturnType<typeof store>;
+export type AppStore = ReturnType<any>;
 export type AppState = ReturnType<AppStore["getState"]>;
 export type AppThunk<ReturnType = void> = ThunkAction<
   ReturnType,

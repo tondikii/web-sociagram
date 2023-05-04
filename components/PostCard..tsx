@@ -21,7 +21,6 @@ import * as Alert from "../components/Alert";
 import styles from "../styles/PostCard.module.css";
 import {likeUnLikeApi} from "../store/api";
 import useMutation from "../hooks/useMutation";
-import {useSelector} from "react-redux";
 
 interface PostCommentUser {
   id: number;

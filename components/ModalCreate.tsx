@@ -9,10 +9,7 @@ import {
 } from "react";
 import {getDownloadURL, ref, uploadBytes} from "@firebase/storage";
 import {storage} from "../config/firebase";
-import {connect} from "react-redux";
 import {useRouter} from "next/router";
-
-import {createPosts as createPostsProps} from "../store/actions";
 
 import {Avatar, CardMedia} from "@mui/material";
 import {Modal, Box, Divider, Button} from "@mui/material";
@@ -28,18 +25,14 @@ import ReactLoading from "react-loading";
 import * as Alert from "../components/Alert";
 
 import styles from "../styles/ModalCreate.module.css";
+import {createPostApi} from "../store/api";
+import useMutation from "../hooks/useMutation";
 
 interface Props {
   open: boolean;
   toggle: Function;
   username: string;
   avatar: string;
-  createPosts: Function;
-  createPostsState: {
-    fetch: boolean;
-    data: {postId: string};
-    error: string[] | string;
-  };
 }
 
 const boxStyle = {
@@ -59,16 +52,7 @@ const steps = [
 const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {
-    open,
-    toggle,
-    username,
-    avatar,
-    createPosts,
-    createPostsState: {
-      data: {postId},
-    },
-  } = props;
+  const {open, toggle, username, avatar} = props;
   const router = useRouter();
   const {username: usernameQuery = ""} = router.query;
 
@@ -82,6 +66,8 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   const [caption, setCaption] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [createPost, {data, error}]: any[] = useMutation(createPostApi);
 
   const onClickFile = () => {
     if (fileRef?.current) {
@@ -134,20 +120,26 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       tempUrls.push(uploadFiles);
     }
     Promise.all(tempUrls)
-      .then((result) => {
-        createPosts({
-          accessToken: localStorage.getItem("accessToken"),
-          data: {
-            caption,
-            files: result,
-          },
-        });
+      .then(async (result) => {
+        try {
+          await createPost({
+            accessToken: localStorage.getItem("accessToken"),
+            data: {
+              caption,
+              files: result,
+            },
+          });
+          setLoading(false);
+          router.replace(router.asPath);
+        } catch (err) {
+          console.error(err);
+        }
       })
       .catch((err) => {
         Alert.Error(err);
         setLoading(false);
       });
-  }, [files, createPosts, caption]);
+  }, [files, createPost, caption, router]);
 
   const Header = useMemo(() => {
     const changeStep = (action: string) => {
@@ -335,12 +327,10 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   ]);
 
   useEffect(() => {
-    if (loading && postId) {
-      setLoading(false);
-      toggle();
-      router.replace(router.asPath);
+    if (error) {
+      Alert.Error("Failed create post");
     }
-  }, [loading, postId, toggle, username, usernameQuery, router]);
+  }, [error]);
 
   return (
     <Modal
@@ -374,15 +364,4 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   );
 };
 
-const mapStateToProps = (state: {rootReducer: {createPosts: Object}}) => ({
-  createPostsState: state.rootReducer.createPosts,
-});
-
-const mapDispatchToProps = {
-  createPosts: (payload: {
-    accessToken: string;
-    data: {caption: string; files: string[]};
-  }) => createPostsProps(payload),
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(ModalCreate);
+export default ModalCreate;

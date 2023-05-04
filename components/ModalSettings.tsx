@@ -45,7 +45,7 @@ const ModalSettings: NextComponentType<NextPageContext, {}, Props> = (
         >
           {menus.map((menu, idx) => (
             <Fragment key={idx}>
-              <ListItem button onClick={menu.onClick}>
+              <ListItem onClick={() => menu.onClick()} role="button">
                 <ListItemText primary={menu.label} />
               </ListItem>
               {idx !== menus.length - 1 && <Divider />}
