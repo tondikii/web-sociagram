@@ -67,7 +67,6 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   const {
     data: {data, error},
   } = props;
-  console.log({data, error});
 
   const avatarRef = useRef<HTMLInputElement>(
     typeof window === "object" ? document.createElement("input") : null
@@ -138,10 +137,6 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     if (!profileForm?.username) return true;
     return disabled;
   }, [profileForm, loadingEdit]);
-
-  useEffect(() => {
-    console.log({disabledSubmit});
-  }, [disabledSubmit]);
 
   const toggleModalPreview = () => {
     setPreview("");
