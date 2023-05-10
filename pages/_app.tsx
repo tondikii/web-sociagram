@@ -15,7 +15,6 @@ const App = ({Component, pageProps}: AppProps) => {
       try {
         const accessToken: string = localStorage.getItem("accessToken") || "";
         if (accessToken) {
-          console.log({accessToken});
           const {data} = await getProfileApi({accessToken, data: null});
           if (data?.data?.username) {
             const {username, avatar, id} = data?.data || {};
@@ -23,7 +22,6 @@ const App = ({Component, pageProps}: AppProps) => {
           }
         }
       } catch (err) {
-        console.log({err});
         Alert.Error("Failed fetch data profile");
       }
     };
