@@ -11,6 +11,7 @@ import {followUnfollowApi, getProfileApi} from "../store/api";
 
 import {Button, IconButton, Avatar, CardMedia} from "@mui/material";
 import {CogIcon, CameraIcon} from "@heroicons/react/outline";
+import {signOut as signOutProps} from "../store/actions";
 
 import * as Alert from "../components/Alert";
 import ModalSettings from "../components/ModalSettings";
@@ -18,6 +19,7 @@ import ModalUsers from "../components/ModalUsers";
 import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Profile.module.css";
+import {AsyncThunkAction} from "@reduxjs/toolkit";
 
 interface PostCommentUser {
   id: number;
@@ -61,7 +63,6 @@ interface Profile {
 }
 
 interface Props {
-  signOut: Function;
   data: {data: Profile | any; error: any} | any;
 }
 
@@ -76,12 +77,12 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
   const {
-    signOut,
     data: {data, error},
   } = props;
   const rows: Post[] = data?.Posts || [];
 
   const dispatch = useDispatch();
+  const signOut: Function = signOutProps;
 
   const {
     accessToken,

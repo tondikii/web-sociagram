@@ -54,7 +54,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
 ) => {
   const {open, toggle, username, avatar} = props;
   const router = useRouter();
-  const {username: usernameQuery = ""} = router.query;
 
   const fileRef = useRef<HTMLInputElement>(
     typeof window === "object" ? document.createElement("input") : null
@@ -131,6 +130,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
           });
           setLoading(false);
           router.replace(router.asPath);
+          toggle();
         } catch (err) {
           console.error(err);
         }
@@ -139,7 +139,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
         Alert.Error(err);
         setLoading(false);
       });
-  }, [files, createPost, caption, router]);
+  }, [files, createPost, caption, router, toggle]);
 
   const Header = useMemo(() => {
     const changeStep = (action: string) => {
