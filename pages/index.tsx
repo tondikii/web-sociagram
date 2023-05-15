@@ -1,15 +1,18 @@
 import type {
-  GetServerSidePropsContext,
+  // GetServerSidePropsContext,
   NextComponentType,
   NextPageContext,
 } from "next";
 
 import PostCard from "../components/PostCard.";
+import * as Alert from "../components/Alert";
 
 import styles from "../styles/Home.module.css";
 import {getPostsApi} from "../store/api";
-import {getCookie} from "cookies-next";
+// import {getCookie} from "cookies-next";
 import {useSelector} from "react-redux";
+import {useEffect, useState} from "react";
+import useFetch from "../hooks/useFetch";
 
 interface PostCommentUser {
   id: number;
@@ -51,20 +54,39 @@ interface Post {
 }
 
 interface Props {
-  data:
-    | {
-        data: {
-          rows: Post[];
-        };
-      }
-    | any;
+  // data:
+  //   | {
+  //       data: {
+  //         rows: Post[];
+  //       };
+  //     }
+  //   | any;
   error: null | any;
 }
 
 const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {data, error} = props;
+  const [refetch, setRefetch] = useState<boolean>(false);
+  const {
+    data,
+    // loading,
+    error,
+  }: {
+    data:
+      | {
+          rows: Post[];
+        }
+      | any;
+    loading: boolean;
+    error: boolean;
+  } = useFetch({
+    api: getPostsApi,
+    refetch,
+    setRefetch,
+  });
 
-  const {rows = []} = data?.data || {};
+  console.log({data});
+
+  const {rows = []} = data || {};
 
   const id = useSelector(
     (state: {
@@ -73,6 +95,12 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       };
     }) => state?.rootReducer?.session?.id
   );
+
+  useEffect(() => {
+    if (error) {
+      Alert.Error("Failed fetching data posts!");
+    }
+  }, [error]);
 
   return (
     <div className={`${styles.container} verticalCenter`}>
@@ -89,22 +117,22 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   );
 };
 
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  try {
-    const {req, res} = context;
-    const accessToken: string | any =
-      getCookie("accessToken", {req, res}) || "";
-    const {data} = await getPostsApi({accessToken});
-    return {
-      props: {data: data},
-    };
-  } catch (error) {
-    return {
-      props: {data: {error, data: null}},
-    };
-  }
-};
+// export const getServerSideProps = async (
+//   context: GetServerSidePropsContext
+// ) => {
+//   try {
+//     const {req, res} = context;
+//     const accessToken: string | any =
+//       getCookie("accessToken", {req, res}) || "";
+//     const {data} = await getPostsApi({accessToken});
+//     return {
+//       props: {data: data},
+//     };
+//   } catch (error) {
+//     return {
+//       props: {data: {error, data: null}},
+//     };
+//   }
+// };
 
 export default Home;

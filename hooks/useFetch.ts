@@ -46,7 +46,7 @@ const useFetch = ({
         }
       }
     };
-    if (api && !prevent) {
+    if (api && !prevent && accessToken) {
       getData();
     }
 
