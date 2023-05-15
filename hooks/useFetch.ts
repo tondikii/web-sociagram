@@ -1,4 +1,4 @@
-import {useState, useEffect} from "react";
+import {useState, useEffect, useCallback} from "react";
 import {useSelector} from "react-redux";
 
 interface Props {
@@ -25,41 +25,44 @@ const useFetch = ({
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState(false);
+  const abortController: AbortController = new AbortController();
 
-  useEffect(() => {
-    const abortController = new AbortController();
-    const getData = async () => {
-      try {
-        const {data} = await api({
-          signal: abortController?.signal,
-          accessToken,
-          ...payload,
-        });
-        setData(data?.data);
+  const getData = useCallback(async () => {
+    try {
+      const {data} = await api({
+        signal: abortController.signal,
+        accessToken,
+        ...payload,
+      });
+      setData(data?.data);
+      setLoading(false);
+      setRefetch(false);
+    } catch (err: any) {
+      if (err?.name !== "AbortError" || err?.message !== "canceled") {
+        setError(err);
         setLoading(false);
         setRefetch(false);
-      } catch (err: any) {
-        if (err?.name !== "AbortError" || err?.message !== "canceled") {
-          setError(err);
-          setLoading(false);
-          setRefetch(false);
-        }
       }
-    };
+    }
+  }, [abortController.signal, accessToken, api, payload, setRefetch]);
+
+  useEffect(() => {
     if (api && !prevent && accessToken) {
       getData();
     }
-
     return () => abortController.abort();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [api, accessToken, prevent, refetch]);
+  }, [api, accessToken, prevent]);
 
   useEffect(() => {
-    if (refetch && !loading) {
+    if (refetch) {
       setLoading(true);
+      setData(null);
+      getData();
     }
-  }, [refetch, loading]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refetch]);
 
   return {data, loading, error};
 };

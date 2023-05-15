@@ -19,7 +19,7 @@ import ModalUsers from "../components/ModalUsers";
 import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Profile.module.css";
-import {AsyncThunkAction} from "@reduxjs/toolkit";
+import useFetch from "../hooks/useFetch";
 
 interface PostCommentUser {
   id: number;
@@ -62,9 +62,7 @@ interface Profile {
   Posts: Post[];
 }
 
-interface Props {
-  data: {data: Profile | any; error: any} | any;
-}
+interface Props {}
 
 interface Session {
   accessToken: string;
@@ -76,10 +74,7 @@ interface Session {
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {
-    data: {data, error},
-  } = props;
-  const rows: Post[] = data?.Posts || [];
+  const {} = props;
 
   const dispatch = useDispatch();
   const signOut: Function = signOutProps;
@@ -103,12 +98,27 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const [showModalUsers, setShowModalUsers] = useState(false);
   const [titleModalUsers, setTitleModalUsers] = useState("");
   const [loading, setLoading] = useState(false);
-  const [selectedPost, setSelectedPost] = useState<Post | any>({});
+  const [selectedPostIndex, setSelectedPostIndex] = useState<number>(-1);
   const [showModalPost, setShowModalPost] = useState<boolean>(false);
 
+  const [refetch, setRefetch] = useState<boolean>(false);
+  const {
+    data,
+  }: {
+    data: Profile | any;
+  } = useFetch({
+    api: getProfileApi,
+    refetch,
+    setRefetch,
+    payload: {data: username},
+  });
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const rows: Post[] = data?.Posts || [];
+
   const toggleModalPost = useCallback(
-    (post: object) => {
-      setSelectedPost(post);
+    (postIndex: number) => {
+      setSelectedPostIndex(postIndex);
       setShowModalPost(!showModalPost);
     },
     [showModalPost]
@@ -155,7 +165,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
           accessToken,
           data: {id: data?.id},
         });
-        router.replace(router.asPath);
+        setRefetch(true);
       }
     } catch (err) {
       if (!isOwnProfile) {
@@ -195,6 +205,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         ownUserId={id}
         targetUserId={data?.id}
         accessToken={accessToken}
+        setRefetch={setRefetch}
       />
     ),
     [
@@ -212,20 +223,18 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       <ModalDetailPost
         open={showModalPost}
         toggle={toggleModalPost}
-        data={selectedPost}
+        data={rows?.[selectedPostIndex] || {}}
+        setRefetch={setRefetch}
       />
     ),
-    [showModalPost, toggleModalPost, selectedPost]
+    [showModalPost, toggleModalPost, selectedPostIndex, rows]
   );
 
   useEffect(() => {
-    if (selectedPost?.id) {
-      setSelectedPost(
-        rows?.find((e: {id: number}) => e?.id === selectedPost?.id)
-      );
+    if (username) {
+      setRefetch(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rows]);
+  }, [username]);
 
   return (
     <Fragment>
@@ -376,19 +385,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         {rows && rows.length && Array.isArray(rows) ? (
           <div className="grid grid-cols-3 lg:gap-8 gap-1 mt-4 w-full lg:w-3/5">
             {rows.map((row: {files: string[]; id: number}, idx: number) => (
-              <div
-                role="button"
-                onClick={() =>
-                  toggleModalPost({
-                    ...row,
-                    User: {
-                      avatar: data?.avatar,
-                      username: data?.username,
-                    },
-                  })
-                }
-                key={idx}
-              >
+              <div role="button" onClick={() => toggleModalPost(idx)} key={idx}>
                 <CardMedia
                   component="img"
                   image={
@@ -406,25 +403,6 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       </div>
     </Fragment>
   );
-};
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  try {
-    const {params, req, res} = context;
-    const username: string | any = params?.username || "";
-    const accessToken: string | any =
-      getCookie("accessToken", {req, res}) || "";
-    const {data} = await getProfileApi({accessToken, data: username || null});
-    return {
-      props: {data},
-    };
-  } catch (error) {
-    return {
-      props: {data: {error, data: null}},
-    };
-  }
 };
 
 export default Profile;

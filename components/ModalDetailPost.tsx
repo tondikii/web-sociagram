@@ -42,18 +42,21 @@ interface PostLike {
 interface Props {
   open: boolean;
   toggle: Function;
-  data: {
-    id: number;
-    User: {
-      avatar: string;
-      username: string;
-    };
-    files: string[];
-    PostComments: PostComment[];
-    PostLikes: PostLike[];
-    caption: string;
-    createdAt: string | Date;
-  };
+  data:
+    | {
+        id: number;
+        User: {
+          avatar: string;
+          username: string;
+        };
+        files: string[];
+        PostComments: PostComment[];
+        PostLikes: PostLike[];
+        caption: string;
+        createdAt: string | Date;
+      }
+    | any;
+  setRefetch: Function;
 }
 
 const boxStyle = {
@@ -82,6 +85,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       PostComments = [],
       createdAt = new Date(),
     } = {},
+    setRefetch,
   } = props;
   const router = useRouter();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -100,7 +104,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   const [showModalDevelopment, setShowModalDevelopment] = useState(false);
   const [loadingComment, setLoadingComment] = useState(false);
   const [loadingLike, setLoadingLike] = useState(false);
-  const [error, setError] = useState("");
 
   const toggleModalDevelopment = () =>
     setShowModalDevelopment(!showModalDevelopment);
@@ -120,21 +123,34 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       comment: string;
       username: string;
       idx: number;
-    }) => (
-      <div className={`flex flex-row lg:p-4 mt-4`} key={data?.idx}>
-        <Avatar
-          className="rounded-full w-7 h-7 mr-4"
-          src={
-            data?.avatar ||
-            "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-          }
-        />
-        <p className={`${styles.caption}`}>
-          <span className={`${styles.text} font-bold`}>{data?.username}</span>{" "}
-          {data?.comment}
-        </p>
-      </div>
-    );
+    }) => {
+      const onClickProfile = () => {
+        toggle();
+        router.push(`/${data?.username}`);
+      };
+      return (
+        <div className={`flex flex-row lg:p-4 mt-4`} key={data?.idx}>
+          <div onClick={onClickProfile} className="cursor-pointer">
+            <Avatar
+              className="rounded-full w-7 h-7 mr-4"
+              src={
+                data?.avatar ||
+                "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+              }
+            />
+          </div>
+          <p className={`${styles.caption}`}>
+            <span
+              className={`${styles.text} font-bold cursor-pointer`}
+              onClick={onClickProfile}
+            >
+              {data?.username}
+            </span>{" "}
+            {data?.comment}
+          </p>
+        </div>
+      );
+    };
 
     const handlePostComment = async () => {
       try {
@@ -144,7 +160,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
           accessToken,
           data: {PostId, comment},
         });
-        router.replace(router.asPath);
+        setRefetch(true);
         setComment("");
       } catch (err) {
         Alert.Error("Error create comment");
@@ -160,7 +176,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
           data: {PostId},
         });
         setIsLiked(!isLiked);
-        router.replace(router.asPath);
+        setRefetch(true);
       } catch (err) {
         Alert.Error("Error like post");
       } finally {
@@ -202,7 +218,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
           navButtonsAlwaysInvisible={files.length > 1 ? false : true}
           className="lg:hidden"
         >
-          {files.map((url, idx) => (
+          {files.map((url: string, idx: number) => (
             <CardMedia
               component="img"
               image={url}
@@ -298,7 +314,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
             indicators={files.length > 1 ? true : false}
             navButtonsAlwaysInvisible={files.length > 1 ? false : true}
           >
-            {files.map((url, idx) => (
+            {files.map((url: string, idx: number) => (
               <CardMedia
                 component="img"
                 image={url}
@@ -323,13 +339,19 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
                     "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
                   }
                   className="cursor-pointer"
-                  onClick={() => router.push(`/${username}`)}
+                  onClick={() => {
+                    toggle();
+                    router.push(`/${username}`);
+                  }}
                 />
               }
               title={
                 <span
                   className={`${styles.title} cursor-pointer`}
-                  onClick={() => router.push(`/${username}`)}
+                  onClick={() => {
+                    toggle();
+                    router.push(`/${username}`);
+                  }}
                 >
                   {username}
                 </span>

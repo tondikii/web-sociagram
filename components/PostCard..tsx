@@ -14,8 +14,6 @@ import {
 import {HeartIcon, ShareIcon, ChatAltIcon} from "@heroicons/react/outline";
 import {HeartIcon as HeartIconSolid} from "@heroicons/react/solid";
 import Carousel from "react-material-ui-carousel";
-import ModalDetailPost from "./ModalDetailPost";
-import ModalDevelopment from "./ModalDevelopment";
 import * as Alert from "../components/Alert";
 
 import styles from "../styles/PostCard.module.css";
@@ -57,14 +55,25 @@ interface Post {
 }
 
 interface Props {
+  index: number;
   data: Post;
   ownUserId: number;
+  onClickDetail: Function;
+  onClickShare: Function;
+  setRefetch: Function;
 }
 
 const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {data, ownUserId} = props;
+  const {
+    index,
+    data,
+    ownUserId,
+    onClickDetail = () => {},
+    onClickShare = () => {},
+    setRefetch = () => {},
+  } = props;
   const {
     id: PostId,
     PostComments = [],
@@ -81,17 +90,9 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 
   const [isLiked, setIsLiked] = useState(false);
   const [isShowMore, setIsShowMore] = useState(false);
-  const [showModalDetail, setShowModalDetail] = useState(false);
-  const [showModalDevelopment, setShowModalDevelopment] = useState(false);
 
   const [likeUnLike, {loading: loadingLike, error: errorLike}]: any[] =
     useMutation(likeUnLikeApi);
-
-  const toggleModalDetail = () => {
-    setShowModalDetail(!showModalDetail);
-  };
-  const toggleModalDevelopment = () =>
-    setShowModalDevelopment(!showModalDevelopment);
 
   const onClickLike = async () => {
     try {
@@ -99,7 +100,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       await likeUnLike({
         data: {PostId},
       });
-      router.replace(router.asPath);
+      setRefetch(true);
     } catch (err) {
       console.error(err);
     }
@@ -124,16 +125,6 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 
   return (
     <>
-      <ModalDevelopment
-        open={showModalDevelopment}
-        toggle={toggleModalDevelopment}
-        feature="Share"
-      />
-      <ModalDetailPost
-        open={showModalDetail}
-        toggle={toggleModalDetail}
-        data={data}
-      />
       <Card className={styles.container}>
         <CardHeader
           avatar={
@@ -198,7 +189,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
           <IconButton
             aria-label="add to favorites"
             className="mx-2"
-            onClick={toggleModalDetail}
+            onClick={() => onClickDetail(index)}
           >
             <ChatAltIcon className={`${styles.text} h-6 w-6`} />
             <span className={`${styles.text} ml-1`}>
@@ -208,7 +199,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
           <IconButton
             aria-label="share"
             className="flex flex-row"
-            onClick={toggleModalDevelopment}
+            onClick={() => onClickShare()}
           >
             <ShareIcon className={`${styles.text} h-6 w-6`} />
             <span className={`${styles.text} ml-1`}>0</span>

@@ -1,15 +1,12 @@
-import type {
-  // GetServerSidePropsContext,
-  NextComponentType,
-  NextPageContext,
-} from "next";
+import type {NextComponentType, NextPageContext} from "next";
 
 import PostCard from "../components/PostCard.";
 import * as Alert from "../components/Alert";
+import ModalDevelopment from "../components/ModalDevelopment";
+import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Home.module.css";
 import {getPostsApi} from "../store/api";
-// import {getCookie} from "cookies-next";
 import {useSelector} from "react-redux";
 import {useEffect, useState} from "react";
 import useFetch from "../hooks/useFetch";
@@ -54,13 +51,6 @@ interface Post {
 }
 
 interface Props {
-  // data:
-  //   | {
-  //       data: {
-  //         rows: Post[];
-  //       };
-  //     }
-  //   | any;
   error: null | any;
 }
 
@@ -68,7 +58,6 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   const [refetch, setRefetch] = useState<boolean>(false);
   const {
     data,
-    // loading,
     error,
   }: {
     data:
@@ -84,8 +73,6 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     setRefetch,
   });
 
-  console.log({data});
-
   const {rows = []} = data || {};
 
   const id = useSelector(
@@ -96,6 +83,17 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     }) => state?.rootReducer?.session?.id
   );
 
+  const [showModalDevelopment, setShowModalDevelopment] = useState(false);
+  const [showModalDetail, setShowModalDetail] = useState(false);
+  const [selectedPostIndex, setSelectedPostIndex] = useState<number>(-1);
+
+  const toggleModalDevelopment = () =>
+    setShowModalDevelopment(!showModalDevelopment);
+
+  const toggleModalDetail = (postIndex: number) => {
+    setSelectedPostIndex(postIndex);
+    setShowModalDetail(!showModalDetail);
+  };
   useEffect(() => {
     if (error) {
       Alert.Error("Failed fetching data posts!");
@@ -103,36 +101,39 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   }, [error]);
 
   return (
-    <div className={`${styles.container} verticalCenter`}>
-      {rows && rows.length && Array.isArray(rows) ? (
-        <>
-          {rows.map((row: Post, idx) => (
-            <PostCard data={row} key={idx} ownUserId={id} />
-          ))}
-        </>
-      ) : (
-        <p className="text-md">No posts yet</p>
-      )}
-    </div>
+    <>
+      <ModalDevelopment
+        open={showModalDevelopment}
+        toggle={toggleModalDevelopment}
+        feature="Share"
+      />
+      <ModalDetailPost
+        open={showModalDetail}
+        toggle={toggleModalDetail}
+        data={rows?.[selectedPostIndex] || {}}
+        setRefetch={setRefetch}
+      />
+      <div className={`${styles.container} verticalCenter`}>
+        {rows && rows.length && Array.isArray(rows) ? (
+          <>
+            {rows.map((row: Post, idx) => (
+              <PostCard
+                data={row}
+                key={idx}
+                index={idx}
+                ownUserId={id}
+                setRefetch={setRefetch}
+                onClickDetail={toggleModalDetail}
+                onClickShare={toggleModalDevelopment}
+              />
+            ))}
+          </>
+        ) : (
+          <p className="text-md">No posts yet</p>
+        )}
+      </div>
+    </>
   );
 };
-
-// export const getServerSideProps = async (
-//   context: GetServerSidePropsContext
-// ) => {
-//   try {
-//     const {req, res} = context;
-//     const accessToken: string | any =
-//       getCookie("accessToken", {req, res}) || "";
-//     const {data} = await getPostsApi({accessToken});
-//     return {
-//       props: {data: data},
-//     };
-//   } catch (error) {
-//     return {
-//       props: {data: {error, data: null}},
-//     };
-//   }
-// };
 
 export default Home;

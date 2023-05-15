@@ -19,6 +19,7 @@ interface Props {
   ownUserId: number;
   targetUserId: number;
   accessToken: string;
+  setRefetch: Function;
 }
 
 interface Profile {
@@ -41,7 +42,15 @@ const boxStyle = {
 const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {open, toggle, title, ownUserId, accessToken, targetUserId} = props;
+  const {
+    open,
+    toggle,
+    title,
+    ownUserId,
+    accessToken,
+    targetUserId,
+    setRefetch: setRefetchProfile,
+  } = props;
 
   const router = useRouter();
 
@@ -78,7 +87,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
           data: {id},
         });
         setLoadingAction(false);
-        router.replace(router.asPath);
+        setRefetchProfile(true);
         setRefetch(true);
       } catch (err) {
         Alert.Error("Failed do action");
@@ -174,6 +183,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
     loadingAction,
     accessToken,
     title,
+    setRefetchProfile,
   ]);
 
   return (
