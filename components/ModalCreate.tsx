@@ -27,6 +27,8 @@ import * as Alert from "../components/Alert";
 import styles from "../styles/ModalCreate.module.css";
 import {createPostApi} from "../store/api";
 import useMutation from "../hooks/useMutation";
+import {setRefetchPost} from "../store/reducers/root";
+import {useDispatch} from "react-redux";
 
 interface Props {
   open: boolean;
@@ -53,7 +55,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
   const {open, toggle, username, avatar} = props;
-  const router = useRouter();
+  const dispatch = useDispatch();
 
   const fileRef = useRef<HTMLInputElement>(
     typeof window === "object" ? document.createElement("input") : null
@@ -66,7 +68,17 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [createPost, {data, error}]: any[] = useMutation(createPostApi);
+  const reset = () => {
+    setFiles([]);
+    setPreview([]);
+    setCurrentStep(1);
+    setCaption("");
+    setShowEmojiPicker(false);
+    setLoading(false);
+  };
+
+  const [createPost, {data, error}, resetCreatePost]: any[] =
+    useMutation(createPostApi);
 
   const onClickFile = () => {
     if (fileRef?.current) {
@@ -119,27 +131,20 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       tempUrls.push(uploadFiles);
     }
     Promise.all(tempUrls)
-      .then(async (result) => {
-        try {
-          await createPost({
-            accessToken: localStorage.getItem("accessToken"),
-            data: {
-              caption,
-              files: result,
-            },
-          });
-          setLoading(false);
-          router.replace(router.asPath);
-          toggle();
-        } catch (err) {
-          console.error(err);
-        }
+      .then((result) => {
+        createPost({
+          accessToken: localStorage.getItem("accessToken"),
+          data: {
+            caption,
+            files: result,
+          },
+        });
       })
       .catch((err) => {
         Alert.Error(err);
         setLoading(false);
       });
-  }, [files, createPost, caption, router, toggle]);
+  }, [files, createPost, caption]);
 
   const Header = useMemo(() => {
     const changeStep = (action: string) => {
@@ -325,6 +330,15 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     caption,
     showEmojiPicker,
   ]);
+
+  useEffect(() => {
+    if (data) {
+      dispatch(setRefetchPost(true));
+      toggle();
+      reset();
+      resetCreatePost();
+    }
+  }, [data, resetCreatePost, toggle, dispatch]);
 
   useEffect(() => {
     if (error) {

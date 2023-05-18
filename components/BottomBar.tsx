@@ -11,14 +11,29 @@ import styles from "../styles/BottomBar.module.css";
 import {useRouter} from "next/router";
 import ModalDevelopment from "./ModalDevelopment";
 import ModalCreate from "./ModalCreate";
+import {useSelector} from "react-redux";
 
 interface Props {}
 
+interface Session {
+  accessToken: string;
+  id: number;
+  username: string;
+  avatar: string;
+}
+
 const BottomBar: NextComponentType<NextPageContext, {}, Props> = () => {
   const router = useRouter();
+  const {username = "", avatar = ""} =
+    useSelector(
+      (state: {
+        rootReducer: {
+          session: Session;
+        };
+      }) => state?.rootReducer?.session
+    ) || {};
 
   const [value, setValue] = useState(0);
-  const [user, setUser] = useState({username: "", avatar: ""});
   const [showModalDevelopment, setShowModalDevelopment] = useState(false);
   const [showModalCreate, setShowModalCreate] = useState(false);
 
@@ -27,13 +42,6 @@ const BottomBar: NextComponentType<NextPageContext, {}, Props> = () => {
   };
   const toggleModalDevelopment = () =>
     setShowModalDevelopment(!showModalDevelopment);
-
-  useEffect(() => {
-    setUser({
-      username: localStorage.getItem("username") || "",
-      avatar: localStorage.getItem("avatar") || "",
-    });
-  }, []);
 
   return (
     <Fragment>
@@ -45,8 +53,8 @@ const BottomBar: NextComponentType<NextPageContext, {}, Props> = () => {
       <ModalCreate
         toggle={toggleModalCreate}
         open={showModalCreate}
-        username={user.username}
-        avatar={user.avatar}
+        username={username}
+        avatar={avatar}
       />
       <BottomNavigation
         showLabels
@@ -79,18 +87,18 @@ const BottomBar: NextComponentType<NextPageContext, {}, Props> = () => {
           icon={
             <Avatar
               className={
-                router?.query?.username === user?.username
+                router?.query?.username === username
                   ? styles.selectedIconImage
                   : styles.iconImage
               }
               src={
-                user?.avatar ||
+                avatar ||
                 "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
               }
               alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
             />
           }
-          onClick={() => router.push(`/${user?.username}`)}
+          onClick={() => router.push(`/${username}`)}
         />
       </BottomNavigation>
     </Fragment>

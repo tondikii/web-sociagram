@@ -7,9 +7,10 @@ import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Home.module.css";
 import {getPostsApi} from "../store/api";
-import {useSelector} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {useEffect, useState} from "react";
 import useFetch from "../hooks/useFetch";
+import {setRefetchPost} from "../store/reducers/root";
 
 interface PostCommentUser {
   id: number;
@@ -55,6 +56,7 @@ interface Props {
 }
 
 const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
+  const dispatch = useDispatch();
   const [refetch, setRefetch] = useState<boolean>(false);
   const {
     data,
@@ -75,12 +77,16 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
 
   const {rows = []} = data || {};
 
-  const id = useSelector(
+  const {
+    refetchPost,
+    session: {id},
+  } = useSelector(
     (state: {
       rootReducer: {
         session: {id: number};
+        refetchPost: boolean;
       };
-    }) => state?.rootReducer?.session?.id
+    }) => state?.rootReducer
   );
 
   const [showModalDevelopment, setShowModalDevelopment] = useState(false);
@@ -99,6 +105,12 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       Alert.Error("Failed fetching data posts!");
     }
   }, [error]);
+  useEffect(() => {
+    if (refetchPost) {
+      setRefetch(true);
+      dispatch(setRefetchPost(false));
+    }
+  }, [refetchPost, dispatch]);
 
   return (
     <>

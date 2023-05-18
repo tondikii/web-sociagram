@@ -91,19 +91,16 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   const [isLiked, setIsLiked] = useState(false);
   const [isShowMore, setIsShowMore] = useState(false);
 
-  const [likeUnLike, {loading: loadingLike, error: errorLike}]: any[] =
-    useMutation(likeUnLikeApi);
+  const [
+    likeUnLike,
+    {data: dataLike, loading: loadingLike, error: errorLike},
+  ]: any[] = useMutation(likeUnLikeApi);
 
-  const onClickLike = async () => {
-    try {
-      if (loadingLike) return;
-      await likeUnLike({
-        data: {PostId},
-      });
-      setRefetch(true);
-    } catch (err) {
-      console.error(err);
-    }
+  const onClickLike = () => {
+    if (loadingLike) return;
+    likeUnLike({
+      data: {PostId},
+    });
   };
   const onClickMore = () => {
     setIsShowMore(!isShowMore);
@@ -114,6 +111,11 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
       Alert.Error("Error like post");
     }
   }, [errorLike]);
+  useEffect(() => {
+    if (dataLike) {
+      setRefetch(true);
+    }
+  }, [dataLike, setRefetch]);
 
   useEffect(() => {
     if (PostLikes) {

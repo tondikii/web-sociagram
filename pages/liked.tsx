@@ -8,10 +8,12 @@ import {useState, useEffect} from "react";
 import {HeartIcon} from "@heroicons/react/solid";
 import ModalDetailPost from "../components/ModalDetailPost";
 import {CardMedia} from "@mui/material";
+import * as Alert from "../components/Alert";
 
 import styles from "../styles/Liked.module.css";
 import {getCookie} from "cookies-next";
 import {getPostsLikedApi} from "../store/api";
+import useFetch from "../hooks/useFetch";
 
 interface PostCommentUser {
   id: number;
@@ -50,24 +52,47 @@ interface Props {
 }
 
 const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {data, error} = props;
-
-  const rows = data?.data || [];
-
-  const [selectedPost, setSelectedPost] = useState<Post | any>({});
+  const [refetch, setRefetch] = useState<boolean>(false);
   const [showModalPost, setShowModalPost] = useState<boolean>(false);
+  const [selectedPostIndex, setSelectedPostIndex] = useState<number>(-1);
 
-  const toggleModalPost = (post: object) => {
-    setSelectedPost(post);
+  const {
+    data,
+    error,
+  }: {
+    data:
+      | {
+          rows: Post[];
+        }
+      | any;
+    loading: boolean;
+    error: boolean;
+  } = useFetch({
+    api: getPostsLikedApi,
+    refetch,
+    setRefetch,
+  });
+
+  const rows = data || [];
+
+  const toggleModalPost = (postIndex: number) => {
+    setSelectedPostIndex(postIndex);
     setShowModalPost(!showModalPost);
   };
+
+  useEffect(() => {
+    if (error) {
+      Alert.Error("Failed fetching data posts!");
+    }
+  }, [error]);
 
   return (
     <>
       <ModalDetailPost
         open={showModalPost}
         toggle={toggleModalPost}
-        data={selectedPost}
+        data={rows?.[selectedPostIndex]?.Post || {}}
+        setRefetch={setRefetch}
       />
       <div className={`${styles.container} verticalCenter`}>
         <div className={`${styles.postsContainer} verticalCenter`}>
@@ -81,7 +106,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
               {rows.map((row, idx: number) => (
                 <div
                   role="button"
-                  onClick={() => toggleModalPost(row)}
+                  onClick={() => toggleModalPost(idx)}
                   key={idx}
                 >
                   <CardMedia
@@ -103,24 +128,6 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       </div>
     </>
   );
-};
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  try {
-    const {req, res} = context;
-    const accessToken: string | any =
-      getCookie("accessToken", {req, res}) || "";
-    const {data} = await getPostsLikedApi({accessToken});
-    return {
-      props: {data},
-    };
-  } catch (error) {
-    return {
-      props: {data: {error, data: null}},
-    };
-  }
 };
 
 export default Liked;

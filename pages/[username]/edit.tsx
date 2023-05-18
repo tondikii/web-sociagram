@@ -1,8 +1,4 @@
-import type {
-  GetServerSidePropsContext,
-  NextComponentType,
-  NextPageContext,
-} from "next";
+import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
 import {
   useCallback,
@@ -19,11 +15,11 @@ import {Avatar, Button} from "@mui/material";
 import * as Alert from "../../components/Alert";
 
 import styles from "../../styles/EditProfile.module.css";
-import {getCookie} from "cookies-next";
 import {editProfileApi, getProfileApi} from "../../store/api";
 import useMutation from "../../hooks/useMutation";
 import {useDispatch, useSelector} from "react-redux";
 import {setSession} from "../../store/reducers/root";
+import useFetch from "../../hooks/useFetch";
 
 interface Profile {
   id: number;
@@ -64,9 +60,7 @@ interface Session {
 }
 
 const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
-  const {
-    data: {data, error},
-  } = props;
+  const {} = props;
 
   const avatarRef = useRef<HTMLInputElement>(
     typeof window === "object" ? document.createElement("input") : null
@@ -93,6 +87,14 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   const [preview, setPreview] = useState("");
   const [modalPreview, setModalPreview] = useState(false);
 
+  const {
+    data,
+  }: {
+    data: Profile | any;
+  } = useFetch({
+    api: getProfileApi,
+    payload: {data: username},
+  });
   const [
     editProfile,
     {data: dataEdit, loading: loadingEdit, error: errorEdit},
@@ -271,22 +273,18 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   );
 
   const handleSubmitForm = useCallback(
-    async (event: React.FormEvent<HTMLFormElement>) => {
-      try {
-        event.preventDefault();
-        const {name, username, bio, gender, avatar} = profileForm;
-        const formData = new FormData();
-        formData.append(typeof avatar === "string" ? "avatar" : "file", avatar);
-        formData.append("name", name);
-        formData.append("username", username);
-        formData.append("bio", bio);
-        formData.append("gender", gender);
-        await editProfile({
-          data: formData,
-        });
-      } catch (err) {
-        console.error(err);
-      }
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const {name, username, bio, gender, avatar} = profileForm;
+      const formData = new FormData();
+      formData.append(typeof avatar === "string" ? "avatar" : "file", avatar);
+      formData.append("name", name);
+      formData.append("username", username);
+      formData.append("bio", bio);
+      formData.append("gender", gender);
+      editProfile({
+        data: formData,
+      });
     },
     [profileForm, editProfile]
   );
@@ -299,7 +297,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   }, [preview, profileForm.avatar]);
 
   useEffect(() => {
-    const {id, name, bio, gender, avatar} = data;
+    const {id, name, bio, gender, avatar} = data || {};
     if (id) {
       setProfileForm({
         ...profileForm,
@@ -400,25 +398,6 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       </div>
     </Fragment>
   );
-};
-
-export const getServerSideProps = async (
-  context: GetServerSidePropsContext
-) => {
-  try {
-    const {params, req, res} = context;
-    const username: string | any = params?.username || "";
-    const accessToken: string | any =
-      getCookie("accessToken", {req, res}) || "";
-    const {data} = await getProfileApi({accessToken, data: username || null});
-    return {
-      props: {data: data},
-    };
-  } catch (error) {
-    return {
-      props: {data: {error, data: null}},
-    };
-  }
 };
 
 export default Liked;

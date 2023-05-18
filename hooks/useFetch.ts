@@ -29,6 +29,9 @@ const useFetch = ({
 
   const getData = useCallback(async () => {
     try {
+      if (!accessToken) {
+        return;
+      }
       const {data} = await api({
         signal: abortController.signal,
         accessToken,

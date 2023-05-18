@@ -14,6 +14,12 @@ const useMutation = (api: Function) => {
   const [error, setError] = useState<any | null>(null);
   const [controller, setController] = useState<AbortController | null>(null);
 
+  const reset = () => {
+    setLoading(false);
+    setData(null);
+    setError("");
+  };
+
   const hitApi = async (payload: any = {}) => {
     try {
       if (loading) {
@@ -46,6 +52,6 @@ const useMutation = (api: Function) => {
     };
   }, [controller]);
 
-  return [hitApi, {data, loading, error}];
+  return [hitApi, {data, loading, error}, reset];
 };
 export default useMutation;

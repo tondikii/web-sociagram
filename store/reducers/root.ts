@@ -4,7 +4,7 @@ import {signOut} from "../actions";
 const rootSlice = createSlice({
   name: "root",
   initialState: {
-    reload: false,
+    refetchPost: false,
     session: {accessToken: "", id: 0, username: "", avatar: ""},
     editProfile: {
       fetch: false,
@@ -18,6 +18,9 @@ const rootSlice = createSlice({
     setSession(state, action) {
       state.session = action.payload;
     },
+    setRefetchPost(state, action) {
+      state.refetchPost = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(signOut.fulfilled, (state) => {
@@ -26,6 +29,6 @@ const rootSlice = createSlice({
   },
 });
 
-export const {setSession} = rootSlice.actions;
+export const {setSession, setRefetchPost} = rootSlice.actions;
 
 export default rootSlice.reducer;

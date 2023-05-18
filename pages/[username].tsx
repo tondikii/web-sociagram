@@ -1,10 +1,5 @@
 import {Fragment, useEffect, useMemo, useState, useCallback} from "react";
-import type {
-  NextComponentType,
-  NextPageContext,
-  GetServerSidePropsContext,
-} from "next";
-import {getCookie} from "cookies-next";
+import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
 import {useDispatch, useSelector} from "react-redux";
 import {followUnfollowApi, getProfileApi} from "../store/api";
@@ -20,6 +15,7 @@ import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Profile.module.css";
 import useFetch from "../hooks/useFetch";
+import {setRefetchPost} from "../store/reducers/root";
 
 interface PostCommentUser {
   id: number;
@@ -80,16 +76,17 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const signOut: Function = signOutProps;
 
   const {
-    accessToken,
-    username: ownUsername,
-    id,
-  } = useSelector(
-    (state: {
-      rootReducer: {
-        session: Session;
-      };
-    }) => state?.rootReducer?.session
-  ) || {};
+    session: {accessToken, username: ownUsername, id},
+    refetchPost,
+  } =
+    useSelector(
+      (state: {
+        rootReducer: {
+          session: Session;
+          refetchPost: boolean;
+        };
+      }) => state?.rootReducer
+    ) || {};
 
   const router = useRouter();
   const {username = ""} = router.query;
@@ -223,11 +220,23 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       <ModalDetailPost
         open={showModalPost}
         toggle={toggleModalPost}
-        data={rows?.[selectedPostIndex] || {}}
+        data={
+          {
+            ...rows?.[selectedPostIndex],
+            User: {username, avatar: data?.avatar},
+          } || {}
+        }
         setRefetch={setRefetch}
       />
     ),
-    [showModalPost, toggleModalPost, selectedPostIndex, rows]
+    [
+      showModalPost,
+      toggleModalPost,
+      selectedPostIndex,
+      rows,
+      data?.avatar,
+      username,
+    ]
   );
 
   useEffect(() => {
@@ -235,6 +244,12 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       setRefetch(true);
     }
   }, [username]);
+  useEffect(() => {
+    if (refetchPost) {
+      setRefetch(true);
+      dispatch(setRefetchPost(false));
+    }
+  }, [refetchPost, dispatch]);
 
   return (
     <Fragment>
