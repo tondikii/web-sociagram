@@ -1,8 +1,4 @@
-import type {
-  GetServerSidePropsContext,
-  NextComponentType,
-  NextPageContext,
-} from "next";
+import type {NextComponentType, NextPageContext} from "next";
 import {useState, useEffect} from "react";
 
 import {HeartIcon} from "@heroicons/react/solid";
