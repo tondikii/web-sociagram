@@ -119,7 +119,6 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
 
   useEffect(() => {
     if (data?.Posts) {
-      console.log({Posts: data?.Posts});
       dispatch(setPosts(data?.Posts));
     }
   }, [data, dispatch]);

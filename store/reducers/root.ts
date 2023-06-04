@@ -1,5 +1,5 @@
 import {createSlice} from "@reduxjs/toolkit";
-import {signOut, getPosts} from "../actions";
+import {signOut, getPosts, getPostsLiked} from "../actions";
 
 const masterInitialState = {
   refetchPost: false,
@@ -41,7 +41,19 @@ const rootSlice = createSlice({
     }));
     addCase(getPosts.rejected, (state, action: {payload: any}) => ({
       ...state,
-      posts: {fetch: true, data: null, error: action?.payload?.rows},
+      posts: {fetch: true, data: null, error: action.payload},
+    }));
+    addCase(getPostsLiked.pending, (state) => ({
+      ...state,
+      posts: {fetch: true, data: null, error: ""},
+    }));
+    addCase(getPostsLiked.fulfilled, (state, action) => ({
+      ...state,
+      posts: {fetch: true, data: action?.payload, error: ""},
+    }));
+    addCase(getPostsLiked.rejected, (state, action: {payload: any}) => ({
+      ...state,
+      posts: {fetch: true, data: null, error: action.payload},
     }));
   },
 });
