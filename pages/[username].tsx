@@ -15,7 +15,7 @@ import ModalDetailPost from "../components/ModalDetailPost";
 
 import styles from "../styles/Profile.module.css";
 import useFetch from "../hooks/useFetch";
-import {setRefetchPost} from "../store/reducers/root";
+import {setRefetchPost, setPosts} from "../store/reducers/root";
 
 interface PostCommentUser {
   id: number;
@@ -67,6 +67,12 @@ interface Session {
   avatar: string;
 }
 
+interface Posts {
+  fetch: boolean;
+  data: Post[];
+  error: string;
+}
+
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
@@ -78,15 +84,16 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const {
     session: {accessToken, username: ownUsername, id},
     refetchPost,
-  } =
-    useSelector(
-      (state: {
-        rootReducer: {
-          session: Session;
-          refetchPost: boolean;
-        };
-      }) => state?.rootReducer
-    ) || {};
+    posts: {data: rows = [], fetch, error},
+  } = useSelector(
+    (state: {
+      rootReducer: {
+        session: Session;
+        refetchPost: boolean;
+        posts: Posts;
+      };
+    }) => state?.rootReducer
+  ) || {};
 
   const router = useRouter();
   const {username = ""} = router.query;
@@ -110,8 +117,15 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     payload: {data: username},
   });
 
+  useEffect(() => {
+    if (data?.Posts) {
+      console.log({Posts: data?.Posts});
+      dispatch(setPosts(data?.Posts));
+    }
+  }, [data, dispatch]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const rows: Post[] = data?.Posts || [];
+  // const rows: Post[] = data?.Posts || [];
 
   const toggleModalPost = useCallback(
     (postIndex: number) => {
@@ -151,6 +165,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const toggleModalUsers = useCallback(() => {
     setShowModalUsers(!showModalUsers);
   }, [showModalUsers]);
+
   const onClickActionButton = async () => {
     try {
       if (isOwnProfile) {
@@ -172,10 +187,12 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
       setLoading(false);
     }
   };
+
   const handleSignOut = () => {
     dispatch(signOut());
     router.push("/signin");
   };
+
   const labelButton = useMemo(() => {
     if (loading) {
       return "Loading...";
@@ -215,8 +232,27 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     ]
   );
 
-  const ComponentModalDetailPost = useMemo(
-    () => (
+  const ComponentModalDetailPost = useMemo(() => {
+    const handleLike = (idx: number, dataLike: PostLike) => {
+      const newRows = [...rows];
+      const row = newRows[idx];
+      const isFound = row?.PostLikes.find(({id}) => id === dataLike?.id);
+      if (isFound) {
+        newRows[idx] = {
+          ...row,
+          PostLikes: [...row?.PostLikes.filter(({id}) => id !== dataLike?.id)],
+        };
+        dispatch(setPosts(newRows));
+      } else {
+        newRows[idx] = {
+          ...row,
+          PostLikes: [...row?.PostLikes, dataLike],
+        };
+        dispatch(setPosts(newRows));
+      }
+    };
+
+    return (
       <ModalDetailPost
         open={showModalPost}
         toggle={toggleModalPost}
@@ -226,18 +262,20 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             User: {username, avatar: data?.avatar},
           } || {}
         }
-        setRefetch={setRefetch}
+        // setRefetch={setRefetch}
+        index={selectedPostIndex}
+        handleLike={handleLike}
       />
-    ),
-    [
-      showModalPost,
-      toggleModalPost,
-      selectedPostIndex,
-      rows,
-      data?.avatar,
-      username,
-    ]
-  );
+    );
+  }, [
+    showModalPost,
+    toggleModalPost,
+    selectedPostIndex,
+    rows,
+    data?.avatar,
+    username,
+    dispatch,
+  ]);
 
   useEffect(() => {
     if (username) {

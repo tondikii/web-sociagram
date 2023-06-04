@@ -56,7 +56,8 @@ interface Props {
         createdAt: string | Date;
       }
     | any;
-  setRefetch: Function;
+  index: number;
+  handleLike: Function;
 }
 
 const boxStyle = {
@@ -85,7 +86,8 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       PostComments = [],
       createdAt = new Date(),
     } = {},
-    setRefetch,
+    index,
+    handleLike = () => {},
   } = props;
   const router = useRouter();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -160,7 +162,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
           accessToken,
           data: {PostId, comment},
         });
-        setRefetch(true);
+        // setRefetch(true);
         setComment("");
       } catch (err) {
         Alert.Error("Error create comment");
@@ -171,12 +173,13 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       try {
         if (loadingLike) return;
         setLoadingLike(true);
-        await likeUnLikeApi({
+        const {data: dataLike} = await likeUnLikeApi({
           accessToken,
           data: {PostId},
         });
-        setIsLiked(!isLiked);
-        setRefetch(true);
+        if (dataLike?.data) {
+          handleLike(index, dataLike?.data);
+        }
       } catch (err) {
         Alert.Error("Error like post");
       } finally {
@@ -498,9 +501,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
 
   useEffect(() => {
     if (PostLikes) {
-      const isFound = PostLikes.find(
-        (e: {UserId: number}) => e?.UserId === ownUserId
-      );
+      const isFound = PostLikes.find((e: PostLike) => e?.UserId === ownUserId);
       if (isFound) setIsLiked(true);
       else setIsLiked(false);
     }

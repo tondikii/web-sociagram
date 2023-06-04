@@ -1,6 +1,6 @@
 import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 import moment from "moment";
 
 import {
@@ -60,7 +60,7 @@ interface Props {
   ownUserId: number;
   onClickDetail: Function;
   onClickShare: Function;
-  setRefetch: Function;
+  handleLike: Function;
 }
 
 const PostCard: NextComponentType<NextPageContext, {}, Props> = (
@@ -72,7 +72,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
     ownUserId,
     onClickDetail = () => {},
     onClickShare = () => {},
-    setRefetch = () => {},
+    handleLike = () => {},
   } = props;
   const {
     id: PostId,
@@ -90,6 +90,7 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 
   const [isLiked, setIsLiked] = useState(false);
   const [isShowMore, setIsShowMore] = useState(false);
+  // const [usedLikes, setUsedLikes] = useState(PostLikes);
 
   const [
     likeUnLike,
@@ -113,9 +114,10 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
   }, [errorLike]);
   useEffect(() => {
     if (dataLike) {
-      setRefetch(true);
+      handleLike(index, dataLike);
     }
-  }, [dataLike, setRefetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataLike]);
 
   useEffect(() => {
     if (PostLikes) {

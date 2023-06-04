@@ -1,19 +1,19 @@
 import {createSlice} from "@reduxjs/toolkit";
-import {signOut} from "../actions";
+import {signOut, getPosts} from "../actions";
+
+const masterInitialState = {
+  refetchPost: false,
+  session: {accessToken: "", id: 0, username: "", avatar: ""},
+  posts: {
+    fetch: false,
+    data: null,
+    error: "",
+  },
+};
 
 const rootSlice = createSlice({
   name: "root",
-  initialState: {
-    refetchPost: false,
-    session: {accessToken: "", id: 0, username: "", avatar: ""},
-    editProfile: {
-      fetch: false,
-      data: {
-        userId: "",
-      },
-      error: "",
-    },
-  },
+  initialState: {...masterInitialState},
   reducers: {
     setSession(state, action) {
       state.session = action.payload;
@@ -21,14 +21,31 @@ const rootSlice = createSlice({
     setRefetchPost(state, action) {
       state.refetchPost = action.payload;
     },
+    setPosts(state: any, action) {
+      state.posts = {
+        ...state?.posts,
+        data: action?.payload,
+      };
+    },
   },
   extraReducers: (builder) => {
-    builder.addCase(signOut.fulfilled, (state) => {
-      state.session = {accessToken: "", id: 0, username: "", avatar: ""};
-    });
+    const {addCase} = builder;
+    addCase(signOut.fulfilled, () => ({...masterInitialState}));
+    addCase(getPosts.pending, (state) => ({
+      ...state,
+      posts: {fetch: true, data: null, error: ""},
+    }));
+    addCase(getPosts.fulfilled, (state, action) => ({
+      ...state,
+      posts: {fetch: true, data: action?.payload?.rows, error: ""},
+    }));
+    addCase(getPosts.rejected, (state, action: {payload: any}) => ({
+      ...state,
+      posts: {fetch: true, data: null, error: action?.payload?.rows},
+    }));
   },
 });
 
-export const {setSession, setRefetchPost} = rootSlice.actions;
+export const {setSession, setRefetchPost, setPosts} = rootSlice.actions;
 
 export default rootSlice.reducer;

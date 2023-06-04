@@ -78,7 +78,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
 
   useEffect(() => {
     if (error) {
-      Alert.Error("Failed fetching data posts!");
+      Alert.Error("Failed fetching posts!");
     }
   }, [error]);
 
