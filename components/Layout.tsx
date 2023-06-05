@@ -5,6 +5,7 @@ import BottomBar from "./BottomBar";
 import ChatDrawer from "./ChatDrawer";
 
 import styles from "../styles/Layout.module.css";
+import TopBar from "./TopBar";
 
 interface Props {
   children: JSX.Element;
@@ -21,6 +22,7 @@ const Layout: NextComponentType<NextPageContext, {}, Props> = (
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row lg:justify-between mb-10 lg mb:0">
+      <TopBar />
       <SideBarNav />
       <div className={styles.content}>{children}</div>
       <BottomBar />
