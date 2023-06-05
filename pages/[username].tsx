@@ -388,7 +388,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             </div>
           </div>
         </div>
-        <div className="vertical lg:hidden mt-4">
+        <div className="vertical lg:hidden mt-6 w-full items-start ">
           <strong className="lg:text-md text-sm">
             {data?.name || "No name yet"}
           </strong>
@@ -396,7 +396,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             {data?.bio || "No bio yet"}
           </p>
         </div>
-        <hr className="w-full lg:w-3/5 mt-8 lg:hidden" />
+        <hr className="w-full lg:w-3/5 mt-6 lg:hidden" />
         <div className="my-4 horizontal lg:hidden justify-around w-full">
           <div className="text-sm mr-4 flex flex-col items-center">
             <strong>{rows?.length}</strong>
