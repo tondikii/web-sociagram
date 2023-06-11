@@ -123,9 +123,6 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
     }
   }, [data, dispatch]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // const rows: Post[] = data?.Posts || [];
-
   const toggleModalPost = useCallback(
     (postIndex: number) => {
       setSelectedPostIndex(postIndex);
@@ -261,7 +258,6 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
             User: {username, avatar: data?.avatar},
           } || {}
         }
-        // setRefetch={setRefetch}
         index={selectedPostIndex}
         handleLike={handleLike}
       />
