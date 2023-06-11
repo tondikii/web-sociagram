@@ -129,7 +129,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
           </div>
           <hr className="w-full mt-4 mb-8" />
           {rows && rows.length && Array.isArray(rows) ? (
-            <div className="grid grid-cols-3 gap-8 w-full">
+            <div className="grid grid-cols-3 lg:gap-8 w-full">
               {rows.map((row, idx: number) => (
                 <div
                   role="button"

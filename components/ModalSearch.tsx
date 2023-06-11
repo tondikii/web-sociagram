@@ -17,6 +17,7 @@ import {searchUsersApi} from "../store/api";
 
 import styles from "../styles/ModalSearch.module.css";
 import useMutation from "../hooks/useMutation";
+import UserCard from "./UserCard";
 
 interface Props {
   open: boolean;
@@ -89,9 +90,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
       <div className="flex flex-col overflow-y-scroll max-h-96">
         {users.map(
           (e: {avatar: string; username: string; name: string}, idx) => (
-            <div
-              className={`${styles.userCard} ${idx === 0 ? "mt-1" : ""}`}
-              key={idx}
+            <UserCard
               onClick={(event) => {
                 event.preventDefault();
                 setSearchState("");
@@ -99,22 +98,9 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
                 toggle();
                 router.push(`/${e?.username}`);
               }}
-            >
-              <Avatar
-                className="rounded-full w-14 h-14"
-                src={
-                  e?.avatar ||
-                  "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-                }
-                alt="https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-              />
-              <div className="flex flex-col ml-4">
-                <span className="font-medium text-lg">
-                  {e?.username || "-"}
-                </span>
-                <span className="text-zinc-400 text-md">{e?.name || "-"}</span>
-              </div>
-            </div>
+              user={e}
+              key={idx}
+            />
           )
         )}
       </div>

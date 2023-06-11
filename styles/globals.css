@@ -169,3 +169,7 @@ a {
 .break-spaces {
   white-space: break-spaces;
 }
+
+.w-48 {
+  width: 48%;
+}

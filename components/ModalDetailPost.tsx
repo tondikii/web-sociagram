@@ -162,7 +162,6 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
           accessToken,
           data: {PostId, comment},
         });
-        // setRefetch(true);
         setComment("");
       } catch (err) {
         Alert.Error("Error create comment");
