@@ -95,6 +95,16 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     }
   };
 
+  const handleComment = (idx: number, dataComment: PostComment) => {
+    const newRows = [...data];
+    const row = newRows[idx];
+    newRows[idx] = {
+      ...row,
+      PostComments: [...row?.PostComments, dataComment],
+    };
+    dispatch(setPosts(newRows));
+  };
+
   const fetchPosts = useCallback(
     () => dispatch(getPostsLiked({accessToken})),
     [accessToken, dispatch]
@@ -119,6 +129,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
         toggle={toggleModalPost}
         data={rows?.[selectedPostIndex] || {}}
         handleLike={handleLike}
+        handleComment={handleComment}
         index={selectedPostIndex}
       />
       <div className={`${styles.container} verticalCenter`}>

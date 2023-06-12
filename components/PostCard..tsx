@@ -90,7 +90,6 @@ const PostCard: NextComponentType<NextPageContext, {}, Props> = (
 
   const [isLiked, setIsLiked] = useState(false);
   const [isShowMore, setIsShowMore] = useState(false);
-  // const [usedLikes, setUsedLikes] = useState(PostLikes);
 
   const [
     likeUnLike,

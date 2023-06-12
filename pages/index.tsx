@@ -112,6 +112,16 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     }
   };
 
+  const handleComment = (idx: number, dataComment: PostComment) => {
+    const newRows = [...data];
+    const row = newRows[idx];
+    newRows[idx] = {
+      ...row,
+      PostComments: [...row?.PostComments, dataComment],
+    };
+    dispatch(setPosts(newRows));
+  };
+
   useEffect(() => {
     if (error) {
       Alert.Error("Failed fetching posts!");
@@ -142,6 +152,7 @@ const Home: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
         toggle={toggleModalDetail}
         data={data?.[selectedPostIndex] || {}}
         handleLike={handleLike}
+        handleComment={handleComment}
         index={selectedPostIndex}
       />
       <div className={`${styles.container} verticalCenter`}>
