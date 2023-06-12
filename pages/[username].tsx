@@ -247,6 +247,15 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         dispatch(setPosts(newRows));
       }
     };
+    const handleComment = (idx: number, dataComment: PostComment) => {
+      const newRows = [...rows];
+      const row = newRows[idx];
+      newRows[idx] = {
+        ...row,
+        PostComments: [...row?.PostComments, dataComment],
+      };
+      dispatch(setPosts(newRows));
+    };
 
     return (
       <ModalDetailPost
@@ -260,6 +269,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
         }
         index={selectedPostIndex}
         handleLike={handleLike}
+        handleComment={handleComment}
       />
     );
   }, [

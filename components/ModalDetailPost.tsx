@@ -58,6 +58,7 @@ interface Props {
     | any;
   index: number;
   handleLike: Function;
+  handleComment: Function;
 }
 
 const boxStyle = {
@@ -88,6 +89,7 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
     } = {},
     index,
     handleLike = () => {},
+    handleComment = () => {},
   } = props;
   const router = useRouter();
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -158,11 +160,14 @@ const ModalCreate: NextComponentType<NextPageContext, {}, Props> = (
       try {
         if (loadingComment || !comment?.length) return;
         setLoadingComment(true);
-        await createPostCommentApi({
+        const {data: dataComment} = await createPostCommentApi({
           accessToken,
           data: {PostId, comment},
         });
         setComment("");
+        if (dataComment?.data) {
+          handleComment(index, dataComment?.data);
+        }
       } catch (err) {
         Alert.Error("Error create comment");
       }
