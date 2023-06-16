@@ -2,7 +2,6 @@ import type {NextComponentType, NextPageContext} from "next";
 import {useRouter} from "next/router";
 import SideBarNav from "./SideBarNav";
 import BottomBar from "./BottomBar";
-import ChatDrawer from "./ChatDrawer";
 
 import styles from "../styles/Layout.module.css";
 import TopBar from "./TopBar";
@@ -26,7 +25,7 @@ const Layout: NextComponentType<NextPageContext, {}, Props> = (
       <SideBarNav />
       <div className={styles.content}>{children}</div>
       <BottomBar />
-      <ChatDrawer />
+      {/* <RightBar /> */}
     </div>
   );
 };

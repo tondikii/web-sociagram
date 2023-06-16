@@ -6,13 +6,14 @@ import styles from "../styles/SideBarNav.module.css";
 import {
   HomeIcon,
   HeartIcon,
+  ChatAlt2Icon,
   PlusCircleIcon,
   SearchIcon,
 } from "@heroicons/react/outline";
 import {
   HomeIcon as HomeIconSolid,
   HeartIcon as HeartIconSolid,
-  PlusCircleIcon as PlusCircleIconSolid,
+  ChatAlt2Icon as ChatAlt2IconSolid,
 } from "@heroicons/react/solid";
 import ModalSearch from "./ModalSearch";
 import ModalCreate from "./ModalCreate";
@@ -39,7 +40,11 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
       }) => state?.rootReducer?.session
     ) || {};
 
-  const [isProfile, setIsProfile] = useState(false);
+  const isHome = pathname === "/";
+  const isChat = pathname.search("/chat") >= 0;
+  const isLiked = pathname.search("/liked") >= 0;
+  const isProfile = query?.username === username;
+
   const [showModalSearch, setShowModalSearch] = useState(false);
   const [showModalCreate, setShowModalCreate] = useState(false);
 
@@ -50,14 +55,6 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
   const toggleModalCreate = useCallback(() => {
     setShowModalCreate(!showModalCreate);
   }, [showModalCreate]);
-
-  useEffect(() => {
-    if (query?.username === username) {
-      setIsProfile(true);
-    } else {
-      setIsProfile(false);
-    }
-  }, [query?.username, username]);
 
   return (
     <Fragment>
@@ -77,13 +74,15 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
             href="/"
             className={`horizontal p-1 items-center ${styles.menuContainer} mt-4`}
           >
-            {pathname === "/" ? (
+            {isHome ? (
               <HomeIconSolid className="text-primary h-8 w-8" />
             ) : (
               <HomeIcon className="text-primary h-8 w-8" />
             )}
 
-            <p className="ml-2 text-primary font-bold">Home</p>
+            <p className={`ml-2 text-primary ${isHome ? "font-bold " : ""}`}>
+              Home
+            </p>
           </Link>
           <div
             onClick={toggleModalSearch}
@@ -92,6 +91,19 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
             <SearchIcon className="text-primary h-8 w-8" />
             <p className="ml-2 text-primary">Search</p>
           </div>
+          <Link
+            href={"/chat"}
+            className={`horizontal p-1 items-center ${styles.menuContainer} mt-4`}
+          >
+            {isChat ? (
+              <ChatAlt2IconSolid className="text-primary h-8 w-8" />
+            ) : (
+              <ChatAlt2Icon className="text-primary h-8 w-8" />
+            )}
+            <p className={`ml-2 text-primary ${isChat ? "font-bold" : ""}`}>
+              Messages
+            </p>
+          </Link>
           <div
             onClick={toggleModalCreate}
             className={`horizontal p-1 items-center ${styles.menuContainer} mt-4`}
@@ -103,12 +115,14 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
             href={"/liked"}
             className={`horizontal p-1 items-center ${styles.menuContainer} mt-4`}
           >
-            {pathname.search("/liked") >= 0 ? (
+            {isLiked ? (
               <HeartIconSolid className="text-primary h-8 w-8" />
             ) : (
               <HeartIcon className="text-primary h-8 w-8" />
             )}
-            <p className="ml-2 text-primary">Liked</p>
+            <p className={`ml-2 text-primary ${isLiked ? "font-bold" : ""}`}>
+              Liked
+            </p>
           </Link>
         </section>
         <section
