@@ -1,0 +1,32 @@
+.container {
+  @apply flex flex-row w-10/12 bg-white dark:bg-black;
+}
+
+.messageBar {
+  @apply w-screen border-r border-r-zinc-200 dark:border-r-zinc-800 flex flex-col w-4/12 h-screen py-4;
+}
+
+.topMessageBar {
+  @apply m-4 flex flex-row justify-between items-center;
+}
+
+.textarea {
+  @apply bg-white dark:bg-black border-0 w-full max-h-16;
+  resize: none;
+  outline: none;
+}
+
+.topChatContainer {
+  @apply w-full p-4 flex flex-row items-center border-b border-b-zinc-200 dark:border-b-zinc-800;
+  height: 10%;
+}
+
+.chatContainer {
+  @apply w-full overflow-y-scroll flex flex-col p-4;
+  height: 80%;
+}
+
+.bottomChatContainer {
+  @apply w-full p-4;
+  height: 10%;
+}

@@ -1,5 +1,5 @@
 import type {NextComponentType, NextPageContext} from "next";
-import {useState, useCallback, useMemo, Fragment, useEffect} from "react";
+import {useState, useMemo, Fragment, useEffect} from "react";
 import {useRouter} from "next/router";
 
 import {followUnfollowApi, getFollowersFollowingApi} from "../store/api";

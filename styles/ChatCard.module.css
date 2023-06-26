@@ -1,0 +1,19 @@
+.container {
+  @apply flex flex-row p-4 items-center cursor-pointer dark:hover:bg-zinc-900;
+}
+
+.avatar {
+  @apply rounded-full w-14 h-14 mr-4;
+}
+
+.textContainer {
+  @apply flex flex-col;
+}
+
+.textName {
+  @apply font-semibold;
+}
+
+.textMessage {
+  @apply text-zinc-400;
+}

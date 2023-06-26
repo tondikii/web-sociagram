@@ -1,7 +1,7 @@
 import type {NextComponentType, NextPageContext} from "next";
 import Link from "next/link";
 import {useRouter} from "next/router";
-import {useCallback, useEffect, useState, Fragment} from "react";
+import {useCallback, useState, Fragment} from "react";
 import styles from "../styles/SideBarNav.module.css";
 import {
   HomeIcon,
@@ -67,8 +67,13 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
       />
       <nav className={styles.container}>
         <section className={`${styles.section} vertical h-100 container`}>
-          <div className="cursor-pointer p-1 mb-8">
-            <p className="ml-2 text-primary text-xl">Sociagram</p>
+          <div className="p-1 mb-8">
+            <Link
+              href="/"
+              className="ml-2 text-primary text-2xl cursor-pointer"
+            >
+              Sociagram
+            </Link>
           </div>
           <Link
             href="/"
@@ -92,7 +97,7 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
             <p className="ml-2 text-primary">Search</p>
           </div>
           <Link
-            href={"/chat"}
+            href="/chat"
             className={`horizontal p-1 items-center ${styles.menuContainer} mt-4`}
           >
             {isChat ? (
@@ -112,7 +117,7 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
             <p className="ml-2 text-primary">Create</p>
           </div>
           <Link
-            href={"/liked"}
+            href="/liked"
             className={`horizontal p-1 items-center ${styles.menuContainer} mt-4`}
           >
             {isLiked ? (

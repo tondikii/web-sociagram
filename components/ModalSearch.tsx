@@ -10,7 +10,7 @@ import {
 import {debounce} from "lodash";
 import {useRouter} from "next/router";
 
-import {Modal, Box, Divider, Avatar} from "@mui/material";
+import {Modal, Box, Divider} from "@mui/material";
 import {SearchIcon, XIcon} from "@heroicons/react/outline";
 import ReactLoading from "react-loading";
 import {searchUsersApi} from "../store/api";
@@ -22,6 +22,7 @@ import UserCard from "./UserCard";
 interface Props {
   open: boolean;
   toggle: Function;
+  onClickUser?: Function;
 }
 
 const boxStyle = {
@@ -36,7 +37,7 @@ const boxStyle = {
 const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
 ) => {
-  const {open, toggle} = props;
+  const {open, toggle, onClickUser} = props;
   const router = useRouter();
 
   const [searchState, setSearchState] = useState("");
@@ -96,7 +97,12 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
                 setSearchState("");
                 setUsers([]);
                 toggle();
-                router.push(`/${e?.username}`);
+                if (onClickUser) {
+                  console.log({e});
+                  onClickUser(e);
+                } else {
+                  router.push(`/${e?.username}`);
+                }
               }}
               user={e}
               key={idx}
@@ -105,7 +111,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
         )}
       </div>
     );
-  }, [users, error, searchState, router, toggle, typing]);
+  }, [users, error, searchState, router, toggle, typing, onClickUser]);
 
   useEffect(() => {
     if (data?.rows.length && Array.isArray(data?.rows)) {
