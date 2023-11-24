@@ -4,7 +4,6 @@ import type {NextComponentType, NextPageContext} from "next";
 import styles from "../styles/ChatCard.module.css";
 
 interface Props {
-  key: number;
   data: {
     avatar: string;
     name: string;
@@ -15,7 +14,6 @@ interface Props {
 }
 
 const ChatCard: NextComponentType<NextPageContext, {}, Props> = ({
-  key,
   data,
   onClick = () => {},
   isSelected,
@@ -24,7 +22,6 @@ const ChatCard: NextComponentType<NextPageContext, {}, Props> = ({
   return (
     <div
       className={`${styles.container} ${isSelected ? "bg-zinc-900" : ""}`}
-      key={key}
       onClick={onClick}
       role="button"
     >

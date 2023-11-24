@@ -11,6 +11,10 @@ import {Avatar} from "@mui/material";
 import {useSelector} from "react-redux";
 import {useRouter} from "next/router";
 
+import {io} from "socket.io-client";
+
+const socket: any = io("http://localhost:3003");
+
 interface Props {}
 
 const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
@@ -39,6 +43,7 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
     },
   ]);
   const [chat, setChat] = useState("");
+  const [receivedChat, setReceivedChat] = useState();
 
   const isAnySelected = selectedChatIndex >= 0;
 
@@ -72,9 +77,19 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   };
   useAutosizeTextArea(textAreaRef.current, chat);
 
-  const handleChangeCaption = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const onChangeChat = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setChat(e?.target?.value);
   };
+
+  const onSendChat = () => {
+    socket.emit("send_chat", {chat: chat});
+  };
+
+  useEffect(() => {
+    socket.on("receive_chat", (data: any) => {
+      console.log(data);
+    });
+  }, []);
 
   return (
     <>
@@ -143,13 +158,16 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                       </div>
                     </>
                   ))}
+                  <div className="self-end bg-fuchsia-600 rounded-l-3xl rounded-tr-3xl p-4">
+                    <span>lebih suka law atau zoro?</span>
+                  </div>
                 </div>
                 <div className={styles.bottomChatContainer}>
                   <div className="horizontal justify-between p-4 border border-zinc-200 dark:border-zinc-800 rounded-3xl">
                     <textarea
                       placeholder="Write a message..."
                       className={styles.textarea}
-                      onChange={handleChangeCaption}
+                      onChange={onChangeChat}
                       ref={textAreaRef}
                       rows={1}
                       maxLength={255}
@@ -159,6 +177,7 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                         chat?.length ? "text-primary" : "text-zinc-400"
                       } font-semibold`}
                       role="button"
+                      onClick={onSendChat}
                     >
                       Send
                     </span>
