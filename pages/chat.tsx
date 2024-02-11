@@ -82,12 +82,12 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   };
 
   const onSendChat = () => {
-    socket.emit("send_chat", {chat: chat});
+    socket.emit("send_chat", chat);
   };
 
   useEffect(() => {
     socket.on("receive_chat", (data: any) => {
-      console.log(data);
+      console.log({data});
     });
   }, []);
 

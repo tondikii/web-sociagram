@@ -106,7 +106,7 @@ const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
               <ChatAlt2Icon className="text-primary h-8 w-8" />
             )}
             <p className={`ml-2 text-primary ${isChat ? "font-bold" : ""}`}>
-              Messages
+              Chat
             </p>
           </Link>
           <div
