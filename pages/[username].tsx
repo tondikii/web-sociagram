@@ -16,62 +16,15 @@ import ModalDetailPost from "../components/ModalDetailPost";
 import styles from "../styles/Profile.module.css";
 import useFetch from "../hooks/useFetch";
 import {setRefetchPost, setPosts} from "../store/reducers/root";
-
-interface PostCommentUser {
-  id: number;
-  username: string;
-  avatar: string;
-}
-
-interface PostComment {
-  id: number;
-  comment: string;
-  User: PostCommentUser;
-}
-
-interface PostLike {
-  id: number;
-  PostId: number;
-  UserId: number;
-}
-
-interface Post {
-  id: number;
-  files: string[];
-  caption: string;
-  UserId: number;
-  createdAt: string;
-  PostComments: PostComment[];
-  PostLikes: PostLike[];
-}
-
-interface Profile {
-  id: number;
-  username: string;
-  email: string;
-  avatar: string;
-  name: string;
-  bio: string;
-  gender: string;
-  followers: number[];
-  following: number[];
-  Posts: Post[];
-}
+import {
+  PostComment,
+  PostLike,
+  Posts,
+  Profile as ProfileProps,
+  Session,
+} from "../props";
 
 interface Props {}
-
-interface Session {
-  accessToken: string;
-  id: number;
-  username: string;
-  avatar: string;
-}
-
-interface Posts {
-  fetch: boolean;
-  data: Post[];
-  error: string;
-}
 
 const Profile: NextComponentType<NextPageContext, {}, Props> = (
   props: Props
@@ -109,7 +62,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
   const {
     data,
   }: {
-    data: Profile | any;
+    data: ProfileProps | any;
   } = useFetch({
     api: getProfileApi,
     refetch,
@@ -446,10 +399,7 @@ const Profile: NextComponentType<NextPageContext, {}, Props> = (
               <div role="button" onClick={() => toggleModalPost(idx)} key={idx}>
                 <CardMedia
                   component="img"
-                  image={
-                    row?.files[0] ||
-                    "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
-                  }
+                  image={row?.files[0]}
                   className="lg:w-64 lg:h-64 w-full h-32"
                 />
               </div>

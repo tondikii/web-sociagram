@@ -20,24 +20,7 @@ import ModalDevelopment from "./ModalDevelopment";
 import styles from "../styles/ModalDetailPost.module.css";
 import {createPostCommentApi, likeUnLikeApi} from "../store/api";
 import {useSelector} from "react-redux";
-
-interface PostCommentUser {
-  id: number;
-  username: string;
-  avatar: string;
-}
-
-interface PostComment {
-  id: number;
-  comment: string;
-  User: PostCommentUser;
-}
-
-interface PostLike {
-  id: number;
-  PostId: number;
-  UserId: number;
-}
+import {PostComment, PostLike} from "../props";
 
 interface Props {
   open: boolean;

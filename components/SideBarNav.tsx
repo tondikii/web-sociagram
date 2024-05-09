@@ -19,15 +19,9 @@ import ModalSearch from "./ModalSearch";
 import ModalCreate from "./ModalCreate";
 import {Avatar} from "@mui/material";
 import {useSelector} from "react-redux";
+import {Session} from "../props";
 
 interface Props {}
-
-interface Session {
-  accessToken: string;
-  id: number;
-  username: string;
-  avatar: string;
-}
 
 const SideBarNav: NextComponentType<NextPageContext, {}, Props> = () => {
   const {pathname, query} = useRouter();

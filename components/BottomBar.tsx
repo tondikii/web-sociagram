@@ -12,15 +12,9 @@ import {useRouter} from "next/router";
 import ModalDevelopment from "./ModalDevelopment";
 import ModalCreate from "./ModalCreate";
 import {useSelector} from "react-redux";
+import {Session} from "../props";
 
 interface Props {}
-
-interface Session {
-  accessToken: string;
-  id: number;
-  username: string;
-  avatar: string;
-}
 
 const BottomBar: NextComponentType<NextPageContext, {}, Props> = () => {
   const router = useRouter();

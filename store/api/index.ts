@@ -132,3 +132,15 @@ export const createPostCommentApi = (payload: {
   };
   return api.post("postComments", payload?.data || {});
 };
+
+export const fetchChatApi = (payload: {
+  accessToken: string;
+  data: number;
+  signal: AbortSignal;
+}) => {
+  const {accessToken, signal} = payload || {};
+  api.defaults.headers.common = {
+    Authorization: `Bearer ${accessToken}`,
+  };
+  return api.get("userChats", {signal});
+};

@@ -14,6 +14,6 @@
   @apply font-semibold;
 }
 
-.textMessage {
+.textMessageSelf {
   @apply text-zinc-400;
 }

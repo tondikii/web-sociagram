@@ -18,6 +18,7 @@ import {searchUsersApi} from "../store/api";
 import styles from "../styles/ModalSearch.module.css";
 import useMutation from "../hooks/useMutation";
 import UserCard from "./UserCard";
+import {useSelector} from "react-redux";
 
 interface Props {
   open: boolean;
@@ -39,6 +40,10 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
 ) => {
   const {open, toggle, onClickUser} = props;
   const router = useRouter();
+  const id = useSelector(
+    (state: {rootReducer: {session: {id: number}}}) =>
+      state?.rootReducer?.session?.id
+  );
 
   const [searchState, setSearchState] = useState("");
   const [users, setUsers] = useState([]);
@@ -98,7 +103,6 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
                 setUsers([]);
                 toggle();
                 if (onClickUser) {
-                  console.log({e});
                   onClickUser(e);
                 } else {
                   router.push(`/${e?.username}`);
@@ -116,7 +120,7 @@ const ModalSearch: NextComponentType<NextPageContext, {}, Props> = (
   useEffect(() => {
     if (data?.rows.length && Array.isArray(data?.rows)) {
       if (searchState) {
-        setUsers(data?.rows);
+        setUsers(data?.rows?.filter((e: {id: number}) => e?.id !== id));
       } else {
         setUsers([]);
       }

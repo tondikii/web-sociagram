@@ -19,40 +19,7 @@ import * as Alert from "../components/Alert";
 import styles from "../styles/PostCard.module.css";
 import {likeUnLikeApi} from "../store/api";
 import useMutation from "../hooks/useMutation";
-
-interface PostCommentUser {
-  id: number;
-  username: string;
-  avatar: string;
-}
-
-interface PostComment {
-  id: number;
-  comment: string;
-  User: PostCommentUser;
-}
-
-interface PostLike {
-  id: number;
-  PostId: number;
-  UserId: number;
-}
-
-interface User {
-  username: string;
-  avatar: string;
-}
-
-interface Post {
-  id: number;
-  files: string[];
-  caption: string;
-  UserId: number;
-  User: User;
-  createdAt: string;
-  PostComments: PostComment[];
-  PostLikes: PostLike[];
-}
+import {Post, PostLike, User} from "../props";
 
 interface Props {
   index: number;

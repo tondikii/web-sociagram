@@ -10,51 +10,7 @@ import {getPosts} from "../store/actions";
 import {useDispatch, useSelector} from "react-redux";
 import {useCallback, useEffect, useState} from "react";
 import {setPosts} from "../store/reducers/root";
-
-interface PostCommentUser {
-  id: number;
-  username: string;
-  avatar: string;
-}
-
-interface PostComment {
-  id: number;
-  comment: string;
-  User: PostCommentUser;
-}
-
-interface PostLike {
-  id: number;
-  PostId: number;
-  UserId: number;
-}
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  avatar: string;
-  name: string;
-  bio: string;
-  gender: string;
-}
-
-interface Post {
-  id: number;
-  files: string[];
-  caption: string;
-  UserId: number;
-  User: User;
-  createdAt: string;
-  PostComments: PostComment[];
-  PostLikes: PostLike[];
-}
-
-interface Posts {
-  fetch: boolean;
-  data: Post[];
-  error: string;
-}
+import {Post, PostComment, PostLike, Posts} from "../props";
 
 interface Props {
   error: null | any;

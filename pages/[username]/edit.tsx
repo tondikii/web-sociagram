@@ -20,16 +20,7 @@ import useMutation from "../../hooks/useMutation";
 import {useDispatch, useSelector} from "react-redux";
 import {setSession} from "../../store/reducers/root";
 import useFetch from "../../hooks/useFetch";
-
-interface Profile {
-  id: number;
-  username: string;
-  email: string;
-  avatar: string;
-  name: string;
-  bio: string;
-  gender: string;
-}
+import {Profile, Session} from "../../props";
 
 interface Props {
   editProfile: Function;
@@ -50,13 +41,6 @@ interface ProfileForm {
   type: string;
   value: string;
   maxLength: number;
-}
-
-interface Session {
-  accessToken: string;
-  id: number;
-  username: string;
-  avatar: string;
 }
 
 const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {

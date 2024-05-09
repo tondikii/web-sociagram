@@ -17,8 +17,8 @@ const App = ({Component, pageProps}: AppProps) => {
         if (accessToken) {
           const {data} = await getProfileApi({accessToken, data: null});
           if (data?.data?.username) {
-            const {username, avatar, id} = data?.data || {};
-            dispatch(setSession({accessToken, username, avatar, id}));
+            const {username, avatar, id, name} = data?.data || {};
+            dispatch(setSession({accessToken, username, avatar, id, name}));
           }
         }
       } catch (err) {

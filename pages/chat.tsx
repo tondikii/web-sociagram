@@ -12,50 +12,64 @@ import {useSelector} from "react-redux";
 import {useRouter} from "next/router";
 
 import {io} from "socket.io-client";
+import {Message, User} from "../props";
+import useFetch from "../hooks/useFetch";
+import {fetchChatApi} from "../store/api";
 
 const socket: any = io("http://localhost:3003");
 
 interface Props {}
+interface Chat {
+  User: User;
+  messages: Message[] | [];
+}
 
-const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
+const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
+  props: Props
+) => {
   const router = useRouter();
 
-  const ownUserId = useSelector(
-    (state: {rootReducer: {session: {id: number}}}) =>
-      state?.rootReducer?.session?.id
+  const session = useSelector(
+    (state: {
+      rootReducer: {
+        session: {id: number; username: string; avatar: string; name: string};
+      };
+    }) => state?.rootReducer?.session
   );
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const [selectedChatIndex, setSelectedChatIndex] = useState<number>(0);
+  const [selectedChatIndex, setSelectedChatIndex] = useState<number>(-1);
   const [modalSearch, toggleModalSearch]: any[] = useToggle();
-  const [messages, setMessages] = useState<any[]>([
-    {
-      avatar:
-        "https://ik.imagekit.io/fnzl2pmmqv2d/Photo_on_12-11-22_at_19.24_z_GsxPSJQ.jpg",
-      bio: "Aku sayang dika",
-      createdAt: "2023-04-26T08:41:07.024Z",
-      email: "kaniadewi26@gmail.com",
-      gender: "female",
-      id: 2,
-      message: "text message",
-      name: "Kania Dika",
-      updatedAt: "2023-06-12T15:39:06.877Z",
-      username: "kaniadewist",
-    },
-  ]);
-  const [chat, setChat] = useState("");
-  const [receivedChat, setReceivedChat] = useState();
+  const [chat, setChat] = useState<Chat[]>([]);
+  useEffect(() => {
+    console.log({chat});
+  }, [chat]);
+  const [message, setMessage] = useState<string>("");
 
-  const isAnySelected = selectedChatIndex >= 0;
+  const {
+    data: fetchedChat,
+  }: {
+    data: any;
+  } = useFetch({
+    api: fetchChatApi,
+    payload: {data: session.id},
+    prevent: !session.id,
+  });
+
+  useEffect(() => {
+    if (fetchedChat) {
+      setChat([...chat, ...fetchedChat]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchedChat]);
+
+  const selectedChat: Chat | undefined = chat[selectedChatIndex];
 
   const onClickChatCard = (idx: number) => {
     setSelectedChatIndex(idx);
   };
 
-  const onClickUser = (user: any) => {
-    const foundUser = messages.find((e) => e?.id === user?.id);
-    if (!foundUser && user?.id !== ownUserId) {
-      setMessages([{...user, message: "text message"}, ...messages]);
-    }
+  const onClickUserSearched = (user: User) => {
+    setChat([{User: user, messages: []}, ...chat]);
     setSelectedChatIndex(0);
   };
 
@@ -75,28 +89,77 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
       }
     }, [textAreaRef, value]);
   };
-  useAutosizeTextArea(textAreaRef.current, chat);
+  useAutosizeTextArea(textAreaRef.current, message);
 
   const onChangeChat = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setChat(e?.target?.value);
+    setMessage(e?.target?.value);
   };
 
   const onSendChat = () => {
-    socket.emit("send_chat", chat);
+    if (message.trim() !== "" && selectedChat) {
+      const userIdReceiver: number = selectedChat.User?.id;
+      console.log("emit chat", {
+        userIdReceiver,
+        message,
+        usernameReceiver: selectedChat.User?.username,
+        nameReceiver: selectedChat.User?.name,
+        avatarReceiver: selectedChat.User?.avatar,
+      });
+
+      socket.emit("chat_message", {
+        userIdReceiver,
+        message,
+        username: session?.username,
+        name: session?.name,
+        avatar: session?.avatar,
+        usernameReceiver: selectedChat.User?.username,
+        nameReceiver: selectedChat.User?.name,
+        avatarReceiver: selectedChat.User?.avatar,
+      });
+      const prevChat: Chat[] = [...chat];
+      prevChat[selectedChatIndex].messages = [
+        ...prevChat[selectedChatIndex]?.messages,
+        {UserId: session.id, UserIdReceiver: userIdReceiver, message},
+      ];
+      console.log("onSendChat", {prevChat});
+      setChat(prevChat);
+      setMessage("");
+    }
   };
 
   useEffect(() => {
-    socket.on("receive_chat", (data: any) => {
-      console.log({data});
-    });
-  }, []);
+    if (session?.id) {
+      console.log("SET ID", session);
+      socket.emit("set_id", session?.id);
+      // Listen for incoming messages
+      socket.on("chat_message", (msg: any) => {
+        console.log({msg});
+        const prevChat: Chat[] = [...chat];
+        const foundIndex = chat.findIndex((e) => e?.User?.id === msg?.UserId);
+        if (foundIndex >= 0) {
+          prevChat[foundIndex].messages = [
+            ...prevChat[foundIndex].messages,
+            msg,
+          ];
+        } else {
+          prevChat.unshift(msg);
+        }
+        setChat(prevChat);
+      });
+    }
+
+    return () => {
+      socket.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session]);
 
   return (
     <>
       <ModalSearch
         open={modalSearch}
         toggle={toggleModalSearch}
-        onClickUser={onClickUser}
+        onClickUser={onClickUserSearched}
       />
       <div className="w-screen flex flex-col items-end">
         <div className={styles.container}>
@@ -109,10 +172,11 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                 onClick={toggleModalSearch}
               />
             </div>
-            {Array.isArray(messages) && messages.length > 0
-              ? messages.map((e, idx) => (
+            {Array.isArray(chat) && chat.length > 0
+              ? chat.map((e, idx) => (
                   <ChatCard
                     data={e}
+                    UserId={session.id}
                     key={idx}
                     onClick={() => {
                       onClickChatCard(idx);
@@ -124,16 +188,16 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
           </div>
           <div
             className={`w-8/12 h-screen flex flex-col justify-${
-              isAnySelected ? "between" : "center"
+              selectedChat ? "between" : "center"
             } items-center`}
           >
-            {isAnySelected ? (
+            {selectedChat ? (
               <>
                 <div
                   className={styles.topChatContainer}
                   role="button"
                   onClick={() => {
-                    const {username} = messages[selectedChatIndex];
+                    const {username} = chat[selectedChatIndex].User;
                     if (username) {
                       router.push(username);
                     }
@@ -141,26 +205,33 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                 >
                   <Avatar
                     className="rounded-full w-14 h-14 mr-4"
-                    src={messages[selectedChatIndex]?.avatar}
+                    src={
+                      chat[selectedChatIndex]?.User?.avatar ||
+                      "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+                    }
                   />
                   <span className="font-semibold">
-                    {messages[selectedChatIndex]?.name}
+                    {chat[selectedChatIndex]?.User?.name}
                   </span>
                 </div>
                 <div className={styles.chatContainer}>
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map(() => (
-                    <>
-                      <div className="self-end bg-fuchsia-600 rounded-l-3xl rounded-tr-3xl p-4">
-                        <span>lebih suka law atau zoro?</span>
+                  {selectedChat.messages.map((e: Message, idx: number) => {
+                    console.log("SEBELAH SINI", e);
+                    const isSelf = e.UserId === session.id;
+                    const placement = isSelf ? "end" : "start";
+                    const color = isSelf ? "fuchsia-600" : "zinc-800";
+                    const roundedSide = isSelf
+                      ? "rounded-l-3xl rounded-tr-3xl"
+                      : "rounded-r-3xl rounded-tl-3xl";
+                    return (
+                      <div
+                        key={idx + 1}
+                        className={`self-${placement} bg-${color} ${roundedSide} p-4`}
+                      >
+                        <span>{e.message}</span>
                       </div>
-                      <div className="self-start bg-zinc-800 rounded-r-3xl rounded-tl-3xl  p-4">
-                        <span>zoro</span>
-                      </div>
-                    </>
-                  ))}
-                  <div className="self-end bg-fuchsia-600 rounded-l-3xl rounded-tr-3xl p-4">
-                    <span>lebih suka law atau zoro?</span>
-                  </div>
+                    );
+                  })}
                 </div>
                 <div className={styles.bottomChatContainer}>
                   <div className="horizontal justify-between p-4 border border-zinc-200 dark:border-zinc-800 rounded-3xl">
@@ -174,7 +245,7 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                     />
                     <span
                       className={`${
-                        chat?.length ? "text-primary" : "text-zinc-400"
+                        message?.length ? "text-primary" : "text-zinc-400"
                       } font-semibold`}
                       role="button"
                       onClick={onSendChat}
@@ -204,4 +275,4 @@ const Chat: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
   );
 };
 
-export default Chat;
+export default ChatPage;

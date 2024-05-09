@@ -8,45 +8,9 @@ import {CardMedia} from "@mui/material";
 import * as Alert from "../components/Alert";
 
 import styles from "../styles/Liked.module.css";
-import {getPostsLikedApi} from "../store/api";
-import useFetch from "../hooks/useFetch";
 import {getPostsLiked} from "../store/actions";
 import {setPosts} from "../store/reducers/root";
-
-interface PostCommentUser {
-  id: number;
-  username: string;
-  avatar: string;
-}
-
-interface PostComment {
-  id: number;
-  comment: string;
-  User: PostCommentUser;
-}
-
-interface Post {
-  id: number;
-  files: string[];
-  caption: string;
-  UserId: number;
-  createdAt: string;
-  PostComments: PostComment[];
-  PostLikes: PostLike[];
-}
-
-interface PostLike {
-  id: number;
-  PostId: number;
-  UserId: number;
-  Post: Post;
-}
-
-interface Posts {
-  fetch: boolean;
-  data: Post[];
-  error: string;
-}
+import {PostComment, PostLike, Posts} from "../props";
 
 interface Props {}
 
@@ -150,10 +114,7 @@ const Liked: NextComponentType<NextPageContext, {}, Props> = (props: Props) => {
                   <CardMedia
                     component="img"
                     className="w-full h-full"
-                    image={
-                      row?.files[0] ||
-                      "https://pbs.twimg.com/profile_images/1284155869060571136/UpanAYid_400x400.jpg"
-                    }
+                    image={row?.files[0]}
                     sx={{height: 250, width: 250}}
                   />
                 </div>
