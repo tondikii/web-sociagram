@@ -14,6 +14,11 @@
   @apply font-semibold;
 }
 
+.textMessage {
+  overflow-wrap: anywhere;
+}
+
 .textMessageSelf {
+  overflow-wrap: anywhere;
   @apply text-zinc-400;
 }

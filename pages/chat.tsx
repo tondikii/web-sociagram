@@ -37,12 +37,9 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
     }) => state?.rootReducer?.session
   );
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
-  const [selectedChatIndex, setSelectedChatIndex] = useState<number>(-1);
+  const [selectedChatIndex, setSelectedChatIndex] = useState<number>(0);
   const [modalSearch, toggleModalSearch]: any[] = useToggle();
   const [chat, setChat] = useState<Chat[]>([]);
-  useEffect(() => {
-    console.log({chat});
-  }, [chat]);
   const [message, setMessage] = useState<string>("");
 
   const {
@@ -98,13 +95,6 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
   const onSendChat = () => {
     if (message.trim() !== "" && selectedChat) {
       const userIdReceiver: number = selectedChat.User?.id;
-      console.log("emit chat", {
-        userIdReceiver,
-        message,
-        usernameReceiver: selectedChat.User?.username,
-        nameReceiver: selectedChat.User?.name,
-        avatarReceiver: selectedChat.User?.avatar,
-      });
 
       socket.emit("chat_message", {
         userIdReceiver,
@@ -121,7 +111,6 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
         ...prevChat[selectedChatIndex]?.messages,
         {UserId: session.id, UserIdReceiver: userIdReceiver, message},
       ];
-      console.log("onSendChat", {prevChat});
       setChat(prevChat);
       setMessage("");
     }
@@ -129,22 +118,27 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
 
   useEffect(() => {
     if (session?.id) {
-      console.log("SET ID", session);
       socket.emit("set_id", session?.id);
+
       // Listen for incoming messages
       socket.on("chat_message", (msg: any) => {
-        console.log({msg});
-        const prevChat: Chat[] = [...chat];
-        const foundIndex = chat.findIndex((e) => e?.User?.id === msg?.UserId);
-        if (foundIndex >= 0) {
-          prevChat[foundIndex].messages = [
-            ...prevChat[foundIndex].messages,
-            msg,
-          ];
-        } else {
-          prevChat.unshift(msg);
-        }
-        setChat(prevChat);
+        setChat((prevChat) => {
+          const newPrevChat: Chat[] = [...prevChat];
+
+          const foundIndex = newPrevChat.findIndex(
+            (e) => e?.User.id === msg?.UserId
+          );
+
+          if (foundIndex >= 0) {
+            newPrevChat[foundIndex].messages = [
+              ...newPrevChat[foundIndex].messages,
+              msg?.messages?.[0],
+            ];
+          } else {
+            newPrevChat.unshift(msg);
+          }
+          return newPrevChat;
+        });
       });
     }
 
@@ -215,19 +209,13 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
                   </span>
                 </div>
                 <div className={styles.chatContainer}>
-                  {selectedChat.messages.map((e: Message, idx: number) => {
-                    console.log("SEBELAH SINI", e);
+                  {selectedChat.messages.map((e: Message, idx) => {
                     const isSelf = e.UserId === session.id;
-                    const placement = isSelf ? "end" : "start";
-                    const color = isSelf ? "fuchsia-600" : "zinc-800";
-                    const roundedSide = isSelf
-                      ? "rounded-l-3xl rounded-tr-3xl"
-                      : "rounded-r-3xl rounded-tl-3xl";
+                    const className = isSelf
+                      ? "self-end bg-fuchsia-600 rounded-l-3xl rounded-tr-3xl p-4 mt-2"
+                      : "self-start bg-zinc-800 rounded-r-3xl rounded-tl-3xl  p-4 mt-2";
                     return (
-                      <div
-                        key={idx + 1}
-                        className={`self-${placement} bg-${color} ${roundedSide} p-4`}
-                      >
+                      <div key={idx + 1} className={className}>
                         <span>{e.message}</span>
                       </div>
                     );

@@ -21,8 +21,12 @@ const ChatCard: NextComponentType<NextPageContext, {}, Props> = ({
   isSelected,
 }: Props) => {
   const {User, messages = []} = data;
-  const {message = "", UserId: UserIdMessage} =
+  let {message = "", UserId: UserIdMessage} =
     messages[messages?.length - 1] || {};
+
+  if (message.length > 100) {
+    message = `${message.slice(0, 97)}...`;
+  }
   return (
     <div
       className={`${styles.container} ${isSelected ? "bg-zinc-900" : ""}`}
@@ -38,9 +42,15 @@ const ChatCard: NextComponentType<NextPageContext, {}, Props> = ({
       />
       <div className={styles.textContainer}>
         <span className={styles.textName}>{User?.name}</span>
-        <p className={UserIdMessage === UserId ? styles.textMessageSelf : ""}>
+        <span
+          className={
+            UserIdMessage === UserId
+              ? styles.textMessageSelf
+              : styles.textMessage
+          }
+        >
           {message}
-        </p>
+        </span>
       </div>
     </div>
   );
