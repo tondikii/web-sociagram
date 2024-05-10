@@ -16,7 +16,11 @@ import {Message, User} from "../props";
 import useFetch from "../hooks/useFetch";
 import {fetchChatApi} from "../store/api";
 
-const socket: any = io("http://localhost:3003");
+const socket: any = io(
+  process.env.NODE_ENV === "production"
+    ? "https://gold-friendly-tortoise.cyclic.app/api:3002"
+    : "http://localhost:3002/api"
+);
 
 interface Props {}
 interface Chat {
