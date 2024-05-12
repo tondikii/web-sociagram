@@ -17,9 +17,10 @@ import useFetch from "../hooks/useFetch";
 import {fetchChatApi} from "../store/api";
 
 const socket: any = io(
-  process.env.NODE_ENV === "production"
-    ? "https://be-sociagram.vercel.app"
-    : "http://localhost:3002"
+  "http://localhost:3002"
+  // process.env.NODE_ENV === "production"
+  //   ? "https://be-sociagram.vercel.app"
+  //   : "http://localhost:3002"
 );
 
 interface Props {}
