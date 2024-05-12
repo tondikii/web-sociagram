@@ -15,13 +15,9 @@ import {io} from "socket.io-client";
 import {Message, User} from "../props";
 import useFetch from "../hooks/useFetch";
 import {fetchChatApi} from "../store/api";
+import {BASE_URL} from "../config/api";
 
-const socket: any = io(
-  "http://localhost:3002"
-  // process.env.NODE_ENV === "production"
-  //   ? "https://be-sociagram.vercel.app"
-  //   : "http://localhost:3002"
-);
+const socket: any = io(BASE_URL);
 
 interface Props {}
 interface Chat {
@@ -145,6 +141,9 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
           return newPrevChat;
         });
       });
+
+      // Listen time
+      socket.on("time", (timeString: string) => {});
     }
 
     return () => {
