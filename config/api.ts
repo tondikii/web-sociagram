@@ -2,8 +2,8 @@ import axios from "axios";
 
 export const BASE_URL =
   process.env.NODE_ENV === "production"
-    ? "https://gold-friendly-tortoise.cyclic.app/api"
-    : "http://localhost:3002/api";
+    ? "https://be-sociagram.vercel.app/"
+    : "http://localhost:3002/";
 
 export const api = axios.create({
   timeout: 325000,

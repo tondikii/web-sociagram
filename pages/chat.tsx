@@ -18,8 +18,8 @@ import {fetchChatApi} from "../store/api";
 
 const socket: any = io(
   process.env.NODE_ENV === "production"
-    ? "https://gold-friendly-tortoise.cyclic.app/api:3002"
-    : "http://localhost:3002/api"
+    ? "https://be-sociagram.vercel.app"
+    : "http://localhost:3002"
 );
 
 interface Props {}
