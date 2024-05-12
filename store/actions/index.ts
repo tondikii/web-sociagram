@@ -19,8 +19,7 @@ export const getPosts = createAsyncThunk(
   ) => {
     try {
       const {data} = await getPostsApi(payload);
-      return [];
-      // return data?.data;
+      return data?.data;
     } catch (err: any) {
       const messageError =
         err?.response?.data?.error || "Failed fetching posts!";
