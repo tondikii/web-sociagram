@@ -16,6 +16,7 @@ import {Message, User} from "../props";
 import useFetch from "../hooks/useFetch";
 import {fetchChatApi} from "../store/api";
 import {BASE_URL} from "../config/api";
+import moment from "moment";
 
 const socket: any = io(BASE_URL);
 
@@ -89,7 +90,7 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
   };
   useAutosizeTextArea(textAreaRef.current, message);
 
-  const onChangeChat = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const onChangeMessage = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMessage(e?.target?.value);
   };
 
@@ -110,7 +111,12 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
       const prevChat: Chat[] = [...chat];
       prevChat[selectedChatIndex].messages = [
         ...prevChat[selectedChatIndex]?.messages,
-        {UserId: session.id, UserIdReceiver: userIdReceiver, message},
+        {
+          UserId: session.id,
+          UserIdReceiver: userIdReceiver,
+          message,
+          createdAt: new Date().toISOString(),
+        },
       ];
       setChat(prevChat);
       setMessage("");
@@ -215,12 +221,16 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
                 <div className={styles.chatContainer}>
                   {selectedChat.messages.map((e: Message, idx) => {
                     const isSelf = e.UserId === session.id;
-                    const className = isSelf
-                      ? "self-end bg-fuchsia-600 rounded-l-3xl rounded-tr-3xl p-4 mt-2"
-                      : "self-start bg-zinc-800 rounded-r-3xl rounded-tl-3xl  p-4 mt-2";
+                    const conditionalClass = isSelf
+                      ? "self-end bg-fuchsia-600 rounded-l-3xl rounded-tr-3xl"
+                      : "self-start bg-zinc-800 rounded-r-3xl rounded-tl-3xl ";
+                    const className = `${conditionalClass} p-4 mt-2 flex flex-col`;
                     return (
                       <div key={idx + 1} className={className}>
                         <span>{e.message}</span>
+                        <span className="text-xs text-neutral-400 text-end">
+                          {moment(e.createdAt).format("D MMM hh:mm")}
+                        </span>
                       </div>
                     );
                   })}
@@ -230,8 +240,9 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
                     <textarea
                       placeholder="Write a message..."
                       className={styles.textarea}
-                      onChange={onChangeChat}
+                      onChange={onChangeMessage}
                       ref={textAreaRef}
+                      value={message}
                       rows={1}
                       maxLength={255}
                     />

@@ -68,4 +68,5 @@ export interface Message {
   User?: User;
   UserIdReceiver: number;
   message: string;
+  createdAt: string;
 }
