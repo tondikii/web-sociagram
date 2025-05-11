@@ -11,14 +11,12 @@ import {Avatar} from "@mui/material";
 import {useSelector} from "react-redux";
 import {useRouter} from "next/router";
 
-import {io} from "socket.io-client";
 import {Message, User} from "../props";
 import useFetch from "../hooks/useFetch";
 import {fetchChatApi} from "../store/api";
-import {BASE_URL} from "../config/api";
 import moment from "moment";
 
-const socket: any = io(BASE_URL);
+import {supabase} from "../lib/supabaseClient";
 
 interface Props {}
 interface Chat {
@@ -43,6 +41,7 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
   const [modalSearch, toggleModalSearch]: any[] = useToggle();
   const [chat, setChat] = useState<Chat[]>([]);
   const [message, setMessage] = useState<string>("");
+  const [refetchChat, setRefetchChat] = useState<boolean>(false);
 
   const {
     data: fetchedChat,
@@ -52,11 +51,13 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
     api: fetchChatApi,
     payload: {data: session.id},
     prevent: !session.id,
+    refetch: refetchChat,
+    setRefetch: setRefetchChat,
   });
 
   useEffect(() => {
     if (fetchedChat) {
-      setChat([...chat, ...fetchedChat]);
+      setChat([...fetchedChat]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchedChat]);
@@ -94,69 +95,74 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
     setMessage(e?.target?.value);
   };
 
-  const onSendChat = () => {
+  const onSendChat = async () => {
     if (message.trim() !== "" && selectedChat) {
-      const userIdReceiver: number = selectedChat.User?.id;
+      const {
+        id: userIdReceiver,
+        username: usernameReceiver,
+        name: nameReceiver,
+        avatar: avatarReceiver,
+      } = selectedChat.User;
 
-      socket.emit("chat_message", {
-        userIdReceiver,
-        message,
-        username: session?.username,
-        name: session?.name,
-        avatar: session?.avatar,
-        usernameReceiver: selectedChat.User?.username,
-        nameReceiver: selectedChat.User?.name,
-        avatarReceiver: selectedChat.User?.avatar,
-      });
-      const prevChat: Chat[] = [...chat];
-      prevChat[selectedChatIndex].messages = [
-        ...prevChat[selectedChatIndex]?.messages,
+      const {error} = await supabase.from("UserChats").insert([
         {
           UserId: session.id,
           UserIdReceiver: userIdReceiver,
+          usernameReceiver,
+          nameReceiver,
+          avatarReceiver,
           message,
           createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         },
-      ];
-      setChat(prevChat);
-      setMessage("");
+      ]);
+
+      if (!error) {
+        const prevChat: Chat[] = [...chat];
+        prevChat[selectedChatIndex].messages = [
+          ...prevChat[selectedChatIndex]?.messages,
+          {
+            UserId: session.id,
+            UserIdReceiver: userIdReceiver,
+            message,
+            createdAt: new Date().toISOString(),
+          },
+        ];
+        setChat(prevChat);
+        setMessage("");
+      }
     }
   };
 
   useEffect(() => {
-    if (session?.id) {
-      socket.emit("set_id", session?.id);
-
-      // Listen for incoming messages
-      socket.on("chat_message", (msg: any) => {
-        setChat((prevChat) => {
-          const newPrevChat: Chat[] = [...prevChat];
-
-          const foundIndex = newPrevChat.findIndex(
-            (e) => e?.User.id === msg?.UserId
-          );
-
-          if (foundIndex >= 0) {
-            newPrevChat[foundIndex].messages = [
-              ...newPrevChat[foundIndex].messages,
-              msg?.messages?.[0],
-            ];
-          } else {
-            newPrevChat.unshift(msg);
-          }
-          return newPrevChat;
-        });
-      });
-
-      // Listen time
-      socket.on("time", (timeString: string) => {});
-    }
+    const channel = supabase
+      .channel(`chat:user:${session.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "UserChats",
+          filter: `UserIdReceiver=eq.${session.id}`,
+        },
+        () => {
+          setRefetchChat(true);
+        }
+      )
+      .subscribe();
 
     return () => {
-      socket.disconnect();
+      supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session]);
+  }, [session.id]);
+
+  const chatEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({behavior: "smooth"});
+    }
+  }, [selectedChat?.messages.length]);
 
   return (
     <>
@@ -226,7 +232,15 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
                       : "self-start bg-zinc-800 rounded-r-3xl rounded-tl-3xl ";
                     const className = `${conditionalClass} p-4 mt-2 flex flex-col`;
                     return (
-                      <div key={idx + 1} className={className}>
+                      <div
+                        key={idx + 1}
+                        className={className}
+                        ref={
+                          idx === selectedChat?.messages?.length - 1
+                            ? chatEndRef
+                            : null
+                        }
+                      >
                         <span>{e.message}</span>
                         <span className="text-xs text-neutral-400 text-end">
                           {moment(e.createdAt).format("D MMM hh:mm")}
