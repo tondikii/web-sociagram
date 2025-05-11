@@ -75,7 +75,7 @@ const BottomBar: NextComponentType<NextPageContext, {}, Props> = () => {
         />
         <BottomNavigationAction
           icon={<QuestionAnswerOutlinedIcon className={styles.icon} />}
-          onClick={toggleModalDevelopment}
+          onClick={() => router.push("/chat")}
         />
         <BottomNavigationAction
           icon={

@@ -3,7 +3,11 @@ import styles from "../styles/Chat.module.css";
 import ChatCard from "../components/ChatCard";
 import {useEffect, useRef, useState} from "react";
 
-import {ChatAlt2Icon, PencilAltIcon} from "@heroicons/react/outline";
+import {
+  ChatAlt2Icon,
+  PencilAltIcon,
+  ArrowLeftIcon,
+} from "@heroicons/react/outline";
 import ButtonPrimary from "../components/ButtonPrimary";
 import ModalSearch from "../components/ModalSearch";
 import {useToggle} from "../hooks";
@@ -42,6 +46,7 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
   const [chat, setChat] = useState<Chat[]>([]);
   const [message, setMessage] = useState<string>("");
   const [refetchChat, setRefetchChat] = useState<boolean>(false);
+  const [showChatList, setShowChatList] = useState<boolean>(true);
 
   const {
     data: fetchedChat,
@@ -66,11 +71,19 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
 
   const onClickChatCard = (idx: number) => {
     setSelectedChatIndex(idx);
+    // On mobile, hide the chat list when selecting a chat
+    if (window.innerWidth < 768) {
+      setShowChatList(false);
+    }
   };
 
   const onClickUserSearched = (user: User) => {
     setChat([{User: user, messages: []}, ...chat]);
     setSelectedChatIndex(0);
+    // On mobile, hide the chat list when selecting a chat
+    if (window.innerWidth < 768) {
+      setShowChatList(false);
+    }
   };
 
   const useAutosizeTextArea = (
@@ -162,7 +175,23 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({behavior: "smooth"});
     }
-  }, [selectedChat?.messages.length]);
+  }, [selectedChat?.messages?.length]);
+
+  // Auto-hide chat list on mobile when a chat is selected
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        // md breakpoint in Tailwind
+        setShowChatList(chat.length === 0 || !selectedChat);
+      } else {
+        setShowChatList(true);
+      }
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [chat.length, selectedChat]);
 
   return (
     <>
@@ -171,58 +200,70 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
         toggle={toggleModalSearch}
         onClickUser={onClickUserSearched}
       />
-      <div className="w-screen flex flex-col items-end">
+      <div className="w-screen flex flex-col items-center">
         <div className={styles.container}>
-          <div className={styles.messageBar}>
-            <div className={styles.topMessageBar}>
-              <span className="text-lg font-semibold">Messages</span>
-              <PencilAltIcon
-                className="h-6 w-6"
-                role="button"
-                onClick={toggleModalSearch}
-              />
+          {showChatList && (
+            <div className={styles.messageBar}>
+              <div className={styles.topMessageBar}>
+                <span className="text-lg font-semibold">Messages</span>
+                <PencilAltIcon
+                  className="h-6 w-6"
+                  role="button"
+                  onClick={toggleModalSearch}
+                />
+              </div>
+              {Array.isArray(chat) && chat.length > 0
+                ? chat.map((e, idx) => (
+                    <ChatCard
+                      data={e}
+                      UserId={session.id}
+                      key={idx}
+                      onClick={() => {
+                        onClickChatCard(idx);
+                      }}
+                      isSelected={selectedChatIndex === idx}
+                    />
+                  ))
+                : null}
             </div>
-            {Array.isArray(chat) && chat.length > 0
-              ? chat.map((e, idx) => (
-                  <ChatCard
-                    data={e}
-                    UserId={session.id}
-                    key={idx}
-                    onClick={() => {
-                      onClickChatCard(idx);
-                    }}
-                    isSelected={selectedChatIndex === idx}
-                  />
-                ))
-              : null}
-          </div>
+          )}
+
           <div
-            className={`w-8/12 h-screen flex flex-col justify-${
-              selectedChat ? "between" : "center"
-            } items-center`}
+            className={`${styles.chatSection} text-sm md:text-md lg:text-lg`}
           >
             {selectedChat ? (
               <>
-                <div
-                  className={styles.topChatContainer}
-                  role="button"
-                  onClick={() => {
-                    const {username} = chat[selectedChatIndex].User;
-                    if (username) {
-                      router.push(username);
-                    }
-                  }}
-                >
-                  <Avatar
-                    className="rounded-full w-14 h-14 mr-4"
-                    src={
-                      chat[selectedChatIndex]?.User?.avatar ||
-                      "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
-                    }
-                  />
-                  <span className="font-semibold">
-                    {chat[selectedChatIndex]?.User?.name}
-                  </span>
+                <div className={styles.topChatContainer}>
+                  <div className="flex flex-row items-center w-full">
+                    {!showChatList && (
+                      <ArrowLeftIcon
+                        className="h-6 w-6 mr-4 md:hidden"
+                        role="button"
+                        onClick={() => setShowChatList(true)}
+                      />
+                    )}
+                    <div
+                      className="flex flex-row items-center flex-grow"
+                      role="button"
+                      onClick={() => {
+                        const {username} = chat[selectedChatIndex].User;
+                        if (username) {
+                          router.push(username);
+                        }
+                      }}
+                    >
+                      <Avatar
+                        className="rounded-full w-10 h-10 md:w-14 md:h-14 mr-3 md:mr-4"
+                        src={
+                          chat[selectedChatIndex]?.User?.avatar ||
+                          "https://trimelive.com/wp-content/uploads/2020/12/gambar-Wa-1.png"
+                        }
+                      />
+                      <span className="font-semibold truncate">
+                        {chat[selectedChatIndex]?.User?.name}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <div className={styles.chatContainer}>
                   {selectedChat.messages.map((e: Message, idx) => {
@@ -230,7 +271,7 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
                     const conditionalClass = isSelf
                       ? "self-end bg-fuchsia-600 rounded-l-3xl rounded-tr-3xl"
                       : "self-start bg-zinc-800 rounded-r-3xl rounded-tl-3xl ";
-                    const className = `${conditionalClass} p-4 mt-2 flex flex-col`;
+                    const className = `${conditionalClass} p-3 md:p-4 mt-2 flex flex-col max-w-[80%]`;
                     return (
                       <div
                         key={idx + 1}
@@ -241,7 +282,7 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
                             : null
                         }
                       >
-                        <span>{e.message}</span>
+                        <span className="break-words">{e.message}</span>
                         <span className="text-xs text-neutral-400 text-end">
                           {moment(e.createdAt).format("D MMM hh:mm")}
                         </span>
@@ -250,7 +291,7 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
                   })}
                 </div>
                 <div className={styles.bottomChatContainer}>
-                  <div className="horizontal justify-between p-4 border border-zinc-200 dark:border-zinc-800 rounded-3xl">
+                  <div className="horizontal justify-between p-3 md:p-4 border border-zinc-200 dark:border-zinc-800 rounded-3xl">
                     <textarea
                       placeholder="Write a message..."
                       className={styles.textarea}
@@ -274,15 +315,17 @@ const ChatPage: NextComponentType<NextPageContext, {}, Props> = (
               </>
             ) : (
               <>
-                <ChatAlt2Icon className="text-primary h-16 w-16 mb-4" />
-                <span className="text-xl">Your messages</span>
-                <span className="text-zinc-400 mb-4">
-                  Send messages to a friend
-                </span>
-                <ButtonPrimary
-                  text="Send message"
-                  onClick={toggleModalSearch}
-                />
+                <div className="flex flex-col items-center justify-center h-screen">
+                  <ChatAlt2Icon className="text-primary h-16 w-16 mb-4" />
+                  <span className="text-xl">Your messages</span>
+                  <span className="text-zinc-400 mb-4 text-center px-4">
+                    Send messages to a friend
+                  </span>
+                  <ButtonPrimary
+                    text="Send message"
+                    onClick={toggleModalSearch}
+                  />
+                </div>
               </>
             )}
           </div>

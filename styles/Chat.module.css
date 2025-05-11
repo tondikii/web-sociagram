@@ -1,9 +1,11 @@
 .container {
-  @apply flex flex-row w-10/12 bg-white dark:bg-black;
+  @apply flex flex-col md:flex-row w-full md:w-10/12 bg-white dark:bg-black lg:ml-64 xl:ml-72 md:ml-0;
 }
 
 .messageBar {
-  @apply w-screen border-r border-r-zinc-200 dark:border-r-zinc-800 flex flex-col w-4/12 h-screen py-4;
+  @apply w-full md:w-4/12 border-b md:border-b-0 md:border-r border-zinc-200 dark:border-zinc-800 flex flex-col h-auto md:h-screen py-4;
+  max-height: 30vh;
+  @apply md:max-h-full;
 }
 
 .topMessageBar {
@@ -23,10 +25,26 @@
 
 .chatContainer {
   @apply w-full overflow-y-scroll flex flex-col p-4;
-  height: 80%;
+  height: 75vh;
+  @apply md:h-[80%];
 }
 
 .bottomChatContainer {
+  width: 100% !important;
   @apply w-full p-4;
   height: 10%;
+  @apply fixed bottom-0 left-0 md:relative bg-white dark:bg-black;
+  @apply w-full mb-12 md:mb-0;
+}
+
+.mobileHidden {
+  @apply hidden md:flex;
+}
+
+.mobileOnly {
+  @apply flex md:hidden;
+}
+
+.chatSection {
+  @apply w-full md:w-8/12 h-screen flex flex-col justify-start items-center;
 }
